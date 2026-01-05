@@ -1,26 +1,96 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, ChevronDown, LayoutDashboard, Settings, LogOut, Users, FileText, Activity, Zap } from 'lucide-react'
+import { Bell, ChevronDown, LayoutDashboard, Settings, LogOut, Users, FileText, Activity, Zap, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/utils/supabase/client'
 
 export default function Dashboard() {
-    const [pulseValue, setPulseValue] = useState(12)
-    const [signals, setSignals] = useState<number[]>([5, 8, 12, 4, 3, 15, 22, 18, 5, 2, 4, 8])
+    const [pulseValue, setPulseValue] = useState(0)
+    const [signals, setSignals] = useState<number[]>(new Array(12).fill(0))
+    const [recentSignals, setRecentSignals] = useState<any[]>([])
+    const [stats, setStats] = useState<Record<string, number>>({})
+    const [aiInsight, setAiInsight] = useState("Gathering data for insights...")
 
-    // Simulate live data
+    const supabase = createClient()
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            // Randomly update current pulse
-            const newValue = Math.floor(Math.random() * 25)
-            setPulseValue(newValue)
-
-            // Update chart array (shift left, add new)
-            setSignals(prev => [...prev.slice(1), newValue])
-        }, 3000)
-
+        fetchData()
+        const interval = setInterval(fetchData, 5000) // Poll every 5s for simplicity
         return () => clearInterval(interval)
     }, [])
+
+    async function fetchData() {
+        // Fetch last hour of signals
+        const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
+
+        const { data: allSignals } = await supabase
+            .from('signals')
+            .select('*')
+            .gte('created_at', oneHourAgo)
+            .order('created_at', { ascending: false })
+
+        if (!allSignals) return
+
+        setRecentSignals(allSignals.slice(0, 5))
+
+        // Calculate Stats
+        const counts: Record<string, number> = {}
+        allSignals.forEach(s => {
+            counts[s.type] = (counts[s.type] || 0) + 1
+        })
+        setStats(counts)
+
+        // Calculate Pulse (signals in last 5 mins relative to total assumed students)
+        const fiveMinsAgo = new Date(Date.now() - 300000).toISOString()
+        const recentCount = allSignals.filter(s => s.created_at >= fiveMinsAgo).length
+        const totalStudents = 42 // Mock total
+        const pulse = Math.min(100, Math.round((recentCount / totalStudents) * 100))
+        setPulseValue(pulse)
+
+        // Update Pulse Chart (historical trend for last hour in 5-min buckets)
+        const buckets = new Array(12).fill(0)
+        allSignals.forEach(s => {
+            const minutesAgo = (Date.now() - new Date(s.created_at).getTime()) / 60000
+            const bucketIndex = 11 - Math.floor(minutesAgo / 5)
+            if (bucketIndex >= 0 && bucketIndex < 12) {
+                buckets[bucketIndex]++
+            }
+        })
+        setSignals(buckets)
+
+        generateInsight(allSignals)
+    }
+
+    function generateInsight(data: any[]) {
+        if (data.length === 0) {
+            setAiInsight("Classroom signal is quiet. Students appear to be following.")
+            return
+        }
+
+        // Logic: Correlate signals and locations
+        const locationClusters: Record<string, number> = {}
+        const typeClusters: Record<string, number> = {}
+
+        data.forEach(s => {
+            if (s.block_room) locationClusters[s.block_room] = (locationClusters[s.block_room] || 0) + 1
+            typeClusters[s.type] = (typeClusters[s.type] || 0) + 1
+        })
+
+        // Find most common location and type
+        const sortedLocs = Object.entries(locationClusters).sort((a, b) => b[1] - a[1])
+        const sortedTypes = Object.entries(typeClusters).sort((a, b) => b[1] - a[1])
+
+        if (sortedLocs.length > 0 && sortedLocs[0][1] > 2) {
+            const loc = sortedLocs[0][0]
+            const type = sortedTypes[0][0]
+            setAiInsight(`${type} signals are concentrated in ${loc}. This may indicate environmental disruption in that area rather than instructional issues.`)
+        } else if (sortedTypes.length > 0 && sortedTypes[0][0] === "Too Fast" && sortedTypes[0][1] > 3) {
+            setAiInsight("Momentum has slowed. Multiple students flagged 'Too Fast'. Consider summarizing the last key point.")
+        } else {
+            setAiInsight("Signals are distributed across the class. A general re-explanation of the current concept might be helpful.")
+        }
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans flex flex-col md:flex-row">
@@ -120,12 +190,12 @@ export default function Dashboard() {
                         </div>
 
                         {/* AI Insight */}
-                        <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                        <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 animate-in slide-in-from-right-4 duration-500">
                             <h3 className="text-indigo-900 font-bold mb-2 flex items-center gap-2">
                                 <Zap className="w-4 h-4" /> AI Insight
                             </h3>
-                            <p className="text-indigo-800 text-sm leading-relaxed">
-                                Momentum has slowed. <strong className="font-semibold">6 students</strong> flagged "Too Fast" in the last minute. Consider summarizing the last key point before moving on.
+                            <p className="text-indigo-800 text-sm leading-relaxed italic">
+                                "{aiInsight}"
                             </p>
                         </div>
                     </div>
@@ -134,56 +204,60 @@ export default function Dashboard() {
                 {/* Tag Distribution */}
                 <div className="grid md:grid-cols-2 gap-6">
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 className="font-bold text-slate-800 mb-4">Signal Breakdown</h3>
+                        <h3 className="font-bold text-slate-800 mb-4">Signal Breakdown (Last Hr)</h3>
                         <div className="space-y-4">
-                            <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-slate-600">"I'm Confused" (Generic)</span>
-                                    <span className="font-semibold">65%</span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-2 rounded-full">
-                                    <div className="bg-slate-800 h-2 rounded-full" style={{ width: '65%' }}></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-slate-600">"Too Fast"</span>
-                                    <span className="font-semibold">25%</span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-2 rounded-full">
-                                    <div className="bg-slate-600 h-2 rounded-full" style={{ width: '25%' }}></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span className="text-slate-600">"Need Example"</span>
-                                    <span className="font-semibold">10%</span>
-                                </div>
-                                <div className="w-full bg-slate-100 h-2 rounded-full">
-                                    <div className="bg-slate-400 h-2 rounded-full" style={{ width: '10%' }}></div>
-                                </div>
-                            </div>
+                            {Object.entries(stats).length === 0 ? (
+                                <p className="text-sm text-slate-400 italic">No signals recorded yet.</p>
+                            ) : (
+                                Object.entries(stats).map(([type, count]) => {
+                                    const total = Object.values(stats).reduce((a, b) => a + b, 0)
+                                    const percentage = Math.round((count / total) * 100)
+                                    return (
+                                        <div key={type}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-slate-600">"{type}"</span>
+                                                <span className="font-semibold">{percentage}%</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full">
+                                                <div
+                                                    className="bg-slate-800 h-2 rounded-full transition-all duration-1000"
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
                         </div>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 className="font-bold text-slate-800 mb-4">Recent Feedback</h3>
+                        <h3 className="font-bold text-slate-800 mb-4">Recent Activity</h3>
                         <ul className="space-y-3">
-                            <li className="flex items-center gap-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg">
-                                <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                                Signal from Anonymous Student
-                                <span className="ml-auto text-xs text-slate-400">Just now</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg">
-                                <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                                Signal from Anonymous Student
-                                <span className="ml-auto text-xs text-slate-400">12s ago</span>
-                            </li>
-                            <li className="flex items-center gap-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg">
-                                <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
-                                "Too Fast" Signal
-                                <span className="ml-auto text-xs text-slate-400">45s ago</span>
-                            </li>
+                            {recentSignals.map((signal) => (
+                                <li key={signal.id} className="flex flex-col gap-1 p-2 bg-slate-50 rounded-lg group hover:bg-slate-100 transition-all">
+                                    <div className="flex items-center gap-3 text-sm text-slate-600">
+                                        <span className={`w-2 h-2 rounded-full ${signal.type === "I'm Confused" ? 'bg-red-400' : 'bg-orange-400'}`}></span>
+                                        <span className="font-medium text-slate-800">{signal.type}</span>
+                                        <span className="ml-auto text-[10px] text-slate-400 uppercase font-bold">
+                                            {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                    {signal.block_room && (
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-500 ml-5">
+                                            <MapPin className="w-3 h-3" /> {signal.block_room}
+                                        </div>
+                                    )}
+                                    {signal.additional_text && (
+                                        <p className="text-[11px] text-slate-500 ml-5 italic line-clamp-1 border-l-2 border-slate-200 pl-2">
+                                            "{signal.additional_text}"
+                                        </p>
+                                    )}
+                                </li>
+                            ))}
+                            {recentSignals.length === 0 && (
+                                <li className="text-center text-sm text-slate-400 py-4 italic">No recent activity</li>
+                            )}
                         </ul>
                     </div>
                 </div>
