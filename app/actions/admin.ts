@@ -59,7 +59,7 @@ export async function resetAllData() {
     return { success: true }
 }
 
-export async function updateCampusSettings(settings: { latitude: number, longitude: number, radius_meters: number }) {
+export async function updateCampusSettings(settings: { latitude: number, longitude: number, radius_meters: number, demo_mode?: boolean }) {
     const supabase = await createClient()
 
     const { error } = await supabase

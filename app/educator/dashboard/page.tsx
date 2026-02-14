@@ -28,6 +28,7 @@ export default function Dashboard() {
     const [timelineData, setTimelineData] = useState<{ time: string; count: number }[]>([])
     const [recurringGaps, setRecurringGaps] = useState<{ topic: string, days: number, severity: 'Emerging' | 'Persistent' | 'Critical' }[]>([])
     const [interventionImpact, setInterventionImpact] = useState<{ improvement: number, clarityChange: number } | null>(null)
+    const [isDemoMode, setIsDemoMode] = useState(false)
 
     const supabase = createClient()
 
@@ -38,6 +39,11 @@ export default function Dashboard() {
     }, [])
 
     async function fetchData() {
+        // Fetch Campus Settings for Demo Mode Check
+        const { data: settings } = await supabase.from('campus_settings').select('demo_mode').single()
+        if (settings?.demo_mode) setIsDemoMode(true)
+        else setIsDemoMode(false)
+
         // Fetch last hour of signals for Real-time view
         const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
         // Fetch last 7 days for Recurring view
@@ -388,6 +394,17 @@ export default function Dashboard() {
 
                         {/* AI Insight */}
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 animate-in slide-in-from-right-4 duration-500">
+                            <div className="flex items-center mb-2">
+                                <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
+                                    EduPulse
+                                </h1>
+                                {/* Demo Mode Badge */}
+                                {isDemoMode && (
+                                    <div className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200 ml-2 animate-pulse">
+                                        DEMO MODE ACTIVE
+                                    </div>
+                                )}
+                            </div>
                             <h3 className="text-indigo-900 font-bold mb-2 flex items-center gap-2">
                                 <Zap className="w-4 h-4" /> AI Insight
                             </h3>

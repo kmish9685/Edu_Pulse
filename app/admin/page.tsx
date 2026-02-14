@@ -14,7 +14,7 @@ export default function AdminPage() {
     const [error, setError] = useState('')
 
     // Campus Settings State
-    const [campus, setCampus] = useState({ latitude: 0, longitude: 0, radius_meters: 500 })
+    const [campus, setCampus] = useState({ latitude: 0, longitude: 0, radius_meters: 500, demo_mode: false })
     const [isSavingCampus, setIsSavingCampus] = useState(false)
 
     // Signal Types State
@@ -30,7 +30,7 @@ export default function AdminPage() {
 
     async function fetchSettings() {
         const { data } = await supabase.from('campus_settings').select('*').single()
-        if (data) setCampus({ latitude: data.latitude, longitude: data.longitude, radius_meters: data.radius_meters })
+        if (data) setCampus({ latitude: data.latitude, longitude: data.longitude, radius_meters: data.radius_meters, demo_mode: data.demo_mode || false })
     }
 
     async function fetchSignalTypes() {
@@ -183,13 +183,26 @@ export default function AdminPage() {
                             />
                         </div>
                     </div>
-                    <button
-                        onClick={handleSaveCampus}
-                        disabled={isSavingCampus}
-                        className="mt-6 px-6 py-2 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-2"
-                    >
-                        {isSavingCampus ? 'Saving...' : 'Save Settings'}
-                    </button>
+
+                    <div className="mt-6 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-6 rounded-full p-1 transition-colors cursor-pointer ${campus.demo_mode ? 'bg-amber-500' : 'bg-slate-300'}`} onClick={() => setCampus({ ...campus, demo_mode: !campus.demo_mode })}>
+                                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${campus.demo_mode ? 'translate-x-4' : ''}`} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-semibold text-slate-800">Enable Demo Mode</div>
+                                <div className="text-xs text-slate-500">Bypass geofence for off-campus demonstrations</div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleSaveCampus}
+                            disabled={isSavingCampus}
+                            className="px-6 py-2 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-2"
+                        >
+                            {isSavingCampus ? 'Saving...' : 'Save Settings'}
+                        </button>
+                    </div>
                 </section>
 
                 {/* Signal Buttons Management */}
@@ -307,6 +320,6 @@ export default function AdminPage() {
                     EduPulse Admin Panel • Restricted Access
                 </div>
             </main>
-        </div>
+        </div >
     )
 }
