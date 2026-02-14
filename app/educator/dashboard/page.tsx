@@ -231,19 +231,19 @@ export default function Dashboard() {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 mt-4">
-                    <Link href="#" className="flex items-center gap-3 px-4 py-3 bg-white/5 text-white rounded-xl border border-white/10 shadow-sm backdrop-blur-sm group transition-all hover:bg-white/10 hover:border-indigo-500/50 hover:shadow-indigo-500/10">
+                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 bg-white/5 text-white rounded-xl border border-white/10 shadow-sm backdrop-blur-sm group transition-all hover:bg-white/10 hover:border-indigo-500/50 hover:shadow-indigo-500/10">
                         <LayoutDashboard className="w-5 h-5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
                         <span className="hidden lg:block font-medium">Dashboard</span>
                     </Link>
-                    <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
                         <Layers className="w-5 h-5 group-hover:text-indigo-400 transition-colors" />
                         <span className="hidden lg:block">Analysis</span>
                     </Link>
-                    <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
                         <Radio className="w-5 h-5 group-hover:text-indigo-400 transition-colors" />
                         <span className="hidden lg:block">Live Feed</span>
                     </Link>
-                    <Link href="#" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
                         <Settings className="w-5 h-5 group-hover:text-indigo-400 transition-colors" />
                         <span className="hidden lg:block">Settings</span>
                     </Link>
@@ -411,8 +411,8 @@ export default function Dashboard() {
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="text-xl font-bold text-white">{primaryConfusion.type}</h4>
                                     <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${primaryConfusion.severity === 'Major Learning Gap' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                                            primaryConfusion.severity === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                                                'bg-slate-700 text-slate-300'
+                                        primaryConfusion.severity === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                                            'bg-slate-700 text-slate-300'
                                         }`}>{primaryConfusion.severity}</span>
                                 </div>
                                 <div className="flex items-end gap-2 mb-4">

@@ -64,12 +64,13 @@ export async function updateCampusSettings(settings: { latitude: number, longitu
 
     const { error } = await supabase
         .from('campus_settings')
-        .update(settings)
-        .eq('id', 1) // Assuming single campus setting for now
+        .upsert({ id: 1, ...settings }) // Upsert ensures row 1 exists
 
     if (error) return { success: false, error: error.message }
 
     revalidatePath('/admin')
+    revalidatePath('/educator/dashboard')
+    revalidatePath('/student') // Update student view too since it checks demo_mode
     return { success: true }
 }
 
