@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, ChevronDown, LayoutDashboard, Settings, LogOut, Users, FileText, Activity, Zap, MapPin, TrendingDown, TrendingUp, Sparkles, Brain, Radio, Layers, X } from 'lucide-react'
+import { Bell, ChevronDown, LayoutDashboard, Settings, LogOut, Users, FileText, Activity, Zap, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 
@@ -10,564 +10,255 @@ export default function Dashboard() {
     const [signals, setSignals] = useState<number[]>(new Array(12).fill(0))
     const [recentSignals, setRecentSignals] = useState<any[]>([])
     const [stats, setStats] = useState<Record<string, number>>({})
-    const [aiInsight, setAiInsight] = useState("Initializing AI Analysis...")
-    const [primaryConfusion, setPrimaryConfusion] = useState<{
-        type: string,
-        count: number,
-        percentage: number,
-        severity: 'Minor' | 'Moderate' | 'Major Learning Gap'
-    } | null>(null)
-    const [clarityScore, setClarityScore] = useState<{
-        score: number,
-        status: 'Clear' | 'Watch' | 'Struggling' | 'Critical'
-    }>({ score: 100, status: 'Clear' })
-    const [recommendedAction, setRecommendedAction] = useState<{
-        action: string,
-        reason: string
-    }>({ action: "Monitor student signals.", reason: "Waiting for data stream." })
-    const [timelineData, setTimelineData] = useState<{ time: string; count: number }[]>([])
-    const [recurringGaps, setRecurringGaps] = useState<{ topic: string, days: number, severity: 'Emerging' | 'Persistent' | 'Critical' }[]>([])
-    const [interventionImpact, setInterventionImpact] = useState<{ improvement: number, clarityChange: number } | null>(null)
-    const [isDemoMode, setIsDemoMode] = useState(false)
+    const [aiInsight, setAiInsight] = useState("Gathering data for insights...")
 
     const supabase = createClient()
 
     useEffect(() => {
         fetchData()
-        const interval = setInterval(fetchData, 5000)
+        const interval = setInterval(fetchData, 5000) // Poll every 5s for simplicity
         return () => clearInterval(interval)
     }, [])
 
     async function fetchData() {
-        const { data: settings } = await supabase.from('campus_settings').select('demo_mode').single()
-        if (settings?.demo_mode) setIsDemoMode(true)
-        else setIsDemoMode(false)
-
+        // Fetch last hour of signals
         const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 3600000).toISOString()
 
         const { data: allSignals } = await supabase
             .from('signals')
             .select('*')
             .gte('created_at', oneHourAgo)
-            .order('created_at', { ascending: true })
+            .order('created_at', { ascending: false })
 
         if (!allSignals) return
 
-        const { data: historySignals } = await supabase
-            .from('signals')
-            .select('type, created_at')
-            .gte('created_at', sevenDaysAgo)
+        setRecentSignals(allSignals.slice(0, 5))
 
-        if (historySignals) {
-            const topicDays: Record<string, Set<string>> = {}
-            historySignals.forEach(s => {
-                const day = new Date(s.created_at).toDateString()
-                if (!topicDays[s.type]) topicDays[s.type] = new Set()
-                topicDays[s.type].add(day)
-            })
-
-            const gaps = Object.entries(topicDays).map(([topic, daysSet]) => {
-                const days = daysSet.size
-                let severity: 'Emerging' | 'Persistent' | 'Critical' = 'Emerging'
-                if (days > 5) severity = 'Critical'
-                else if (days >= 4) severity = 'Persistent'
-                return { topic, days, severity }
-            })
-                .filter(gap => gap.days >= 3)
-                .sort((a, b) => b.days - a.days)
-            setRecurringGaps(gaps)
-        }
-
-        const recentFirstSignals = [...allSignals].reverse()
-        setRecentSignals(recentFirstSignals.slice(0, 5))
-
+        // Calculate Stats
         const counts: Record<string, number> = {}
-        allSignals.forEach(s => counts[s.type] = (counts[s.type] || 0) + 1)
+        allSignals.forEach(s => {
+            counts[s.type] = (counts[s.type] || 0) + 1
+        })
         setStats(counts)
 
-        let currentSeverity: 'Minor' | 'Moderate' | 'Major Learning Gap' = 'Minor'
-        let currentType = ''
-
-        if (allSignals.length > 0) {
-            const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1])
-            const topSignal = sortedCounts[0]
-            const type = topSignal[0]
-            const count = topSignal[1]
-            const percentage = Math.round((count / allSignals.length) * 100)
-
-            if (percentage >= 60) currentSeverity = 'Major Learning Gap'
-            else if (percentage >= 30) currentSeverity = 'Moderate'
-            currentType = type
-
-            setPrimaryConfusion({ type, count, percentage, severity: currentSeverity })
-        } else {
-            setPrimaryConfusion(null)
-        }
-
+        // Calculate Pulse (signals in last 5 mins relative to total assumed students)
         const fiveMinsAgo = new Date(Date.now() - 300000).toISOString()
         const recentCount = allSignals.filter(s => s.created_at >= fiveMinsAgo).length
-        const totalStudents = 42
+        const totalStudents = 42 // Mock total
         const pulse = Math.min(100, Math.round((recentCount / totalStudents) * 100))
         setPulseValue(pulse)
 
-        const signalCount = allSignals.length
-        const rawScore = 100 - ((signalCount / totalStudents) * 100)
-        const score = Math.max(0, Math.round(rawScore))
-
-        let status: 'Clear' | 'Watch' | 'Struggling' | 'Critical' = 'Clear'
-        if (score < 40) status = 'Critical'
-        else if (score < 60) status = 'Struggling'
-        else if (score < 80) status = 'Watch'
-
-        setClarityScore({ score, status })
-
-        let action = "Monitor signal stream."
-        let reason = "Data accumulation in progress."
-
-        if (currentSeverity === 'Major Learning Gap' && score < 60) {
-            action = "Micro-Pause Recommended (2m)"
-            reason = `Critical density in "${currentType}". Clarity compromised.`
-        } else if (currentSeverity === 'Moderate') {
-            action = "Clarify Context / Example"
-            reason = "Moderate confusion clustering detected."
-        } else if (currentSeverity === 'Minor' && score > 80) {
-            action = "Maintain Current Pacing"
-            reason = "Cognitive load appears optimal."
-        }
-        setRecommendedAction({ action, reason })
-
+        // Update Pulse Chart (historical trend for last hour in 5-min buckets)
         const buckets = new Array(12).fill(0)
-        recentFirstSignals.forEach(s => {
+        allSignals.forEach(s => {
             const minutesAgo = (Date.now() - new Date(s.created_at).getTime()) / 60000
             const bucketIndex = 11 - Math.floor(minutesAgo / 5)
-            if (bucketIndex >= 0 && bucketIndex < 12) buckets[bucketIndex]++
-        })
-        setSignals(buckets)
-
-        const timelineBuckets: Record<string, number> = {}
-        const now = new Date()
-        const timeLabels: string[] = []
-
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getTime() - i * 5 * 60000)
-            const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            timelineBuckets[label] = 0
-            timeLabels.push(label)
-        }
-
-        allSignals.forEach(signal => {
-            const date = new Date(signal.created_at)
-            const roundedMin = Math.floor(date.getMinutes() / 5) * 5
-            date.setMinutes(roundedMin)
-            const bucketLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            if (timeLabels.includes(bucketLabel)) timelineBuckets[bucketLabel] = (timelineBuckets[bucketLabel] || 0) + 1
-        })
-
-        const timelineArray = timeLabels.map(time => ({ time, count: timelineBuckets[time] || 0 }))
-        setTimelineData(timelineArray)
-
-        let maxSpike = 0
-        let spikeIndex = -1
-        timelineArray.forEach((point, index) => {
-            if (point.count > maxSpike) {
-                maxSpike = point.count
-                spikeIndex = index
+            if (bucketIndex >= 0 && bucketIndex < 12) {
+                buckets[bucketIndex]++
             }
         })
-
-        const currentBucket = timelineArray[timelineArray.length - 1]
-        const currentCount = currentBucket?.count || 0
-
-        if (maxSpike > 3 && spikeIndex < timelineArray.length - 1) {
-            const improvement = Math.round(((maxSpike - currentCount) / maxSpike) * 100)
-            const clarityChange = Math.round(improvement / 5)
-            setInterventionImpact({ improvement: Math.max(0, improvement), clarityChange: Math.max(0, clarityChange) })
-        } else {
-            setInterventionImpact(null)
-        }
+        setSignals(buckets)
 
         generateInsight(allSignals)
     }
 
     function generateInsight(data: any[]) {
         if (data.length === 0) {
-            setAiInsight("Signal channel clear. No active anomalies.")
+            setAiInsight("Classroom signal is quiet. Students appear to be following.")
             return
         }
+
+        // Logic: Correlate signals and locations
         const locationClusters: Record<string, number> = {}
         const typeClusters: Record<string, number> = {}
+
         data.forEach(s => {
             if (s.block_room) locationClusters[s.block_room] = (locationClusters[s.block_room] || 0) + 1
             typeClusters[s.type] = (typeClusters[s.type] || 0) + 1
         })
+
+        // Find most common location and type
         const sortedLocs = Object.entries(locationClusters).sort((a, b) => b[1] - a[1])
         const sortedTypes = Object.entries(typeClusters).sort((a, b) => b[1] - a[1])
 
         if (sortedLocs.length > 0 && sortedLocs[0][1] > 2) {
-            setAiInsight(`Localized anomaly: ${sortedTypes[0][0]} signals clustering in ${sortedLocs[0][0]}. Possible environmental factor.`)
+            const loc = sortedLocs[0][0]
+            const type = sortedTypes[0][0]
+            setAiInsight(`${type} signals are concentrated in ${loc}. This may indicate environmental disruption in that area rather than instructional issues.`)
         } else if (sortedTypes.length > 0 && sortedTypes[0][0] === "Too Fast" && sortedTypes[0][1] > 3) {
-            setAiInsight("Velocity Warning: Multiple 'Too Fast' flags. Deceleration advised.")
+            setAiInsight("Momentum has slowed. Multiple students flagged 'Too Fast'. Consider summarizing the last key point.")
         } else {
-            setAiInsight("Distributed signals detected. Concept reinforcement suggested.")
+            setAiInsight("Signals are distributed across the class. A general re-explanation of the current concept might be helpful.")
         }
     }
 
-    const [showQR, setShowQR] = useState(false)
-    const [qrUrl, setQrUrl] = useState('')
-
-    useEffect(() => {
-        // Set the URL for the QR code (pointing to student view)
-        // using window.location.origin to be dynamic
-        if (typeof window !== 'undefined') {
-            setQrUrl(`${window.location.origin}/student`)
-        }
-    }, [])
-
     return (
-        <div className="flex h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden relative">
-
-            {/* Background Ambient Glow */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-900/10 rounded-full blur-[120px] animate-pulse-glow" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-900/10 rounded-full blur-[100px]" />
-            </div>
-
-            {/* QR Code Modal */}
-            {showQR && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl relative text-center">
-                        <button
-                            onClick={() => setShowQR(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-
-                        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-                            <Zap className="w-8 h-8" />
-                        </div>
-
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Join Live Session</h3>
-                        <p className="text-slate-500 mb-6">Scan to participate as a student</p>
-
-                        <div className="bg-white p-4 rounded-xl border-2 border-slate-100 mb-6 flex justify-center shadow-sm">
-                            {/* QR Code via Public API */}
-                            <img
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrUrl)}`}
-                                alt="Student Access QR"
-                                className="w-56 h-56 mix-blend-multiply"
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 text-left">
-                            <div className="flex-1 truncate text-xs text-slate-500 font-mono">{qrUrl}</div>
-                            <button
-                                onClick={() => { navigator.clipboard.writeText(qrUrl) }}
-                                className="text-blue-600 hover:text-blue-700 font-bold text-xs"
-                            >
-                                Copy
-                            </button>
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-slate-50 font-sans flex flex-col md:flex-row">
+            {/* Sidebar */}
+            <aside className="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col h-screen sticky top-0">
+                <div className="p-6 border-b border-slate-800">
+                    <span className="font-bold text-white text-xl tracking-tight">EduPulse</span>
                 </div>
-            )}
-
-            {/* Sidebar (Glassmorphic) */}
-            <aside className="w-64 bg-slate-900/50 backdrop-blur-xl border-r border-white/5 flex flex-col z-20 hidden md:flex">
-                <div className="p-6 border-b border-white/5 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        <Zap className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-bold text-lg tracking-tight text-white">EduPulse AI</span>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-1">
-                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl font-medium border border-blue-500/10">
-                        <LayoutDashboard className="w-5 h-5" /> Dashboard
+                <nav className="flex-1 p-4 space-y-2">
+                    <Link href="#" className="flex items-center gap-3 px-4 py-3 bg-slate-800 text-white rounded-lg">
+                        <LayoutDashboard className="w-5 h-5" />
+                        Dashboard
                     </Link>
-                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all">
-                        <Activity className="w-5 h-5" /> Analysis
+                    <Link href="#" className="flex items-center gap-3 px-4 py-3 hover:text-white transition-colors">
+                        <FileText className="w-5 h-5" />
+                        Session History
                     </Link>
-                    <Link href="/educator/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all">
-                        <Radio className="w-5 h-5" /> Live Feed
+                    <Link href="#" className="flex items-center gap-3 px-4 py-3 hover:text-white transition-colors">
+                        <Settings className="w-5 h-5" />
+                        Settings
                     </Link>
-                    <div className="pt-4 mt-4 border-t border-white/5">
-                        <div className="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">My Classes</div>
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-3 px-4 py-2 text-slate-300 bg-white/5 rounded-lg text-sm border-l-2 border-emerald-500">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> CS101: Intro to DB
-                            </div>
-                            <div className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-slate-300 rounded-lg text-sm cursor-pointer">
-                                <span className="w-2 h-2 rounded-full bg-slate-700"></span> CS102: Algorithms
-                            </div>
-                        </div>
-                    </div>
                 </nav>
-
-                <div className="p-4 border-t border-white/5">
-                    <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all mb-1">
-                        <Settings className="w-5 h-5" /> Admin Panel
+                <div className="p-4 border-t border-slate-800">
+                    <Link href="/" className="flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 transition-colors">
+                        <LogOut className="w-5 h-5" />
+                        End Session
                     </Link>
-                    <button className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-all">
-                        <LogOut className="w-5 h-5" /> End Session
-                    </button>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col overflow-hidden relative z-10">
-                {/* Top Bar */}
-                <header className="h-16 border-b border-white/5 bg-slate-900/50 backdrop-blur-md flex items-center justify-between px-6 z-20">
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                            CS101: Introduction to Database Systems
-                            <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
-                                LIVE
-                            </span>
-                        </h1>
+            {/* Main Content */}
+            <main className="flex-1 p-6 md:p-10 overflow-y-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-10">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900">CS101: Intro to Algorithms</h1>
+                        <p className="text-slate-500">Live Session • 42 Students Online</p>
                     </div>
-
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setShowQR(true)}
-                            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wide rounded-lg border border-white/10 transition-all"
-                        >
-                            <Zap className="w-3 h-3" /> Show Join QR
+                        <div className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            System Active
+                        </div>
+                        <button className="p-2 text-slate-400 hover:text-slate-600">
+                            <Bell className="w-6 h-6" />
                         </button>
-
-                        <div className="h-8 w-px bg-white/10 mx-2"></div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="text-right hidden sm:block">
-                                <div className="text-sm font-bold text-white">Dr. Amit Kumar</div>
-                                <div className="text-xs text-slate-400">Associate Professor</div>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-slate-700 border border-white/10 flex items-center justify-center text-slate-300 font-bold">
-                                AK
-                            </div>
-                        </div>
+                        <div className="w-8 h-8 bg-slate-200 rounded-full"></div>
                     </div>
-                </header>
+                </div>
 
-                {/* Main Content Padding */}
-                <div className="p-6 md:p-8 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
-
-                    {/* Top Quick Stats Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div className="glass-card p-4 rounded-xl flex items-center justify-between group hover:border-indigo-500/30 transition-all">
-                            <div>
-                                <div className="text-slate-500 text-xs uppercase font-semibold tracking-wider mb-1">Students</div>
-                                <div className="text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors">42 <span className="text-xs font-normal text-slate-500">/ 45</span></div>
-                            </div>
-                            <div className="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-                                <Users className="w-5 h-5 text-indigo-400" />
-                            </div>
+                {/* Live Pulse Card */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-slate-500" />
+                                Live Confusion Pulse
+                            </h2>
+                            <span className="text-xs text-slate-400 uppercase font-semibold">Real-time (Last 5m)</span>
                         </div>
-                        {/* Additional quick stats could go here */}
-                    </div >
 
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                        {/* REAL-TIME PULSE */}
-                        <div className="lg:col-span-2 glass-card p-6 rounded-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-indigo-500/10 transition-all duration-700"></div>
-
-                            <div className="flex justify-between items-center mb-8 relative z-10">
-                                <div>
-                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <Activity className="w-5 h-5 text-indigo-400" />
-                                        Live Confusion Pulse
-                                    </h2>
-                                    <p className="text-xs text-slate-400">Real-time signal density (Last 5m)</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="text-right">
-                                        <div className="text-xs text-slate-500 uppercase font-bold">Current Spike</div>
-                                        <div className={`text-xl font-bold ${pulseValue > 15 ? 'text-red-400 text-glow' : 'text-emerald-400'}`}>{pulseValue}%</div>
+                        {/* CSS Bar Chart */}
+                        <div className="h-64 flex items-end justify-between gap-2">
+                            {signals.map((val, i) => (
+                                <div key={i} className="w-full bg-slate-100 rounded-t-sm relative group">
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 bg-slate-900 transition-all duration-1000 rounded-t-sm opacity-80 group-hover:opacity-100"
+                                        style={{ height: `${val * 3}%` }} // Scale mock data
+                                    ></div>
+                                    {/* Tooltip */}
+                                    <div className="opacity-0 group-hover:opacity-100 absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity">
+                                        {val} Signals
                                     </div>
                                 </div>
-                            </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 flex justify-between text-xs text-slate-400 font-medium">
+                            <span>5 mins ago</span>
+                            <span>Now</span>
+                        </div>
+                    </div>
 
-                            {/* Equalizer Chart */}
-                            <div className="h-48 flex items-end justify-between gap-1 relative z-10 box-border px-2">
-                                {signals.map((val, i) => {
-                                    const height = Math.max(5, Math.min(100, val * 8)); // Scale for visibility
+                    <div className="space-y-6">
+                        {/* Current Status */}
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Current Confusion Level</h3>
+                            <div className="flex items-end gap-2">
+                                <span className={`text-5xl font-bold ${pulseValue > 15 ? 'text-red-500' : 'text-slate-900'}`}>{pulseValue}%</span>
+                                <span className="text-slate-400 mb-2">of class signaled</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-500 ${pulseValue > 15 ? 'bg-red-500' : 'bg-slate-900'}`}
+                                    style={{ width: `${pulseValue}%` }}
+                                ></div>
+                            </div>
+                        </div>
+
+                        {/* AI Insight */}
+                        <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 animate-in slide-in-from-right-4 duration-500">
+                            <h3 className="text-indigo-900 font-bold mb-2 flex items-center gap-2">
+                                <Zap className="w-4 h-4" /> AI Insight
+                            </h3>
+                            <p className="text-indigo-800 text-sm leading-relaxed italic">
+                                "{aiInsight}"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tag Distribution */}
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 className="font-bold text-slate-800 mb-4">Signal Breakdown (Last Hr)</h3>
+                        <div className="space-y-4">
+                            {Object.entries(stats).length === 0 ? (
+                                <p className="text-sm text-slate-400 italic">No signals recorded yet.</p>
+                            ) : (
+                                Object.entries(stats).map(([type, count]) => {
+                                    const total = Object.values(stats).reduce((a, b) => a + b, 0)
+                                    const percentage = Math.round((count / total) * 100)
                                     return (
-                                        <div key={i} className="w-full bg-slate-800/50 rounded-t-sm relative group/bar h-full flex items-end overflow-hidden">
-                                            <div
-                                                className={`w-full transition-all duration-700 ease-out rounded-t-sm ${height > 40 ? 'bg-gradient-to-t from-red-900/80 to-red-500' : 'bg-gradient-to-t from-indigo-900/80 to-indigo-500'}`}
-                                                style={{ height: `${height}%` }}
-                                            >
-                                                <div className="w-full h-full opacity-0 group-hover/bar:opacity-30 bg-white transition-opacity"></div>
+                                        <div key={type}>
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-slate-600">"{type}"</span>
+                                                <span className="font-semibold">{percentage}%</span>
                                             </div>
-                                            {/* Tooltip */}
-                                            <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] py-1 px-2 rounded border border-white/10 pointer-events-none transition-opacity whitespace-nowrap z-20">
-                                                {val} Signals
+                                            <div className="w-full bg-slate-100 h-2 rounded-full">
+                                                <div
+                                                    className="bg-slate-800 h-2 rounded-full transition-all duration-1000"
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
                                             </div>
                                         </div>
                                     )
-                                })}
-                            </div>
-                            <div className="h-px w-full bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent mt-0" />
-                            <div className="mt-2 flex justify-between text-[10px] text-slate-500 font-mono uppercase tracking-widest">
-                                <span>-5m</span>
-                                <span>Live</span>
-                            </div>
-                        </div>
-
-                        {/* AI INSIGHT SADDLE */}
-                        <div className="space-y-6">
-                            {/* Clarity Score Radial */}
-                            <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Session Clarity</h3>
-                                <div className="flex items-center gap-6">
-                                    <div className="relative w-24 h-24 flex items-center justify-center">
-                                        <svg className="w-full h-full -rotate-90">
-                                            <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-800" />
-                                            <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="6" fill="transparent"
-                                                className={`${clarityScore.status === 'Critical' ? 'text-red-500' : clarityScore.status === 'Watch' ? 'text-amber-500' : 'text-emerald-500'} transition-all duration-1000`}
-                                                strokeDasharray={251.2}
-                                                strokeDashoffset={251.2 - (251.2 * clarityScore.score) / 100}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <span className="text-2xl font-bold text-white">{clarityScore.score}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className={`text-lg font-bold mb-1 ${clarityScore.status === 'Critical' ? 'text-red-400' : clarityScore.status === 'Watch' ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                            {clarityScore.status}
-                                        </div>
-                                        <div className="text-xs text-slate-500">Benchmark: <span className="text-slate-300">Top 10%</span></div>
-                                        <div className="text-xs text-slate-500">Trend: <span className="text-emerald-400">+2.4%</span></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* AI Action Card */}
-                            <div className="p-[1px] rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-900 shadow-lg shadow-indigo-500/20 relative group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-900 opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-700"></div>
-                                <div className="bg-slate-950/90 rounded-[15px] p-5 h-full relative backdrop-blur-xl">
-                                    <div className="flex items-start gap-3 mb-3">
-                                        <Sparkles className="w-5 h-5 text-indigo-300 animate-pulse" />
-                                        <div>
-                                            <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-widest">AI Recommendation</h3>
-                                        </div>
-                                    </div>
-                                    <div className="text-lg font-medium text-white mb-3">
-                                        {recommendedAction.action}
-                                    </div>
-                                    <div className="text-xs text-indigo-200/60 font-mono border-l-2 border-indigo-500/30 pl-3">
-                                        {recommendedAction.reason}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* CONFUSION TIMELINE & RECURRING GAPS */}
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {/* Primary Confusion Area */}
-                        <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-                            <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-slate-800/50 rounded-full blur-2xl group-hover:bg-slate-700/50 transition-colors"></div>
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Primary Confusion Zone</h3>
-
-                            {primaryConfusion ? (
-                                <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h4 className="text-xl font-bold text-white">{primaryConfusion.type}</h4>
-                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${primaryConfusion.severity === 'Major Learning Gap' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
-                                            primaryConfusion.severity === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                                                'bg-slate-700 text-slate-300'
-                                            }`}>{primaryConfusion.severity}</span>
-                                    </div>
-                                    <div className="flex items-end gap-2 mb-4">
-                                        <span className="text-4xl font-bold text-slate-200">{primaryConfusion.percentage}%</span>
-                                        <span className="text-sm text-slate-500 mb-1">of total signals</span>
-                                    </div>
-                                    <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                                        <div className={`h-full rounded-full transition-all duration-1000 ${primaryConfusion.severity === 'Major Learning Gap' ? 'bg-red-500' : 'bg-amber-500'
-                                            }`} style={{ width: `${primaryConfusion.percentage}%` }}></div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="h-24 flex items-center justify-center text-slate-600 italic text-sm">
-                                    No active confusion zones.
-                                </div>
+                                })
                             )}
                         </div>
-
-                        {/* Timeline Graph */}
-                        <div className="md:col-span-2 glass-card p-6 rounded-2xl relative">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Session Timeline</h3>
-                                <div className="flex gap-4">
-                                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span> Interventions
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="h-40 w-full relative">
-                                {timelineData.length > 1 ? (
-                                    <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="chartGradientDark" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                                                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        <path
-                                            d={`M 0 100 ${timelineData.map((d, i) => {
-                                                const x = (i / (timelineData.length - 1)) * 100
-                                                const y = 100 - (d.count / (Math.max(...timelineData.map(t => t.count)) || 1) * 80)
-                                                return `L ${x} ${y}`
-                                            }).join(' ')} L 100 100 Z`}
-                                            fill="url(#chartGradientDark)"
-                                        />
-                                        <path
-                                            d={`M 0 ${100 - (timelineData[0].count / (Math.max(...timelineData.map(t => t.count)) || 1) * 80)} ${timelineData.map((d, i) => {
-                                                const x = (i / (timelineData.length - 1)) * 100
-                                                const y = 100 - (d.count / (Math.max(...timelineData.map(t => t.count)) || 1) * 80)
-                                                return `L ${x} ${y}`
-                                            }).join(' ')}`}
-                                            fill="none"
-                                            stroke="#818cf8"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                        {/* Intervention Points */}
-                                        {timelineData.map((d, i) => {
-                                            const prev = timelineData[i - 1]?.count || 0
-                                            const isDrop = i > 0 && (prev - d.count) > 2
-                                            const x = (i / (timelineData.length - 1)) * 100
-                                            const y = 100 - (d.count / (Math.max(...timelineData.map(t => t.count)) || 1) * 80)
-
-                                            return isDrop ? (
-                                                <g key={i}>
-                                                    <circle cx={x} cy={y} r="3" fill="#1e1b4b" stroke="#818cf8" strokeWidth="2" />
-                                                    <circle cx={x} cy={y} r="6" stroke="#818cf8" strokeWidth="1" strokeOpacity="0.3" />
-                                                </g>
-                                            ) : null
-                                        })}
-                                    </svg>
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-slate-600 text-sm italic">Initializing Visualizer...</div>
-                                )}
-                            </div>
-                        </div>
                     </div>
 
-                    {/* AI Insight Footer */}
-                    <div className="mt-6 glass-card p-4 rounded-xl border-l-4 border-indigo-500 bg-indigo-900/10 flex items-start gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <Brain className="w-5 h-5 text-indigo-400 mt-1" />
-                        <div>
-                            <h4 className="text-sm font-bold text-indigo-300 mb-1">Live Intelligence</h4>
-                            <p className="text-sm text-indigo-200/80 italic">"{aiInsight}"</p>
-                        </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 className="font-bold text-slate-800 mb-4">Recent Activity</h3>
+                        <ul className="space-y-3">
+                            {recentSignals.map((signal) => (
+                                <li key={signal.id} className="flex flex-col gap-1 p-2 bg-slate-50 rounded-lg group hover:bg-slate-100 transition-all">
+                                    <div className="flex items-center gap-3 text-sm text-slate-600">
+                                        <span className={`w-2 h-2 rounded-full ${signal.type === "I'm Confused" ? 'bg-red-400' : 'bg-orange-400'}`}></span>
+                                        <span className="font-medium text-slate-800">{signal.type}</span>
+                                        <span className="ml-auto text-[10px] text-slate-400 uppercase font-bold">
+                                            {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+                                    {signal.block_room && (
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-500 ml-5">
+                                            <MapPin className="w-3 h-3" /> {signal.block_room}
+                                        </div>
+                                    )}
+                                    {signal.additional_text && (
+                                        <p className="text-[11px] text-slate-500 ml-5 italic line-clamp-1 border-l-2 border-slate-200 pl-2">
+                                            "{signal.additional_text}"
+                                        </p>
+                                    )}
+                                </li>
+                            ))}
+                            {recentSignals.length === 0 && (
+                                <li className="text-center text-sm text-slate-400 py-4 italic">No recent activity</li>
+                            )}
+                        </ul>
                     </div>
                 </div>
             </main>

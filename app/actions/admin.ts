@@ -59,18 +59,17 @@ export async function resetAllData() {
     return { success: true }
 }
 
-export async function updateCampusSettings(settings: { latitude: number, longitude: number, radius_meters: number, demo_mode?: boolean }) {
+export async function updateCampusSettings(settings: { latitude: number, longitude: number, radius_meters: number }) {
     const supabase = await createClient()
 
     const { error } = await supabase
         .from('campus_settings')
-        .upsert({ id: 1, ...settings }) // Upsert ensures row 1 exists
+        .update(settings)
+        .eq('id', 1) // Assuming single campus setting for now
 
     if (error) return { success: false, error: error.message }
 
     revalidatePath('/admin')
-    revalidatePath('/educator/dashboard')
-    revalidatePath('/student') // Update student view too since it checks demo_mode
     return { success: true }
 }
 

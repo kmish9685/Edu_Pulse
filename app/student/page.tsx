@@ -10,8 +10,6 @@ export default function StudentPage() {
     const [loading, setLoading] = useState(true)
     const [cooldown, setCooldown] = useState(false)
 
-    const [deviceId, setDeviceId] = useState('')
-
     // Config
     const [signalTypes, setSignalTypes] = useState<{ id: number, label: string }[]>([])
     const [campus, setCampus] = useState<any>(null)
@@ -28,14 +26,6 @@ export default function StudentPage() {
     useEffect(() => {
         init()
         checkLocation()
-
-        // Anti-Spam: Generate or retrieve Device ID
-        let id = localStorage.getItem('device_id')
-        if (!id) {
-            id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)
-            localStorage.setItem('device_id', id)
-        }
-        setDeviceId(id)
     }, [])
 
     async function init() {
@@ -51,9 +41,9 @@ export default function StudentPage() {
         const lastSignal = localStorage.getItem('last_signal_time')
         if (lastSignal) {
             const diff = Date.now() - parseInt(lastSignal)
-            if (diff < 30000) { // 30 seconds cooldown (Reduced from 60s)
+            if (diff < 60000) { // 1 minute cooldown
                 setCooldown(true)
-                setTimeout(() => setCooldown(false), 30000 - diff)
+                setTimeout(() => setCooldown(false), 60000 - diff)
             }
         }
     }
@@ -80,12 +70,6 @@ export default function StudentPage() {
     const verifyGeofence = (lat: number, lng: number) => {
         if (!campus) return
 
-        // Demo Mode Bypass
-        if (campus.demo_mode) {
-            setIsWithinRange(true)
-            return
-        }
-
         // Haversine formula for distance
         const R = 6371e3 // metres
         const φ1 = lat * Math.PI / 180
@@ -111,8 +95,7 @@ export default function StudentPage() {
             lat: userLocation?.lat,
             lng: userLocation?.lng,
             block_room: blockRoom,
-            additional_text: additionalText,
-            device_id: deviceId // Send anonymous device ID
+            additional_text: additionalText
         })
 
         if (res.success) {
@@ -128,22 +111,17 @@ export default function StudentPage() {
                 setSignaled(false)
             }, 3000)
 
-            setTimeout(() => setCooldown(false), 30000) // 30 seconds cooldown
+            setTimeout(() => setCooldown(false), 60000) // 1 minute cooldown
         }
     }
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
-            <header className="p-6 flex justify-center flex-col items-center border-b border-slate-200 bg-white relative">
+            <header className="p-6 flex justify-center border-b border-slate-200 bg-white">
                 <Link href="/" className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-slate-900" />
                     <span className="font-semibold text-slate-900">EduPulse Student View</span>
                 </Link>
-                {campus?.demo_mode && (
-                    <div className="absolute top-2 right-2 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-amber-200">
-                        Demo Mode
-                    </div>
-                )}
             </header>
 
             <main className="flex-1 flex flex-col items-center justify-center p-6 bg-slate-50 relative overflow-hidden">
