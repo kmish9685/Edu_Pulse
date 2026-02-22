@@ -1,276 +1,209 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Calculator, DollarSign, TrendingUp, Download, Mail, ArrowRight, School, Users, Award } from 'lucide-react'
+import { useState } from 'react'
+import { Calculator, TrendingUp, AlertTriangle, ShieldCheck, Download, Mail } from 'lucide-react'
 import Link from 'next/link'
 
+const TIERS = {
+    small: { name: 'Small (<5K)', cost: 200000, label: '₹2 Lakh' },
+    medium: { name: 'Medium (5-15K)', cost: 499999, label: '₹5 Lakh' },
+    large: { name: 'Large (>15K)', cost: 800000, label: '₹8 Lakh' }
+}
+
 export default function ROICalculator() {
-    const [institutionSize, setInstitutionSize] = useState<'Small' | 'Medium' | 'Large'>('Medium')
-    const [studentCount, setStudentCount] = useState(10000)
+    const [institutionSize, setInstitutionSize] = useState<keyof typeof TIERS>('medium')
     const [dropoutRate, setDropoutRate] = useState(18)
     const [tuition, setTuition] = useState(120000)
+    const [totalStudents, setTotalStudents] = useState(10000)
 
-    // Derived Metrics
-    const [studentsLost, setStudentsLost] = useState(0)
-    const [lostRevenue, setLostRevenue] = useState(0)
-    const [studentsRetained, setStudentsRetained] = useState(0)
-    const [revenueProtected, setRevenueProtected] = useState(0)
-    const [eduPulseCost, setEduPulseCost] = useState(0)
-    const [netBenefit, setNetBenefit] = useState(0)
-    const [roi, setRoi] = useState(0)
-    const [paybackPeriod, setPaybackPeriod] = useState(0)
+    // Calculations
+    const studentsLost = Math.floor(totalStudents * (dropoutRate / 100))
+    const lostRevenue = studentsLost * tuition
+    const studentsRetained = Math.floor(studentsLost * 0.10) // 10% improvement assumption
+    const revenueProtected = studentsRetained * tuition
+    const eduPulseCost = TIERS[institutionSize].cost
+    const netBenefit = revenueProtected - eduPulseCost
+    const roiPercentage = ((netBenefit / eduPulseCost) * 100).toFixed(0)
+    const paybackMonths = ((eduPulseCost / revenueProtected) * 12).toFixed(1)
 
-    useEffect(() => {
-        // Defaults based on size
-        if (institutionSize === 'Small') {
-            // setStudentCount(3000) // Keep it manual for flexibility, but could preset
-            setEduPulseCost(200000) // 2 Lakh
-        } else if (institutionSize === 'Medium') {
-            // setStudentCount(10000)
-            setEduPulseCost(800000) // 8 Lakh
-        } else {
-            // setStudentCount(25000)
-            setEduPulseCost(1500000) // 15 Lakh
+    const formatINR = (amount: number) => {
+        if (amount >= 10000000) {
+            return `₹${(amount / 10000000).toFixed(2)} Crore`
+        } else if (amount >= 100000) {
+            return `₹${(amount / 100000).toFixed(2)} Lakh`
         }
-    }, [institutionSize])
-
-    useEffect(() => {
-        const lost = Math.round(studentCount * (dropoutRate / 100))
-        setStudentsLost(lost)
-
-        const lostRev = lost * tuition
-        setLostRevenue(lostRev)
-
-        const retained = Math.round(lost * 0.10) // 10% improvement assumption
-        setStudentsRetained(retained)
-
-        const revProt = retained * tuition
-        setRevenueProtected(revProt)
-
-        const benefit = revProt - eduPulseCost
-        setNetBenefit(benefit)
-
-        const roiVal = eduPulseCost > 0 ? (benefit / eduPulseCost) * 100 : 0
-        setRoi(Math.round(roiVal))
-
-        const payback = benefit > 0 ? (eduPulseCost / (revProt / 12)) : 0
-        setPaybackPeriod(Number(payback.toFixed(1)))
-
-    }, [studentCount, dropoutRate, tuition, eduPulseCost])
-
-    const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val)
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
-            {/* Ambient Background */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-900/20 rounded-full blur-[150px] animate-pulse-glow" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 rounded-full blur-[120px]" />
-            </div>
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+            <header className="p-6 bg-white border-b border-slate-200 flex items-center justify-between">
+                <Link href="/" className="flex items-center gap-2 font-bold text-xl text-slate-900">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                    EduPulse ROI Projector
+                </Link>
+                <div className="text-sm font-medium text-slate-500 uppercase tracking-widest">For Institutional Pitch</div>
+            </header>
 
-            <main className="relative z-10 container mx-auto px-4 py-12 max-w-6xl">
-                {/* Header */}
-                <div className="text-center mb-16 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-                        <Calculator className="w-3 h-3" /> ROI Projector
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                        The Cost of <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Invisible Confusion</span>
+            <main className="max-w-6xl mx-auto p-6 lg:p-12">
+                <div className="mb-12 text-center max-w-3xl mx-auto space-y-4">
+                    <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900">
+                        The true cost of the <span className="text-blue-600">invisible gap.</span>
                     </h1>
-                    <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                        Calculate how much student attrition is costing your institution and the financial impact of deploying EduPulse learning intelligence.
+                    <p className="text-lg text-slate-600">
+                        Calculate the immediate financial impact of preventing student dropouts through real-time learning intelligence.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* INPUTS PANEL */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="glass-card p-6 rounded-2xl">
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <School className="w-4 h-4" /> Institution Parameters
-                            </h3>
-
-                            <div className="space-y-6">
-                                {/* Institution Size */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-3">Institution Scale</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {(['Small', 'Medium', 'Large'] as const).map((size) => (
-                                            <button
-                                                key={size}
-                                                onClick={() => setInstitutionSize(size)}
-                                                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${institutionSize === size
-                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 ring-1 ring-blue-400'
-                                                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                                    }`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Student Count */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-2">Total Students</label>
-                                    <div className="relative">
-                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                        <input
-                                            type="number"
-                                            value={studentCount}
-                                            onChange={(e) => setStudentCount(Number(e.target.value))}
-                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Dropout Rate */}
-                                <div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="text-sm font-medium text-slate-300">Annual Dropout Rate</label>
-                                        <span className="text-sm font-bold text-blue-400">{dropoutRate}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="5"
-                                        max="40"
-                                        value={dropoutRate}
-                                        onChange={(e) => setDropoutRate(Number(e.target.value))}
-                                        className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                                    />
-                                    <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                                        <span>5% (Elite)</span>
-                                        <span>40% (At Risk)</span>
-                                    </div>
-                                </div>
-
-                                {/* Tuition */}
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-300 mb-2">Avg. Annual Tuition (₹)</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-sans">₹</span>
-                                        <input
-                                            type="number"
-                                            value={tuition}
-                                            onChange={(e) => setTuition(Number(e.target.value))}
-                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2.5 pl-8 pr-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                    {/* Input Variables */}
+                    <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
+                        <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                            <Calculator className="w-6 h-6 text-slate-700" />
+                            <h2 className="text-xl font-bold">Institution Metrics</h2>
                         </div>
 
-                        <div className="glass-card p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950">
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Projected Cost</h3>
-                            <div className="flex justify-between items-end">
-                                <div>
-                                    <div className="text-2xl font-bold text-white">{formatCurrency(eduPulseCost)}</div>
-                                    <div className="text-xs text-slate-500 mt-1">Based on {institutionSize} tier pricing</div>
+                        <div className="space-y-6">
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-slate-700">Institution Scale</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {(Object.keys(TIERS) as Array<keyof typeof TIERS>).map((tierKey) => (
+                                        <button
+                                            key={tierKey}
+                                            onClick={() => {
+                                                setInstitutionSize(tierKey)
+                                                if (tierKey === 'small') setTotalStudents(3000)
+                                                if (tierKey === 'medium') setTotalStudents(10000)
+                                                if (tierKey === 'large') setTotalStudents(20000)
+                                            }}
+                                            className={`p-2 text-sm font-medium rounded-lg border transition-all ${institutionSize === tierKey
+                                                ? 'bg-blue-50 border-blue-600 text-blue-700 ring-1 ring-blue-600'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                                                }`}
+                                        >
+                                            {TIERS[tierKey].name.split(' ')[0]}
+                                        </button>
+                                    ))}
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">Year 1 License</div>
-                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-slate-700 flex justify-between">
+                                    <span>Total Students</span>
+                                    <span className="text-blue-600">{totalStudents.toLocaleString()}</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    min="500"
+                                    max="40000"
+                                    step="500"
+                                    value={totalStudents}
+                                    onChange={(e) => setTotalStudents(Number(e.target.value))}
+                                    className="w-full accent-blue-600"
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-slate-700 flex justify-between">
+                                    <span>Annual Dropout Rate</span>
+                                    <span className="text-red-600">{dropoutRate}%</span>
+                                </label>
+                                <input
+                                    type="range"
+                                    min="5"
+                                    max="40"
+                                    value={dropoutRate}
+                                    onChange={(e) => setDropoutRate(Number(e.target.value))}
+                                    className="w-full accent-red-600"
+                                />
+                                <p className="text-xs text-slate-500 text-right">National avg: ~18%</p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-slate-700">Avg Tuition per Student (₹)</label>
+                                <input
+                                    type="number"
+                                    value={tuition}
+                                    onChange={(e) => setTuition(Number(e.target.value))}
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-slate-900 font-medium"
+                                />
                             </div>
                         </div>
                     </div>
 
-                    {/* RESULTS PANEL */}
-                    <div className="lg:col-span-8 space-y-6">
-                        {/* Current State Card */}
-                        <div className="glass-card p-8 rounded-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-
-                            <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 rotate-180" /> Current Annual Loss
-                            </h3>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Output Analysis */}
+                    <div className="lg:col-span-7 space-y-6">
+                        {/* Current Loss Box */}
+                        <div className="bg-white p-8 rounded-2xl border border-red-100 shadow-sm relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
+                            <div className="flex items-center gap-3 mb-6">
+                                <AlertTriangle className="w-6 h-6 text-red-500" />
+                                <h3 className="text-lg font-bold text-slate-800">Current Financial Exposure</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-8">
                                 <div>
-                                    <div className="text-slate-500 text-sm mb-1 uppercase font-semibold tracking-wider">Students Lost</div>
-                                    <div className="text-4xl font-light text-white">{studentsLost.toLocaleString()} <span className="text-lg text-slate-600">/ yr</span></div>
-                                    <p className="text-xs text-slate-500 mt-2">Based on {dropoutRate}% attrition rate</p>
+                                    <div className="text-sm font-medium text-slate-500 mb-1">Students Lost / Year</div>
+                                    <div className="text-3xl font-bold tracking-tight text-slate-900">{studentsLost.toLocaleString()}</div>
                                 </div>
                                 <div>
-                                    <div className="text-slate-500 text-sm mb-1 uppercase font-semibold tracking-wider">Revenue Impact</div>
-                                    <div className="text-4xl font-bold text-red-500 text-glow-red">{formatCurrency(lostRevenue)}</div>
-                                    <p className="text-xs text-red-400/60 mt-2">Direct tuition loss only</p>
+                                    <div className="text-sm font-medium text-slate-500 mb-1">Annual Revenue Lost</div>
+                                    <div className="text-3xl font-bold tracking-tight text-red-600">{formatINR(lostRevenue)}</div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* EduPulse Impact Card */}
-                        <div className="glass-card p-1 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-2xl shadow-blue-900/20">
-                            <div className="bg-slate-950/90 rounded-[22px] p-8 h-full backdrop-blur-xl relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/10 to-transparent pointer-events-none"></div>
+                        {/* EduPulse Value Box */}
+                        <div className="bg-slate-900 p-8 rounded-2xl shadow-xl border border-slate-800 relative overflow-hidden text-white">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600 opacity-20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2"></div>
 
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 relative z-10">
-                                    <h3 className="text-sm font-bold text-blue-300 uppercase tracking-widest flex items-center gap-2">
-                                        <Award className="w-4 h-4" /> EduPulse Advantage (10% Retention Lift)
-                                    </h3>
-                                    <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 mt-2 md:mt-0">
-                                        Conservative Estimate
-                                    </div>
+                            <div className="flex items-center gap-3 mb-8 relative z-10">
+                                <ShieldCheck className="w-7 h-7 text-blue-400" />
+                                <h3 className="text-xl font-bold text-white">EduPulse Impact Analysis</h3>
+                                <span className="ml-auto text-xs font-semibold bg-white/10 px-3 py-1 rounded-full text-blue-200">
+                                    Based on 10% conservative improvement
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8 relative z-10 mb-8 pb-8 border-b border-white/10">
+                                <div>
+                                    <div className="text-sm font-medium text-slate-400 mb-1">Students Retained</div>
+                                    <div className="text-3xl font-bold tracking-tight text-white">+{studentsRetained}</div>
                                 </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10 border-b border-white/5 pb-8 mb-8">
-                                    <div>
-                                        <div className="text-slate-400 text-xs mb-1 uppercase font-semibold">Students Retained</div>
-                                        <div className="text-3xl font-bold text-white">{studentsRetained}</div>
-                                        <div className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
-                                            <Users className="w-3 h-3" /> Saved from attrition
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-slate-400 text-xs mb-1 uppercase font-semibold">Revenue Protected</div>
-                                        <div className="text-3xl font-bold text-emerald-400">{formatCurrency(revenueProtected)}</div>
-                                        <div className="text-slate-500 text-xs mt-1">Recovered tuition</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-slate-400 text-xs mb-1 uppercase font-semibold">Net Benefit</div>
-                                        <div className="text-3xl font-bold text-blue-400 text-glow">{formatCurrency(netBenefit)}</div>
-                                        <div className="text-slate-500 text-xs mt-1">After platform cost</div>
-                                    </div>
+                                <div>
+                                    <div className="text-sm font-medium text-slate-400 mb-1">Revenue Protected</div>
+                                    <div className="text-3xl font-bold tracking-tight text-emerald-400">{formatINR(revenueProtected)}</div>
                                 </div>
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-8 relative z-10">
-                                    <div>
-                                        <div className="text-sm text-slate-400 font-medium mb-1">Return on Investment</div>
-                                        <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300 tracking-tight">
-                                            {roi.toLocaleString()}%
-                                        </div>
-                                        <div className="text-xs text-blue-500/60 mt-1">In Year 1</div>
+                            <div className="grid grid-cols-3 gap-6 relative z-10">
+                                <div>
+                                    <div className="text-sm font-medium text-slate-400 mb-1">License Cost</div>
+                                    <div className="text-xl font-bold text-white">{TIERS[institutionSize].label}</div>
+                                </div>
+                                <div className="col-span-2 text-right">
+                                    <div className="text-sm font-medium text-slate-400 mb-1">First Year ROI</div>
+                                    <div className="text-5xl font-extrabold tracking-tighter text-blue-400">
+                                        {roiPercentage}%
                                     </div>
-                                    <div>
-                                        <div className="text-sm text-slate-400 font-medium mb-1">Payback Period</div>
-                                        <div className="text-5xl font-black text-white tracking-tight">
-                                            {paybackPeriod} <span className="text-lg font-normal text-slate-500">months</span>
-                                        </div>
-                                        <div className="text-xs text-slate-600 mt-1">Immediate value realization</div>
+                                    <div className="text-sm text-blue-200 mt-2">
+                                        Pays for itself in {paybackMonths} months
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-slate-800 text-white font-medium hover:bg-slate-700 transition-all border border-slate-700 hover:border-slate-600 group">
-                                <Download className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-                                Export PDF Report
+                        {/* Action Buttons */}
+                        <div className="flex gap-4">
+                            <button className="flex-1 py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                <Download className="w-5 h-5" />
+                                Export Report
                             </button>
-                            <button className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:translate-y-0.5 hover:-translate-y-0.5">
+                            <button className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-200">
                                 <Mail className="w-5 h-5" />
-                                Email to Stakeholders
+                                Email to Administrator
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <div className="mt-16 text-center border-t border-slate-800/50 pt-8">
-                    <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors text-sm font-medium">
-                        Back to Home <ArrowRight className="w-4 h-4" />
-                    </Link>
                 </div>
             </main>
         </div>

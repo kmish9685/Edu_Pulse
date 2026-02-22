@@ -13,10 +13,6 @@ export default function AdminPage() {
     const [isVerifying, setIsVerifying] = useState(false)
     const [error, setError] = useState('')
 
-    // Campus Settings State
-    const [campus, setCampus] = useState({ latitude: 0, longitude: 0, radius_meters: 500 })
-    const [isSavingCampus, setIsSavingCampus] = useState(false)
-
     // Signal Types State
     const [signalTypes, setSignalTypes] = useState<{ id: number, label: string }[]>([])
     const [newSignalLabel, setNewSignalLabel] = useState('')
@@ -24,14 +20,8 @@ export default function AdminPage() {
     const supabase = createClient()
 
     useEffect(() => {
-        fetchSettings()
         fetchSignalTypes()
     }, [])
-
-    async function fetchSettings() {
-        const { data } = await supabase.from('campus_settings').select('*').single()
-        if (data) setCampus({ latitude: data.latitude, longitude: data.longitude, radius_meters: data.radius_meters })
-    }
 
     async function fetchSignalTypes() {
         const { data } = await supabase.from('signal_types').select('*').eq('is_active', true)
@@ -62,12 +52,6 @@ export default function AdminPage() {
             setError(verification.error || 'Invalid password')
         }
         setIsVerifying(false)
-    }
-
-    const handleSaveCampus = async () => {
-        setIsSavingCampus(true)
-        await updateCampusSettings(campus)
-        setIsSavingCampus(false)
     }
 
     const handleAddSignalType = async () => {
@@ -146,50 +130,6 @@ export default function AdminPage() {
                             </div>
                         ))}
                     </div>
-                </section>
-
-                {/* Campus Location Setup */}
-                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                    <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-blue-600" />
-                        Campus Geofencing
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase">Latitude</label>
-                            <input
-                                type="number"
-                                value={campus.latitude}
-                                onChange={(e) => setCampus({ ...campus, latitude: parseFloat(e.target.value) })}
-                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase">Longitude</label>
-                            <input
-                                type="number"
-                                value={campus.longitude}
-                                onChange={(e) => setCampus({ ...campus, longitude: parseFloat(e.target.value) })}
-                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold text-slate-500 uppercase">Radius (meters)</label>
-                            <input
-                                type="number"
-                                value={campus.radius_meters}
-                                onChange={(e) => setCampus({ ...campus, radius_meters: parseInt(e.target.value) })}
-                                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                            />
-                        </div>
-                    </div>
-                    <button
-                        onClick={handleSaveCampus}
-                        disabled={isSavingCampus}
-                        className="mt-6 px-6 py-2 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-2"
-                    >
-                        {isSavingCampus ? 'Saving...' : 'Save Settings'}
-                    </button>
                 </section>
 
                 {/* Signal Buttons Management */}

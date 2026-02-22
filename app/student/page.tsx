@@ -25,10 +25,9 @@ export default function StudentPage() {
 
     useEffect(() => {
         init()
-        checkLocation()
     }, [])
 
-    async function init() {
+    const init = async () => {
         const [types, settings] = await Promise.all([
             getSignalTypes(),
             getCampusSettings()
@@ -36,6 +35,9 @@ export default function StudentPage() {
         if (types.success && types.data) setSignalTypes(types.data as { id: number, label: string }[])
         if (settings.success && settings.data) setCampus(settings.data)
         setLoading(false)
+
+        // Force within range since geolocation is disabled for demo
+        setIsWithinRange(true)
 
         // Check local cooldown
         const lastSignal = localStorage.getItem('last_signal_time')
@@ -46,44 +48,6 @@ export default function StudentPage() {
                 setTimeout(() => setCooldown(false), 60000 - diff)
             }
         }
-    }
-
-    const checkLocation = () => {
-        if (!navigator.geolocation) {
-            setLocationError("Geolocation is not supported by your browser.")
-            return
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords
-                setUserLocation({ lat: latitude, lng: longitude })
-                verifyGeofence(latitude, longitude)
-            },
-            (err) => {
-                setLocationError("Location access denied. Signals are restricted to campus.")
-            },
-            { enableHighAccuracy: true }
-        )
-    }
-
-    const verifyGeofence = (lat: number, lng: number) => {
-        if (!campus) return
-
-        // Haversine formula for distance
-        const R = 6371e3 // metres
-        const φ1 = lat * Math.PI / 180
-        const φ2 = campus.latitude * Math.PI / 180
-        const Δφ = (campus.latitude - lat) * Math.PI / 180
-        const Δλ = (campus.longitude - lng) * Math.PI / 180
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-        const d = R * c
-
-        setIsWithinRange(d <= campus.radius_meters)
     }
 
     const handleSignal = async (type: string) => {
@@ -135,17 +99,6 @@ export default function StudentPage() {
                     </div>
                 ) : (
                     <div className="w-full max-w-md space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Status Message */}
-                        {!isWithinRange && !loading && (
-                            <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3">
-                                <MapPin className="w-5 h-5 text-amber-600 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-semibold text-amber-900">Outside Campus Boundary</p>
-                                    <p className="text-xs text-amber-700">Signals can only be sent from within campus. Please enable location access.</p>
-                                </div>
-                            </div>
-                        )}
-
                         {cooldown && (
                             <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl text-center text-xs font-medium text-blue-700">
                                 Cooldown active. You can send another signal in a moment.
@@ -216,7 +169,7 @@ export default function StudentPage() {
                         </div>
 
                         <p className="text-center text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
-                            Anonymized • Geofenced • Secure
+                            Anonymized • Secure
                         </p>
                     </div>
                 )}
