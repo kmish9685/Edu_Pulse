@@ -110,56 +110,48 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Addressing Concerns / FAQ */}
-        <section id="how-it-works" className="py-24 relative overflow-hidden">
-          <div className="container mx-auto px-6 max-w-5xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">You have questions. We have data.</h2>
-              <p className="text-slate-400 max-w-2xl mx-auto">Addressing the most common concerns from administrators, educators, and IT departments.</p>
+        {/* Educator Experience Section */}
+        <section id="educator-flow" className="py-24 relative overflow-hidden bg-slate-900 border-t border-white/5">
+          <div className="container mx-auto px-6 max-w-6xl">
+            <div className="text-center mb-20 max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">Protecting the Educator's Flow</h2>
+              <p className="text-xl text-slate-400 leading-relaxed">
+                Teachers shouldn't have to work extra hours or sacrifice their mental peace to find out what's wrong. EduPulse is designed to make diagnosing confusion effortless, without ever breaking the lecture.
+              </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Concern 1: Extra Time */}
-              <div className="bg-slate-900/50 p-8 rounded-2xl border border-white/5 hover:bg-slate-900 transition-colors">
-                <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mb-6 border border-blue-500/20">
-                  <Brain className="w-6 h-6 text-blue-400" />
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Benefit 1 */}
+              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-blue-500/10 hover:border-blue-500/30 transition-all group">
+                <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                  <Brain className="w-7 h-7 text-blue-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">Does this require teachers to teach extra hours?</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  <strong className="text-slate-200">No. EduPulse is an in-lecture steering wheel, not an after-class review tool.</strong> Because feedback is real-time, teachers clarify doubts instantly. This prevents the need to re-teach entire concepts next week when students fail their quizzes. We make the existing 50-minute lecture more efficient.
+                <h3 className="text-xl font-bold text-white mb-4">Zero Disruption to Lecture Flow</h3>
+                <p className="text-slate-400 leading-relaxed mb-6">
+                  EduPulse acts as an invisible steering wheel. There are no "polls" to launch or questions to type. You teach exactly as you normally do, and the dashboard silently highlights when pacing needs adjustment.
                 </p>
               </div>
 
-              {/* Concern 2: Anti-Spam */}
-              <div className="bg-slate-900/50 p-8 rounded-2xl border border-white/5 hover:bg-slate-900 transition-colors">
-                <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-6 border border-indigo-500/20">
-                  <Shield className="w-6 h-6 text-indigo-400" />
+              {/* Benefit 2 */}
+              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-indigo-500/10 hover:border-indigo-500/30 transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl rounded-full"></div>
+                <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                  <BarChart3 className="w-7 h-7 text-indigo-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">How do you prevent students from spamming?</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  <strong className="text-slate-200">Hard-coded 60-second cooldowns and device fingerprinting.</strong> A student literally cannot spam the system. Furthermore, the teacher's dashboard only triggers a 'Confusion Spike' alert if multiple different students signal simultaneously, filtering out isolated noise.
+                <h3 className="text-xl font-bold text-white mb-4">Instant Context via Time-Series</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  How do you know <em className="text-slate-300">what</em> is confusing? EduPulse links signals to the exact minute of your lecture. A massive spike at 10:14 AM tells you instantly that your explanation of that specific topic missed the mark. No extra questions needed.
                 </p>
               </div>
 
-              {/* Concern 3: Context */}
-              <div className="bg-slate-900/50 p-8 rounded-2xl border border-white/5 hover:bg-slate-900 transition-colors">
-                <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-6 border border-purple-500/20">
-                  <BarChart3 className="w-6 h-6 text-purple-400" />
+              {/* Benefit 3 */}
+              <div className="bg-slate-950/50 p-8 rounded-[2rem] border border-purple-500/10 hover:border-purple-500/30 transition-all group">
+                <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                  <Shield className="w-7 h-7 text-purple-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">How does the teacher know WHAT is confusing?</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  <strong className="text-slate-200">Time-series correlation.</strong> If there is a massive spike in confusion at exactly 10:14 AM, the teacher knows exactly what topic they were teaching at that moment. Students don't need to type long essays; the timing of the signal provides the context automatically.
-                </p>
-              </div>
-
-              {/* Concern 4: Single Student */}
-              <div className="bg-slate-900/50 p-8 rounded-2xl border border-white/5 hover:bg-slate-900 transition-colors">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-6 border border-emerald-500/20">
-                  <Users className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">What if only ONE shy student is lost?</h3>
-                <p className="text-slate-400 leading-relaxed text-sm">
-                  <strong className="text-slate-200">EduPulse targets systemic curriculum failures, not 1-on-1 tutoring.</strong> The teacher shouldn't stop 59 students for 1 confused student. However, that signal is logged. The dashboard shows it as a minor event, allowing the teacher to send supplementary material after class without derailing the live lecture.
+                <h3 className="text-xl font-bold text-white mb-4">Bulletproof Spam Filtering</h3>
+                <p className="text-slate-400 leading-relaxed">
+                  What if one kid is just spamming the button? <strong className="text-slate-200 font-medium">They can't.</strong> Hard-coded cooldowns prevent botting. More importantly, isolated single clicks are logged for after-class review but <em className="text-red-300 text-sm bg-red-500/10 px-1 rounded ml-1">DO NOT</em> trigger a class-wide "Confusion Spike", protecting your mental peace from trolls.
                 </p>
               </div>
             </div>
