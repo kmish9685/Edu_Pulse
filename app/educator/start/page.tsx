@@ -2,46 +2,108 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Play, Link as LinkIcon, Users, QrCode, ArrowRight } from 'lucide-react'
+import { Play, Link as LinkIcon, Users, QrCode, ArrowRight, Plus, X, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function EducatorStart() {
     const [sessionId, setSessionId] = useState('')
     const [joinUrl, setJoinUrl] = useState('')
+    const [agendaInput, setAgendaInput] = useState('')
+    const [agenda, setAgenda] = useState<string[]>([])
     const router = useRouter()
 
     useEffect(() => {
-        // Generate a random 4 digit PIN
         const pin = Math.floor(1000 + Math.random() * 9000).toString()
         setSessionId(pin)
-
-        // In local dev, use localhost. In prod, use window.location.origin
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://edupulse.com'
         setJoinUrl(`${baseUrl}/join/${pin}`)
     }, [])
 
+    const addTopic = () => {
+        const trimmed = agendaInput.trim()
+        if (!trimmed) return
+        setAgenda(prev => [...prev, trimmed])
+        setAgendaInput('')
+    }
+
+    const removeTopic = (i: number) => setAgenda(prev => prev.filter((_, idx) => idx !== i))
+
+    const handleStart = () => {
+        // Pass agenda as URL-safe param so dashboard can pick it up
+        const agendaParam = encodeURIComponent(JSON.stringify(agenda))
+        router.push(`/educator/dashboard?session=${sessionId}&agenda=${agendaParam}`)
+    }
+
     return (
         <div className="min-h-screen bg-slate-900 font-sans text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
 
-            {/* Background elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full"></div>
-                <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full"></div>
+                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full" />
             </div>
 
-            <div className="relative z-10 w-full max-w-4xl grid md:grid-cols-2 gap-12 items-center">
+            <div className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 gap-12 items-start">
 
+                {/* Left: Controls */}
                 <div className="space-y-8">
                     <div>
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold rounded-full text-sm mb-6">
-                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                             Ready to Broadcast
                         </div>
                         <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">Zero-Friction Connections.</h1>
                         <p className="text-slate-400 text-lg leading-relaxed">
-                            Students do not need an app or an account. Display this code on your projector. They scan, tap, and instantly join your live intelligence stream.
+                            Students do not need an app or account. Project this code, they scan, and instantly join your live intelligence stream.
                         </p>
+                    </div>
+
+                    {/* Agenda Builder */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                        <div>
+                            <h2 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+                                <QrCode className="w-4 h-4 text-indigo-400" />
+                                Pre-set Lecture Agenda <span className="text-slate-500 text-sm font-normal">(optional)</span>
+                            </h2>
+                            <p className="text-slate-400 text-sm">
+                                Add your topics now. During class, you advance them with <strong className="text-white">one tap</strong> — no typing needed while teaching.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={agendaInput}
+                                onChange={e => setAgendaInput(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && addTopic()}
+                                placeholder="e.g. Slide 1: Recursion Basics"
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-blue-500/50 text-sm font-medium"
+                            />
+                            <button
+                                onClick={addTopic}
+                                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors flex items-center gap-1"
+                            >
+                                <Plus className="w-4 h-4" /> Add
+                            </button>
+                        </div>
+
+                        {agenda.length > 0 ? (
+                            <ol className="space-y-2">
+                                {agenda.map((topic, i) => (
+                                    <li key={i} className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 group">
+                                        <span className="text-xs font-black text-slate-500 w-5 shrink-0">#{i + 1}</span>
+                                        <span className="flex-1 text-sm font-semibold text-slate-200 truncate">{topic}</span>
+                                        <button onClick={() => removeTopic(i)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ol>
+                        ) : (
+                            <div className="text-center py-4 text-slate-600 text-sm border border-dashed border-white/10 rounded-xl">
+                                No topics added yet — you can also leave this blank and type later
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-4">
@@ -51,7 +113,7 @@ export default function EducatorStart() {
                             </div>
                             <div>
                                 <div className="font-bold text-white">1. Screen Projection</div>
-                                <div className="text-sm">Display the QR code on your main display</div>
+                                <div className="text-sm">Display the QR code on your classroom screen</div>
                             </div>
                         </div>
                         <div className="flex items-center gap-4 text-slate-300 bg-white/5 p-4 border border-white/10 rounded-xl">
@@ -60,13 +122,13 @@ export default function EducatorStart() {
                             </div>
                             <div>
                                 <div className="font-bold text-white">2. Student Scan</div>
-                                <div className="text-sm">Students scan using their default camera</div>
+                                <div className="text-sm">Students scan using their default camera — no app needed</div>
                             </div>
                         </div>
                     </div>
 
                     <button
-                        onClick={() => router.push(`/educator/dashboard?session=${sessionId}`)}
+                        onClick={handleStart}
                         className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 group"
                     >
                         Initialize Dashboard
@@ -78,6 +140,7 @@ export default function EducatorStart() {
                     </Link>
                 </div>
 
+                {/* Right: QR Card */}
                 <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-slate-900 transform md:rotate-2 hover:rotate-0 transition-transform duration-500 border-8 border-slate-800">
                     <div className="mb-6 text-center">
                         <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Join Session</div>
@@ -88,7 +151,7 @@ export default function EducatorStart() {
                         {joinUrl && (
                             <QRCodeSVG
                                 value={joinUrl}
-                                size={240}
+                                size={220}
                                 bgColor={"#ffffff"}
                                 fgColor={"#0f172a"}
                                 level={"H"}
@@ -99,10 +162,20 @@ export default function EducatorStart() {
 
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full w-full justify-center">
                         <LinkIcon className="w-4 h-4" />
-                        edupulse.com/join/{sessionId}
+                        <span className="truncate">{joinUrl ? new URL(joinUrl).hostname : 'edupulse.com'}/join/{sessionId}</span>
                     </div>
-                </div>
 
+                    {agenda.length > 0 && (
+                        <div className="mt-4 w-full">
+                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 text-center">{agenda.length} Topics Loaded</div>
+                            <div className="flex flex-wrap gap-1 justify-center">
+                                {agenda.map((t, i) => (
+                                    <span key={i} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-medium">#{i + 1} {t.split(':')[0]}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

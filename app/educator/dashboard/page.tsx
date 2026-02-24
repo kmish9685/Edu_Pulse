@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Bell, LayoutDashboard, Settings, LogOut, FileText, Activity, Zap, MapPin, Download, Tag, Plus, Clock } from 'lucide-react'
+import { Bell, LayoutDashboard, Settings, LogOut, FileText, Activity, Zap, MapPin, Download, Tag, ChevronRight, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -17,9 +17,23 @@ function DashboardContent() {
     const [recentSignals, setRecentSignals] = useState<any[]>([])
     const [stats, setStats] = useState<Record<string, number>>({})
     const [aiInsight, setAiInsight] = useState("Gathering data for insights...")
-    // Topic Annotation State
-    const [currentTopicInput, setCurrentTopicInput] = useState('')
+
+    // Pre-set Agenda State — loaded from URL param, one-click advance during class
+    const agendaParam = searchParams.get('agenda')
+    const [agenda] = useState<string[]>(() => {
+        try { return agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : [] }
+        catch { return [] }
+    })
+    const [currentTopicIndex, setCurrentTopicIndex] = useState(0)
     const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([{ time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), label: 'Session Started' }])
+
+    const advanceTopic = () => {
+        if (currentTopicIndex >= agenda.length) return
+        const topic = agenda[currentTopicIndex]
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        setTopicLog(prev => [...prev, { time, label: topic }])
+        setCurrentTopicIndex(prev => prev + 1)
+    }
 
     const supabase = createClient()
 
@@ -147,54 +161,32 @@ function DashboardContent() {
 
             {/* Main Content */}
             <main className="flex-1 p-6 md:p-10 overflow-y-auto">
-                {/* Topic Annotation Bar */}
-                <div className="mb-6 bg-indigo-950/40 border border-indigo-500/20 rounded-2xl p-4 flex flex-col md:flex-row gap-3">
-                    <div className="flex items-center gap-3 flex-1">
+                {/* Topic Advance Bar */}
+                {agenda.length > 0 && (
+                    <div className="mb-6 bg-indigo-950/40 border border-indigo-500/20 rounded-2xl p-4 flex items-center gap-4">
                         <div className="w-9 h-9 bg-indigo-500/10 rounded-lg flex items-center justify-center shrink-0 border border-indigo-500/20">
                             <Tag className="w-4 h-4 text-indigo-400" />
                         </div>
-                        <div className="flex-1">
-                            <div className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">Current Topic / Slide</div>
-                            <input
-                                type="text"
-                                value={currentTopicInput}
-                                onChange={(e) => setCurrentTopicInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && currentTopicInput.trim()) {
-                                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                        setTopicLog(prev => [...prev, { time, label: currentTopicInput.trim() }])
-                                        setCurrentTopicInput('')
-                                    }
-                                }}
-                                placeholder="e.g. Slide 4: Recursion, Live Code: Binary Search..."
-                                className="w-full bg-transparent text-white font-semibold placeholder:text-indigo-400/40 outline-none text-sm"
-                            />
+                        <div className="flex-1 min-w-0">
+                            <div className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-0.5">Current Topic</div>
+                            <div className="text-white font-bold text-sm truncate">
+                                {currentTopicIndex < agenda.length
+                                    ? agenda[currentTopicIndex]
+                                    : <span className="text-slate-500">All topics covered ✓</span>}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-xs text-slate-500 font-mono">{Math.min(currentTopicIndex, agenda.length)}/{agenda.length}</span>
+                            <button
+                                onClick={advanceTopic}
+                                disabled={currentTopicIndex >= agenda.length}
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded-xl text-sm transition-colors flex items-center gap-1.5"
+                            >
+                                Next Topic <ChevronRight className="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => {
-                                if (currentTopicInput.trim()) {
-                                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                    setTopicLog(prev => [...prev, { time, label: currentTopicInput.trim() }])
-                                    setCurrentTopicInput('')
-                                }
-                            }}
-                            className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 font-bold rounded-lg text-sm transition-colors flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" /> Log Topic
-                        </button>
-                    </div>
-                    {topicLog.length > 0 && (
-                        <div className="flex flex-wrap gap-2 border-t border-indigo-500/10 pt-3 mt-1 md:hidden">
-                            {topicLog.slice(-3).map((entry, i) => (
-                                <span key={i} className="flex items-center gap-1 text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded-lg border border-indigo-500/10">
-                                    <Clock className="w-3 h-3" />{entry.time}: {entry.label}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                )}
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
