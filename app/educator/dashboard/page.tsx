@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Bell, LayoutDashboard, Settings, LogOut, FileText, Activity, Zap, MapPin, Download, Tag, ChevronRight, Clock } from 'lucide-react'
+import { Bell, LayoutDashboard, LogOut, Activity, Zap, MapPin, Download, Tag, ChevronRight, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -145,10 +145,6 @@ function DashboardContent() {
                     <Link href="#" className="flex items-center gap-3 px-4 py-3 bg-blue-600/20 text-blue-400 font-bold rounded-xl border border-blue-500/30">
                         <LayoutDashboard className="w-5 h-5" />
                         Live Session
-                    </Link>
-                    <Link href="/admin/outcomes" className="flex items-center gap-3 px-4 py-3 hover:text-white transition-colors">
-                        <FileText className="w-5 h-5" />
-                        Outcomes Tracker
                     </Link>
                 </nav>
                 <div className="p-4 border-t border-slate-800">

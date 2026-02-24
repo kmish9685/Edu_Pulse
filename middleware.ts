@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
         },
     })
 
-    // 1. Initialize Supabase Client
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -18,10 +17,8 @@ export async function middleware(request: NextRequest) {
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-                    response = NextResponse.next({
-                        request,
-                    })
+                    cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+                    response = NextResponse.next({ request })
                     cookiesToSet.forEach(({ name, value, options }) =>
                         response.cookies.set(name, value, options)
                     )
@@ -30,22 +27,23 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    // 2. Refresh Session
+    // Refresh session
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 3. Define Protected Routes
     const path = request.nextUrl.pathname
     const isAdminRoute = path.startsWith('/admin')
-    const isEducatorRoute = path.startsWith('/educator/dashboard')
+    const isEducatorRoute = path.startsWith('/educator')  // covers /educator/start AND /educator/dashboard
+    const isLoginPage = path === '/educator/login'
 
-    // 4. Redirect Unauthenticated Users
-    if ((isAdminRoute || isEducatorRoute) && !user) {
-        return NextResponse.redirect(new URL('/educator/login', request.url))
+    // If not logged in and trying to access educator or admin routes → send to login
+    if (!user && (isAdminRoute || isEducatorRoute) && !isLoginPage) {
+        const loginUrl = new URL('/educator/login', request.url)
+        loginUrl.searchParams.set('redirect', path)   // remember where they were going
+        return NextResponse.redirect(loginUrl)
     }
 
-    // 5. Role-Based Access Control (RBAC)
+    // If logged in, enforce role-based access
     if (user && (isAdminRoute || isEducatorRoute)) {
-        // Fetch profile role
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -54,16 +52,20 @@ export async function middleware(request: NextRequest) {
 
         const role = profile?.role
 
-        // Admin Route Protection
+        // Non-admins cannot access /admin/* — redirect to their dashboard
         if (isAdminRoute && role !== 'admin') {
-            // Redirect non-admins to their dashboard or home
-            return NextResponse.redirect(new URL('/educator/dashboard', request.url))
+            return NextResponse.redirect(new URL('/educator/start', request.url))
         }
 
-        // Educator Route Protection (Admins can also view dashboards, purely educator view logic)
-        // If strict separation is needed: if (isEducatorRoute && role !== 'educator' && role !== 'admin') ...
-        // Assuming 'educator' role is required, or 'admin' is superuser.
-        // Spec: "dashboard Allow: educator, admin". So both are fine.
+        // If somehow a student role exists and tries /educator/* — send home
+        if (isEducatorRoute && role !== 'educator' && role !== 'admin') {
+            return NextResponse.redirect(new URL('/', request.url))
+        }
+    }
+
+    // Already logged in and visiting login page → redirect to start
+    if (user && isLoginPage) {
+        return NextResponse.redirect(new URL('/educator/start', request.url))
     }
 
     return response
@@ -72,6 +74,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/admin/:path*',
-        '/educator/dashboard/:path*',
+        '/educator/:path*',   // now covers /educator/start too
     ],
 }
