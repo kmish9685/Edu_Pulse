@@ -25,7 +25,7 @@ function DashboardContent() {
         catch { return [] }
     })
     const [currentTopicIndex, setCurrentTopicIndex] = useState(0)
-    const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([{ time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), label: 'Session Started' }])
+    const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([])
 
     const advanceTopic = () => {
         if (currentTopicIndex >= agenda.length) return
@@ -36,6 +36,11 @@ function DashboardContent() {
     }
 
     const supabase = createClient()
+
+    useEffect(() => {
+        // Add the initial 'Session Started' entry client-side only to avoid hydration mismatch
+        setTopicLog([{ time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), label: 'Session Started' }])
+    }, [])
 
     useEffect(() => {
         if (!sessionId || sessionId.length !== 4) {
