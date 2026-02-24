@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { Bell, LayoutDashboard, Settings, LogOut, FileText, Activity, Zap, MapPin, Download } from 'lucide-react'
+import { Bell, LayoutDashboard, Settings, LogOut, FileText, Activity, Zap, MapPin, Download, Tag, Plus, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -17,6 +17,9 @@ function DashboardContent() {
     const [recentSignals, setRecentSignals] = useState<any[]>([])
     const [stats, setStats] = useState<Record<string, number>>({})
     const [aiInsight, setAiInsight] = useState("Gathering data for insights...")
+    // Topic Annotation State
+    const [currentTopicInput, setCurrentTopicInput] = useState('')
+    const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([{ time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), label: 'Session Started' }])
 
     const supabase = createClient()
 
@@ -144,6 +147,55 @@ function DashboardContent() {
 
             {/* Main Content */}
             <main className="flex-1 p-6 md:p-10 overflow-y-auto">
+                {/* Topic Annotation Bar */}
+                <div className="mb-6 bg-indigo-950/40 border border-indigo-500/20 rounded-2xl p-4 flex flex-col md:flex-row gap-3">
+                    <div className="flex items-center gap-3 flex-1">
+                        <div className="w-9 h-9 bg-indigo-500/10 rounded-lg flex items-center justify-center shrink-0 border border-indigo-500/20">
+                            <Tag className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">Current Topic / Slide</div>
+                            <input
+                                type="text"
+                                value={currentTopicInput}
+                                onChange={(e) => setCurrentTopicInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && currentTopicInput.trim()) {
+                                        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                        setTopicLog(prev => [...prev, { time, label: currentTopicInput.trim() }])
+                                        setCurrentTopicInput('')
+                                    }
+                                }}
+                                placeholder="e.g. Slide 4: Recursion, Live Code: Binary Search..."
+                                className="w-full bg-transparent text-white font-semibold placeholder:text-indigo-400/40 outline-none text-sm"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {
+                                if (currentTopicInput.trim()) {
+                                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                    setTopicLog(prev => [...prev, { time, label: currentTopicInput.trim() }])
+                                    setCurrentTopicInput('')
+                                }
+                            }}
+                            className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-300 font-bold rounded-lg text-sm transition-colors flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" /> Log Topic
+                        </button>
+                    </div>
+                    {topicLog.length > 0 && (
+                        <div className="flex flex-wrap gap-2 border-t border-indigo-500/10 pt-3 mt-1 md:hidden">
+                            {topicLog.slice(-3).map((entry, i) => (
+                                <span key={i} className="flex items-center gap-1 text-xs bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded-lg border border-indigo-500/10">
+                                    <Clock className="w-3 h-3" />{entry.time}: {entry.label}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
                     <div>
@@ -273,32 +325,50 @@ function DashboardContent() {
                         </div>
                     </div>
 
-                    <div className="md:col-span-3 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-slate-900 text-lg">Audit Log</h3>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Live</span>
+                    <div className="md:col-span-3 space-y-6">
+                        {/* Topic Annotation Log */}
+                        <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-2xl">
+                            <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-widest mb-4 flex items-center gap-2"><Tag className="w-4 h-4" /> Topic Timeline Annotations</h3>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {topicLog.map((entry, i) => (
+                                    <div key={i} className="flex items-center gap-3 text-sm">
+                                        <span className="font-mono font-bold text-indigo-400 shrink-0">{entry.time}</span>
+                                        <span className="w-px h-4 bg-indigo-200 shrink-0"></span>
+                                        <span className={`font-semibold ${i === topicLog.length - 1 ? 'text-indigo-900' : 'text-indigo-400'}`}>{entry.label}</span>
+                                        {i === topicLog.length - 1 && <span className="text-xs bg-indigo-500 text-white px-2 py-0.5 rounded-full font-bold">CURRENT</span>}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <ul className="space-y-3">
-                            {recentSignals.map((signal) => (
-                                <li key={signal.id} className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
-                                    <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-                                        <div className={`w-3 h-3 rounded-full ${signal.type === "Too Fast" ? 'bg-orange-500' : 'bg-red-500'}`}></div>
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-bold text-slate-800">{signal.type}</span>
-                                            <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
-                                                {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                            </span>
+
+                        {/* Audit Log */}
+                        <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="font-bold text-slate-900 text-lg">Audit Log</h3>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Live</span>
+                            </div>
+                            <ul className="space-y-3">
+                                {recentSignals.map((signal) => (
+                                    <li key={signal.id} className="flex gap-4 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 transition-colors">
+                                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                            <div className={`w-3 h-3 rounded-full ${signal.type === "Too Fast" ? 'bg-orange-500' : 'bg-red-500'}`}></div>
                                         </div>
-                                        <p className="text-sm text-slate-500 font-medium">Anonymous encrypted signal logged.</p>
-                                    </div>
-                                </li>
-                            ))}
-                            {recentSignals.length === 0 && (
-                                <li className="text-center text-sm text-slate-400 py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 font-medium">Waiting for incoming secure signals...</li>
-                            )}
-                        </ul>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-bold text-slate-800">{signal.type}</span>
+                                                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+                                                    {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-slate-500 font-medium">Anonymous encrypted signal logged.</p>
+                                        </div>
+                                    </li>
+                                ))}
+                                {recentSignals.length === 0 && (
+                                    <li className="text-center text-sm text-slate-400 py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200 font-medium">Waiting for incoming secure signals...</li>
+                                )}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </main>
