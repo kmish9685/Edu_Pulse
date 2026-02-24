@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { submitSignal } from '@/app/actions/signals'
-import { AlertCircle, CheckCircle2, Navigation, Send, Loader2 } from 'lucide-react'
+import { CheckCircle, Clock, Loader2 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
 export default function StudentJoin() {
@@ -12,138 +12,138 @@ export default function StudentJoin() {
 
     const [signaled, setSignaled] = useState(false)
     const [cooldown, setCooldown] = useState(false)
-    const [types, setTypes] = useState([
+    const [cooldownSecs, setCooldownSecs] = useState(0)
+    const [submitting, setSubmitting] = useState<string | null>(null)
+    const [types] = useState([
         { id: 1, label: "I'm Confused" },
         { id: 2, label: "Too Fast" },
     ])
 
-    // Auto-join the session conceptually. For the demo, we assume the session is valid
-    // if a user lands here with a 4-digit PIN.
-
     useEffect(() => {
-        // Enforce basic PIN validation for the demo
-        if (!sessionId || sessionId.length !== 4) {
-            router.push('/')
-        }
+        if (!sessionId || sessionId.length !== 4) router.push('/')
 
         const lastSignal = localStorage.getItem('last_signal_time')
         if (lastSignal) {
             const diff = Date.now() - parseInt(lastSignal)
-            if (diff < 60000) { // 1 minute cooldown
+            if (diff < 60000) {
+                const remaining = Math.ceil((60000 - diff) / 1000)
                 setCooldown(true)
-                setTimeout(() => setCooldown(false), 60000 - diff)
+                setCooldownSecs(remaining)
+                const countdown = setInterval(() => {
+                    setCooldownSecs(s => {
+                        if (s <= 1) { clearInterval(countdown); setCooldown(false); return 0 }
+                        return s - 1
+                    })
+                }, 1000)
+                return () => clearInterval(countdown)
             }
         }
     }, [sessionId, router])
 
     const handleSignal = async (type: string) => {
-        if (cooldown) return
-
-        // Submit signal with session ID attached as block_room to avoid DB schema changes
-        const res = await submitSignal({
-            type,
-            block_room: sessionId,
-            additional_text: ''
-        })
-
+        if (cooldown || submitting) return
+        setSubmitting(type)
+        const res = await submitSignal({ type, block_room: sessionId, additional_text: '' })
         if (res.success) {
             setSignaled(true)
             setCooldown(true)
+            setCooldownSecs(60)
             localStorage.setItem('last_signal_time', Date.now().toString())
-
-            setTimeout(() => {
-                setSignaled(false)
-            }, 3000)
-
-            setTimeout(() => setCooldown(false), 60000) // 1 minute cooldown
+            setTimeout(() => setSignaled(false), 4000)
+            const countdown = setInterval(() => {
+                setCooldownSecs(s => {
+                    if (s <= 1) { clearInterval(countdown); setCooldown(false); return 0 }
+                    return s - 1
+                })
+            }, 1000)
         }
+        setSubmitting(null)
     }
 
-    if (!sessionId || sessionId.length !== 4) return <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>
+    if (!sessionId || sessionId.length !== 4) {
+        return (
+            <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 size={20} color="var(--text-tertiary)" style={{ animation: 'spin 1s linear infinite' }} />
+            </div>
+        )
+    }
 
     return (
-        <div className="min-h-screen bg-slate-900 font-sans text-slate-100 flex flex-col pt-[5vh] items-center px-6 relative overflow-hidden">
-
-            {/* Background blur */}
-            <div className="absolute top-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-40">
-                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[50%] bg-blue-600 blur-[120px] rounded-full"></div>
-            </div>
-
-            <main className="w-full max-w-sm flex flex-col items-center z-10 space-y-8">
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.5rem' }}>
+            <div style={{ width: '100%', maxWidth: 360 }}>
 
                 {/* Header */}
-                <div className="text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-slate-300 backdrop-blur-md mb-6 border border-white/5">
-                        <Navigation className="w-3 h-3 text-blue-400" />
-                        Connected to Session {sessionId}
+                <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                        Session · {sessionId}
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight mb-2">EduPulse</h1>
-                    <p className="text-slate-400 text-sm">Anonymous Real-Time Feedback</p>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: '0.4rem' }}>EduPulse</h1>
+                    <p style={{ fontSize: '0.857rem', color: 'var(--text-secondary)' }}>Anonymous classroom feedback</p>
                 </div>
 
-                {/* Status Card */}
-                <div className={`w-full p-4 rounded-2xl border transition-all duration-300 flex items-start gap-3
-                    ${signaled
-                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100'
-                        : cooldown
-                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-200/80'
-                            : 'bg-white/5 border-white/10 text-slate-300'
-                    } backdrop-blur-md shadow-xl`}
-                >
-                    {signaled ? (
-                        <CheckCircle2 className="w-6 h-6 shrink-0 text-emerald-400 mt-1" />
-                    ) : (
-                        <AlertCircle className={`w-6 h-6 shrink-0 mt-1 ${cooldown ? 'text-amber-400/80' : 'text-blue-400'}`} />
-                    )}
-                    <div>
-                        <h2 className="font-bold text-md mb-1">
-                            {signaled ? "Signal Delivered Successfully" : cooldown ? "Cooldown Active" : "Ready to Send"}
-                        </h2>
-                        <p className="text-sm opacity-80 leading-relaxed font-medium">
-                            {signaled
-                                ? "Your teacher has been notified anonymously. Thank you."
-                                : cooldown
-                                    ? "To prevent spam, you can only send one signal per minute. Please wait."
-                                    : "Tap a button below if you are feeling lost. Your identity is 100% hidden."
-                            }
-                        </p>
+                {/* Status */}
+                {signaled && (
+                    <div style={{ marginBottom: '1.5rem', background: 'var(--success-dim)', border: '1px solid rgba(62,207,142,0.2)', borderRadius: 'var(--radius-lg)', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <CheckCircle size={16} color="var(--success)" />
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.857rem', color: 'var(--success)' }}>Signal sent</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Your teacher has been notified anonymously.</div>
+                        </div>
                     </div>
-                </div>
+                )}
 
-                {/* Primary Action Buttons */}
-                <div className="w-full space-y-4">
+                {cooldown && !signaled && (
+                    <div style={{ marginBottom: '1.5rem', background: 'var(--warning-dim)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 'var(--radius-lg)', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Clock size={16} color="var(--warning)" />
+                        <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.857rem', color: 'var(--warning)' }}>Cooldown — {cooldownSecs}s remaining</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>One signal per minute to prevent noise.</div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Signal Buttons */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {types.map((type) => (
                         <button
                             key={type.id}
                             onClick={() => handleSignal(type.label)}
-                            disabled={cooldown}
-                            className={`w-full relative overflow-hidden group p-6 rounded-[2rem] text-left transition-all duration-300
-                                ${cooldown
-                                    ? 'bg-white/5 opacity-50 cursor-not-allowed border-transparent'
-                                    : 'bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:shadow-[0_0_40px_-10px_rgba(59,130,246,0.5)] border-t border-white/20'
-                                }
-                            `}
+                            disabled={cooldown || !!submitting}
+                            style={{
+                                width: '100%',
+                                padding: '1rem 1.25rem',
+                                borderRadius: 'var(--radius-lg)',
+                                border: `1px solid ${cooldown ? 'var(--border)' : 'var(--border-accent)'}`,
+                                background: cooldown ? 'var(--bg-surface)' : submitting === type.label ? 'var(--accent)' : 'var(--accent-dim)',
+                                color: cooldown ? 'var(--text-tertiary)' : 'var(--text-primary)',
+                                fontFamily: 'inherit',
+                                fontWeight: 700,
+                                fontSize: '0.95rem',
+                                letterSpacing: '-0.02em',
+                                cursor: cooldown ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                transition: 'all 0.15s ease',
+                                textAlign: 'left',
+                                opacity: cooldown ? 0.5 : 1,
+                            }}
                         >
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div>
-                                    <span className={`block font-black text-2xl mb-1 ${cooldown ? 'text-white' : 'text-white'}`}>{type.label}</span>
-                                    <span className={`text-sm font-medium ${cooldown ? 'text-slate-400' : 'text-blue-100'}`}>Notify teacher instantly</span>
-                                </div>
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 ${cooldown ? 'bg-white/10' : 'bg-white/20 group-hover:scale-110 group-hover:bg-white/30'}`}>
-                                    <Send className={`w-5 h-5 ${cooldown ? 'text-white/50' : 'text-white'}`} />
-                                </div>
-                            </div>
+                            <span>{type.label}</span>
+                            {submitting === type.label
+                                ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                                : <span style={{ fontSize: '0.75rem', color: cooldown ? 'var(--text-tertiary)' : 'var(--accent)', fontWeight: 600 }}>Tap to signal →</span>
+                            }
                         </button>
                     ))}
                 </div>
 
-                {/* Trust Footer */}
-                <div className="mt-8 text-center text-xs font-semibold text-slate-500 uppercase tracking-widest flex items-center justify-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    100% Anonymous Encryption
+                {/* Trust line */}
+                <div style={{ marginTop: '2rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>100% anonymous · No account required</span>
                 </div>
-
-            </main>
+            </div>
         </div>
     )
 }

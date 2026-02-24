@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { Play, Link as LinkIcon, Users, QrCode, ArrowRight, Plus, X, GripVertical } from 'lucide-react'
+import { ArrowRight, Plus, X, Link as LinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -21,160 +21,108 @@ export default function EducatorStart() {
     }, [])
 
     const addTopic = () => {
-        const trimmed = agendaInput.trim()
-        if (!trimmed) return
-        setAgenda(prev => [...prev, trimmed])
+        const t = agendaInput.trim()
+        if (!t) return
+        setAgenda(prev => [...prev, t])
         setAgendaInput('')
     }
 
-    const removeTopic = (i: number) => setAgenda(prev => prev.filter((_, idx) => idx !== i))
-
     const handleStart = () => {
-        // Pass agenda as URL-safe param so dashboard can pick it up
         const agendaParam = encodeURIComponent(JSON.stringify(agenda))
         router.push(`/educator/dashboard?session=${sessionId}&agenda=${agendaParam}`)
     }
 
+    const displayUrl = joinUrl ? `${new URL(joinUrl).hostname}/join/${sessionId}` : `edupulse.com/join/${sessionId}`
+
     return (
-        <div className="min-h-screen bg-slate-900 font-sans text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column' }}>
 
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full" />
-            </div>
+            {/* Topbar */}
+            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '1.5rem' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em' }}>EduPulse</span>
+                <span style={{ color: 'var(--border)', fontSize: '1rem' }}>/</span>
+                <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)' }}>New Session</span>
+                <div style={{ flex: 1 }} />
+                <Link href="/admin" style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textDecoration: 'none' }}>← Admin</Link>
+            </header>
 
-            <div className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 gap-12 items-start">
+            {/* Content */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 380px', maxWidth: 960, margin: '0 auto', width: '100%', padding: '3rem 1.5rem', gap: '3rem', alignItems: 'start' }}>
 
-                {/* Left: Controls */}
-                <div className="space-y-8">
-                    <div>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold rounded-full text-sm mb-6">
-                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                            Ready to Broadcast
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">Zero-Friction Connections.</h1>
-                        <p className="text-slate-400 text-lg leading-relaxed">
-                            Students do not need an app or account. Project this code, they scan, and instantly join your live intelligence stream.
-                        </p>
-                    </div>
+                {/* Left: Setup */}
+                <div>
+                    <h1 style={{ fontSize: '1.375rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '0.375rem' }}>Start a Class Session</h1>
+                    <p style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+                        Add your lecture topics before class. During the session, advance them with a single tap — no typing while teaching.
+                    </p>
 
-                    {/* Agenda Builder */}
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-                        <div>
-                            <h2 className="text-base font-bold text-white mb-1 flex items-center gap-2">
-                                <QrCode className="w-4 h-4 text-indigo-400" />
-                                Pre-set Lecture Agenda <span className="text-slate-500 text-sm font-normal">(optional)</span>
-                            </h2>
-                            <p className="text-slate-400 text-sm">
-                                Add your topics now. During class, you advance them with <strong className="text-white">one tap</strong> — no typing needed while teaching.
-                            </p>
-                        </div>
-
-                        <div className="flex gap-2">
+                    {/* Agenda */}
+                    <div style={{ marginBottom: '2rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>
+                            Lecture Agenda <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                             <input
-                                type="text"
+                                className="lx-input"
                                 value={agendaInput}
                                 onChange={e => setAgendaInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && addTopic()}
-                                placeholder="e.g. Slide 1: Recursion Basics"
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder:text-slate-500 outline-none focus:border-blue-500/50 text-sm font-medium"
+                                placeholder="e.g. Introduction to Recursion"
                             />
-                            <button
-                                onClick={addTopic}
-                                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors flex items-center gap-1"
-                            >
-                                <Plus className="w-4 h-4" /> Add
+                            <button onClick={addTopic} className="lx-btn lx-btn-ghost" style={{ flexShrink: 0 }}>
+                                <Plus size={14} /> Add
                             </button>
                         </div>
 
                         {agenda.length > 0 ? (
-                            <ol className="space-y-2">
+                            <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
                                 {agenda.map((topic, i) => (
-                                    <li key={i} className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 group">
-                                        <span className="text-xs font-black text-slate-500 w-5 shrink-0">#{i + 1}</span>
-                                        <span className="flex-1 text-sm font-semibold text-slate-200 truncate">{topic}</span>
-                                        <button onClick={() => removeTopic(i)} className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
-                                            <X className="w-4 h-4" />
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.875rem', borderBottom: i < agenda.length - 1 ? '1px solid var(--border)' : 'none', background: 'var(--bg-surface)' }}>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums', width: 20, flexShrink: 0 }}>#{i + 1}</span>
+                                        <span style={{ flex: 1, fontSize: '0.857rem', color: 'var(--text-primary)', fontWeight: 500 }}>{topic}</span>
+                                        <button onClick={() => setAgenda(prev => prev.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', padding: '0.25rem', display: 'flex' }}>
+                                            <X size={13} />
                                         </button>
-                                    </li>
+                                    </div>
                                 ))}
-                            </ol>
+                            </div>
                         ) : (
-                            <div className="text-center py-4 text-slate-600 text-sm border border-dashed border-white/10 rounded-xl">
-                                No topics added yet — you can also leave this blank and type later
+                            <div style={{ border: '1px dashed var(--border)', borderRadius: 'var(--radius-lg)', padding: '1.25rem', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>
+                                No topics yet — you can also annotate live during the session
                             </div>
                         )}
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4 text-slate-300 bg-white/5 p-4 border border-white/10 rounded-xl">
-                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
-                                <QrCode className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <div className="font-bold text-white">1. Screen Projection</div>
-                                <div className="text-sm">Display the QR code on your classroom screen</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-slate-300 bg-white/5 p-4 border border-white/10 rounded-xl">
-                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
-                                <Users className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <div className="font-bold text-white">2. Student Scan</div>
-                                <div className="text-sm">Students scan using their default camera — no app needed</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleStart}
-                        className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 group"
-                    >
-                        Initialize Dashboard
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    <button onClick={handleStart} className="lx-btn lx-btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.75rem', fontSize: '0.9rem' }}>
+                        Initialize Dashboard <ArrowRight size={15} />
                     </button>
-
-                    <Link href="/admin" className="block text-center text-sm font-semibold text-slate-500 hover:text-white transition-colors">
-                        Cancel and return to Admin
-                    </Link>
                 </div>
 
                 {/* Right: QR Card */}
-                <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-slate-900 transform md:rotate-2 hover:rotate-0 transition-transform duration-500 border-8 border-slate-800">
-                    <div className="mb-6 text-center">
-                        <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Join Session</div>
-                        <div className="text-5xl font-black font-mono tracking-widest text-slate-900">{sessionId}</div>
-                    </div>
-
-                    <div className="bg-slate-50 p-6 rounded-3xl border-2 border-slate-100 mb-8 w-full flex justify-center">
-                        {joinUrl && (
-                            <QRCodeSVG
-                                value={joinUrl}
-                                size={220}
-                                bgColor={"#ffffff"}
-                                fgColor={"#0f172a"}
-                                level={"H"}
-                                marginSize={1}
-                            />
+                <div style={{ position: 'sticky', top: '5rem' }}>
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+                        {/* PIN */}
+                        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Session PIN</div>
+                            <div style={{ fontSize: '2.5rem', fontWeight: 800, fontFamily: 'monospace', letterSpacing: '0.15em', color: 'var(--text-primary)' }}>{sessionId}</div>
+                        </div>
+                        {/* QR */}
+                        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'center', background: '#fff' }}>
+                            {joinUrl && <QRCodeSVG value={joinUrl} size={200} fgColor="#09090E" bgColor="#ffffff" level="H" marginSize={1} />}
+                        </div>
+                        {/* URL */}
+                        <div style={{ padding: '0.875rem 1.25rem', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <LinkIcon size={12} color="var(--text-tertiary)" />
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontFamily: 'monospace', letterSpacing: '-0.01em' }}>{displayUrl}</span>
+                        </div>
+                        {/* Agenda loaded indicator */}
+                        {agenda.length > 0 && (
+                            <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid var(--border)', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+                                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>{agenda.length} topic{agenda.length > 1 ? 's' : ''} ready</span>
+                            </div>
                         )}
                     </div>
-
-                    <div className="flex items-center gap-2 text-sm font-bold text-slate-500 bg-slate-100 px-4 py-2 rounded-full w-full justify-center">
-                        <LinkIcon className="w-4 h-4" />
-                        <span className="truncate">{joinUrl ? new URL(joinUrl).hostname : 'edupulse.com'}/join/{sessionId}</span>
-                    </div>
-
-                    {agenda.length > 0 && (
-                        <div className="mt-4 w-full">
-                            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 text-center">{agenda.length} Topics Loaded</div>
-                            <div className="flex flex-wrap gap-1 justify-center">
-                                {agenda.map((t, i) => (
-                                    <span key={i} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg font-medium">#{i + 1} {t.split(':')[0]}</span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
