@@ -1,206 +1,175 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Download, Send, ArrowLeft, Building2, UserCircle, Calculator, CheckCircle2 } from 'lucide-react'
+import { FileText, Download, Send, ArrowLeft, Building2, UserCircle, Calculator, CheckCircle2, Loader2, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LOIGenerator() {
-    const [formData, setFormData] = useState({
-        institution: '',
-        contactName: '',
-        role: '',
-        students: 5000,
-        amount: 250000
-    })
-
+    const [formData, setFormData] = useState({ institution: '', contactName: '', role: '', students: 5000, amount: 250000 })
     const [isGenerating, setIsGenerating] = useState(false)
     const [isGenerated, setIsGenerated] = useState(false)
 
     const handleGenerate = (e: React.FormEvent) => {
         e.preventDefault()
         setIsGenerating(true)
-        setTimeout(() => {
-            setIsGenerating(false)
-            setIsGenerated(true)
-        }, 1500)
+        setTimeout(() => { setIsGenerating(false); setIsGenerated(true) }, 1500)
     }
 
+    const fields = [
+        { label: 'Institution Name', key: 'institution', placeholder: 'e.g. Galgotias University', icon: Building2, type: 'text' },
+        { label: 'Contact Person (Signatory)', key: 'contactName', placeholder: 'e.g. Dr. K. Mallik', icon: UserCircle, type: 'text' },
+        { label: 'Signatory Role', key: 'role', placeholder: 'e.g. Dean of Academics', icon: null, type: 'text' },
+    ]
+
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-            <header className="p-6 bg-white border-b border-slate-200 flex items-center justify-between">
-                <Link href="/admin" className="flex items-center gap-2 font-bold text-slate-600 hover:text-slate-900 transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Admin
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
+
+            {/* Ambient orb */}
+            <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '45%', height: '50%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.09) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+            {/* Header */}
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '1rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
+                    <ArrowLeft size={14} /> Admin
                 </Link>
-                <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
-                    <FileText className="w-6 h-6 text-emerald-600" />
-                    LOI Generator
+                <span style={{ color: 'var(--border)', fontSize: '1rem' }}>/</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FileText size={14} color="var(--accent)" />
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.9rem' }}>LOI Generator</span>
                 </div>
-                <div className="text-sm font-medium text-slate-500 uppercase tracking-widest hidden md:block">Sales Operations</div>
+                <div style={{ flex: 1 }} />
+                <div className="section-label">Sales Operations</div>
             </header>
 
-            <main className="max-w-6xl mx-auto p-6 lg:p-12">
+            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '3rem 1.75rem', position: 'relative', zIndex: 1 }}>
 
-                <div className="mb-12 text-center max-w-3xl mx-auto space-y-4">
-                    <h1 className="text-3xl font-bold text-slate-900">Letter of Intent Automation</h1>
-                    <p className="text-slate-600">
-                        Generate legally compliant Letters of Intent (LOI) to secure pilot commitments and demonstrate B2B sales traction to the EDVentures judges.
+                {/* Hero */}
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0.875rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
+                        <Zap size={12} color="#A78BFA" />
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', fontWeight: 700, color: '#A78BFA', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Letter of Intent Automation</span>
+                    </div>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
+                        Generate your <span className="gradient-text">Pilot LOI</span> instantly.
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 520, margin: '0 auto' }}>
+                        Legally-compliant Letters of Intent to secure pilot commitments and demonstrate B2B traction to EDVentures judges.
                     </p>
                 </div>
 
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
-                    {/* Form Section */}
-                    <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
-                            <Building2 className="w-5 h-5 text-emerald-600" /> Institution Details
-                        </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '2rem', alignItems: 'start' }}>
 
-                        <form onSubmit={handleGenerate} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Institution Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="e.g. Galgotias University"
-                                    value={formData.institution}
-                                    onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                                />
+                    {/* Form */}
+                    <div className="glass-card" style={{ padding: '2rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--glass-border)' }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Building2 size={16} color="#A78BFA" />
                             </div>
+                            <div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Institution Details</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Fill in the signing party info</div>
+                            </div>
+                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Contact Person (Signatory)</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <UserCircle className="w-5 h-5 text-slate-400" />
-                                    </div>
+                        <form onSubmit={handleGenerate} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
+                            {fields.map(f => (
+                                <div key={f.key}>
+                                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>{f.label}</label>
                                     <input
-                                        type="text"
+                                        type={f.type}
                                         required
-                                        placeholder="e.g. Dr. K. Mallik"
-                                        value={formData.contactName}
-                                        onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                                        className="w-full p-3 pl-10 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                        placeholder={f.placeholder}
+                                        value={(formData as any)[f.key]}
+                                        onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                        className="lx-input"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Signatory Role</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="e.g. Dean of Academics"
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-700">Students</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={formData.students}
-                                        onChange={(e) => setFormData({ ...formData, students: parseInt(e.target.value) })}
-                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-slate-700">Deal Value (₹)</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">₹</div>
+                            ))}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                {[
+                                    { label: 'Students', key: 'students', prefix: '' },
+                                    { label: 'Deal Value (₹)', key: 'amount', prefix: '₹' },
+                                ].map(f => (
+                                    <div key={f.key}>
+                                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>{f.label}</label>
                                         <input
                                             type="number"
                                             required
-                                            value={formData.amount}
-                                            onChange={(e) => setFormData({ ...formData, amount: parseInt(e.target.value) })}
-                                            className="w-full p-3 pl-8 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                            value={(formData as any)[f.key]}
+                                            onChange={e => setFormData(prev => ({ ...prev, [f.key]: parseInt(e.target.value) || 0 }))}
+                                            className="lx-input"
                                         />
                                     </div>
-                                </div>
+                                ))}
                             </div>
-
                             <button
                                 type="submit"
                                 disabled={isGenerating || !formData.institution || !formData.contactName}
-                                className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 mt-4 shadow-sm shadow-slate-200 disabled:opacity-50"
-                            >
-                                {isGenerating ? 'Drafting Legal Document...' : 'Generate LOI Draft'}
+                                className="btn-primary"
+                                style={{ justifyContent: 'center', marginTop: '0.5rem', opacity: (!formData.institution || !formData.contactName) ? 0.5 : 1 }}>
+                                {isGenerating ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating...</> : 'Generate LOI Draft'}
                             </button>
                         </form>
                     </div>
 
-                    {/* Preview Section */}
-                    <div className="lg:col-span-7">
+                    {/* Preview */}
+                    <div>
                         {isGenerated ? (
-                            <div className="animate-in fade-in slide-in-from-right-8 duration-500">
-                                <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-2 text-emerald-800 font-bold">
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-600" /> LOI Successfully Generated
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                {/* Success banner */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1.25rem', background: 'var(--success-dim)', border: '1px solid rgba(62,207,142,0.25)', borderRadius: 'var(--radius-lg)', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.857rem', color: 'var(--success)' }}>
+                                        <CheckCircle2 size={16} /> LOI Successfully Generated
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button className="px-4 py-2 bg-white text-emerald-700 font-bold rounded-lg border border-emerald-200 hover:bg-emerald-100 flex items-center gap-2 text-sm shadow-sm transition-colors">
-                                            <Download className="w-4 h-4" /> PDF
-                                        </button>
-                                        <button className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 flex items-center gap-2 text-sm shadow-sm transition-colors">
-                                            <Send className="w-4 h-4" /> Send Sign Request
-                                        </button>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button className="btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Download size={13} /> PDF</button>
+                                        <button className="btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Send size={13} /> Send for Sign</button>
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-12 rounded-2xl border border-slate-200 shadow-2xl relative overflow-hidden font-serif">
+                                {/* LOI document — white paper look */}
+                                <div style={{ background: '#FAFAFA', borderRadius: 'var(--radius-xl)', padding: '3rem', boxShadow: '0 32px 80px -16px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden', fontFamily: 'Georgia, serif', color: '#1a1a2e' }}>
                                     {/* Watermark */}
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none rotate-[-30deg]">
-                                        <div className="text-8xl font-black whitespace-nowrap">DRAFT LOI</div>
+                                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(-30deg)', opacity: 0.04, fontSize: '5rem', fontWeight: 900, whiteSpace: 'nowrap', pointerEvents: 'none', color: '#000' }}>DRAFT LOI</div>
+
+                                    <div style={{ textAlign: 'center', marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '2px solid #e5e5e5' }}>
+                                        <div style={{ fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: '0.25rem' }}>EduPulse AI · Institutional Division</div>
+                                        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#111', margin: '0.5rem 0 0.25rem' }}>Letter of Intent</h2>
+                                        <p style={{ fontSize: '0.8rem', color: '#999' }}>Non-Binding Memorandum of Understanding</p>
                                     </div>
-
-                                    <div className="text-center mb-10 border-b pb-8">
-                                        <h2 className="text-2xl font-bold text-slate-900 mb-2 uppercase tracking-widest">Letter of Intent</h2>
-                                        <p className="text-slate-500 text-sm">Non-Binding Memorandum of Understanding</p>
-                                    </div>
-
-                                    <div className="space-y-6 text-slate-800 leading-loose">
-                                        <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-                                        <p>This NON-BINDING LETTER OF INTENT ("LOI") outlines the mutual intention between <strong>EduPulse AI</strong> ("Provider") and <strong>{formData.institution}</strong> ("Institution") to implement a comprehensive Institutional Learning Intelligence system.</p>
-
-                                        <h3 className="font-bold text-lg pt-4 border-b border-slate-100 pb-2">1. Scope of Pilot</h3>
-                                        <p>The Institution intends to deploy EduPulse software covering approximately <strong>{formData.students.toLocaleString()} students</strong> to track real-time learning gaps, protect tuition revenue from systemic dropouts, and improve overall institutional outcomes.</p>
-
-                                        <h3 className="font-bold text-lg pt-4 border-b border-slate-100 pb-2">2. Financial Provisions</h3>
-                                        <p>Pending the successful completion of a 60-day trial period, the Institution anticipates entering into a formal licensing agreement estimated at <strong>₹{formData.amount.toLocaleString()} per annum</strong>.</p>
-
-                                        <h3 className="font-bold text-lg pt-4 border-b border-slate-100 pb-2">3. Next Steps</h3>
-                                        <p>Signatures below indicate intent to proceed with technical integration and faculty onboarding within the next 14 business days.</p>
-
-                                        <div className="grid grid-cols-2 gap-12 mt-16 pt-8">
-                                            <div>
-                                                <div className="border-b-2 border-slate-300 mb-2 h-12"></div>
-                                                <p className="font-bold text-sm">EduPulse Representative</p>
-                                                <p className="text-sm text-slate-500">Authorized Signatory</p>
-                                            </div>
-                                            <div>
-                                                <div className="border-b-2 border-slate-300 mb-2 h-12"></div>
-                                                <p className="font-bold text-sm">{formData.contactName}</p>
-                                                <p className="text-sm text-slate-500">{formData.role}</p>
-                                                <p className="text-sm text-slate-500">{formData.institution}</p>
-                                            </div>
+                                    <div style={{ fontSize: '0.875rem', lineHeight: 1.8, color: '#333', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        <p><strong>Date:</strong> {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                        <p>This NON-BINDING LETTER OF INTENT outlines the mutual intention between <strong>EduPulse AI</strong> ("Provider") and <strong>{formData.institution}</strong> ("Institution") to implement a comprehensive Institutional Learning Intelligence system.</p>
+                                        <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '0.875rem' }}>
+                                            <strong style={{ display: 'block', marginBottom: '0.375rem', color: '#111' }}>1. Scope of Pilot</strong>
+                                            <p>The Institution intends to deploy EduPulse covering approximately <strong>{formData.students.toLocaleString()} students</strong> to track real-time learning gaps and protect tuition revenue from systemic dropouts.</p>
+                                        </div>
+                                        <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '0.875rem' }}>
+                                            <strong style={{ display: 'block', marginBottom: '0.375rem', color: '#111' }}>2. Financial Provisions</strong>
+                                            <p>Subject to successful 60-day trial completion, the Institution anticipates a formal licensing agreement estimated at <strong>₹{formData.amount.toLocaleString()} per annum</strong>.</p>
+                                        </div>
+                                        <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '0.875rem' }}>
+                                            <strong style={{ display: 'block', marginBottom: '0.375rem', color: '#111' }}>3. Next Steps</strong>
+                                            <p>Signatures below indicate intent to proceed with technical integration within 14 business days.</p>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e5e5' }}>
+                                            <div><div style={{ borderBottom: '2px solid #ccc', marginBottom: '0.5rem', height: '2rem' }} /><strong style={{ fontSize: '0.8rem', color: '#111' }}>EduPulse Representative</strong><p style={{ fontSize: '0.75rem', color: '#666' }}>Authorized Signatory</p></div>
+                                            <div><div style={{ borderBottom: '2px solid #ccc', marginBottom: '0.5rem', height: '2rem' }} /><strong style={{ fontSize: '0.8rem', color: '#111' }}>{formData.contactName}</strong><p style={{ fontSize: '0.75rem', color: '#666' }}>{formData.role}</p><p style={{ fontSize: '0.75rem', color: '#666' }}>{formData.institution}</p></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
-                                <Calculator className="w-16 h-16 mb-4 text-slate-300" />
-                                <h3 className="text-lg font-bold text-slate-500">Document Preview</h3>
-                                <p className="text-center text-sm max-w-sm mt-2">Fill out the institution details on the left to generate a preview of the Letter of Intent.</p>
+                            <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center', height: '100%', minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Calculator size={24} color="#A78BFA" />
+                                </div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.025em' }}>Document Preview</div>
+                                <div style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', maxWidth: 280, lineHeight: 1.6 }}>Fill in the institution details on the left. Your LOI will appear here, ready to download or send for e-signature.</div>
                             </div>
                         )}
                     </div>
                 </div>
-
             </main>
         </div>
     )
