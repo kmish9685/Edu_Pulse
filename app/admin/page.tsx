@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home } from 'lucide-react'
 import Link from 'next/link'
 import { verifyAdminPassword, resetAllData, addSignalType } from '@/app/actions/admin'
+import { createEducatorUser } from '@/app/actions/users'
 import { createClient } from '@/utils/supabase/client'
 
-type NavSection = 'overview' | 'signals' | 'sessions' | 'danger'
+type NavSection = 'overview' | 'signals' | 'sessions' | 'danger' | 'users'
 
 interface RealMetrics {
     totalSignals: number
@@ -23,6 +24,7 @@ interface LiveSignal {
 // ─── Left Rail ─────────────────────────────────────────────────
 const NAV_ITEMS: { id: NavSection; label: string; Icon: any }[] = [
     { id: 'overview', label: 'Overview', Icon: Home },
+    { id: 'users', label: 'Users', Icon: ExternalLink },
     { id: 'signals', label: 'Signal Types', Icon: Tag },
     { id: 'sessions', label: 'Session PINs', Icon: QrCode },
     { id: 'danger', label: 'System Reset', Icon: Settings },
@@ -50,6 +52,12 @@ export default function AdminPage() {
     const [isVerifying, setIsVerifying] = useState(false)
     const [resetDone, setResetDone] = useState(false)
     const [resetError, setResetError] = useState('')
+    // User creation
+    const [newEmail, setNewEmail] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [newName, setNewName] = useState('')
+    const [creating, setCreating] = useState(false)
+    const [createResult, setCreateResult] = useState<{ ok: boolean; msg: string } | null>(null)
     const tickerRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
@@ -274,7 +282,69 @@ export default function AdminPage() {
                     )}
 
                     {/* ── SIGNAL TYPES ──────────────────────────────────── */}
+                    {/* ── USERS ─────────────────────────────────────────── */}
+                    {activeSection === 'users' && (
+                        <div>
+                            <div style={{ marginBottom: '2rem' }}>
+                                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.375rem' }}>Users</h1>
+                                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Create and manage educator accounts for your institution.</p>
+                            </div>
+
+                            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Create Educator Account</div>
+                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.5rem', marginBottom: '2rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>Display Name</label>
+                                        <input className="lx-input" type="text" placeholder="e.g. Dr. Sharma" value={newName} onChange={e => setNewName(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>Email Address</label>
+                                        <input className="lx-input" type="email" placeholder="educator@edupulse.com" value={newEmail} onChange={e => setNewEmail(e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>Password</label>
+                                        <input className="lx-input" type="password" placeholder="Min. 6 characters" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                                    </div>
+
+                                    {createResult && (
+                                        <div style={{ padding: '0.75rem 1rem', background: createResult.ok ? 'var(--success-dim)' : 'var(--danger-dim)', border: `1px solid ${createResult.ok ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 9, fontSize: '0.82rem', fontWeight: 600, color: createResult.ok ? 'var(--success)' : 'var(--danger)' }}>
+                                            {createResult.msg}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        disabled={creating || !newEmail || !newPassword || !newName}
+                                        onClick={async () => {
+                                            setCreating(true)
+                                            setCreateResult(null)
+                                            const res = await createEducatorUser(newEmail, newPassword, newName)
+                                            if (res.success) {
+                                                setCreateResult({ ok: true, msg: `✓ Educator account created for ${newEmail}` })
+                                                setNewEmail(''); setNewPassword(''); setNewName('')
+                                            } else {
+                                                setCreateResult({ ok: false, msg: res.error || 'Failed to create account' })
+                                            }
+                                            setCreating(false)
+                                        }}
+                                        className="btn-primary"
+                                        style={{ justifyContent: 'center', opacity: (!newEmail || !newPassword || !newName) ? 0.45 : 1 }}
+                                    >
+                                        {creating ? 'Creating Account...' : 'Create Educator Account'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style={{ padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', lineHeight: 1.65 }}>
+                                    New educators will receive one unified login at <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>/educator/login</span>. Their role is set to <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-soft)' }}>educator</span> automatically — they will only see classroom tools, not admin pages.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── SIGNAL TYPES ──────────────────────────────────── */}
                     {activeSection === 'signals' && (
+
                         <div>
                             <div style={{ marginBottom: '2rem' }}>
                                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.375rem' }}>Signal Types</h1>
