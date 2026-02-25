@@ -142,10 +142,10 @@ function LoginForm() {
                 </div>
 
                 {/* Roles note */}
-                <div style={{ marginTop: '1.25rem', padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
-                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', marginTop: 6, flexShrink: 0 }} />
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.6 }}>
-                        This login page serves both <strong style={{ color: 'var(--text-secondary)' }}>Educators</strong> and <strong style={{ color: 'var(--text-secondary)' }}>Administrators</strong>. You will be automatically redirected to the correct dashboard based on your account role.
+                <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
+                        Administrator?{' '}
+                        <Link href="/admin/login" style={{ color: 'var(--accent-soft)', textDecoration: 'none', fontWeight: 600 }}>Use the Admin Portal →</Link>
                     </p>
                 </div>
 

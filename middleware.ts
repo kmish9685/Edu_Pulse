@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
@@ -9,15 +9,35 @@ export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
     const isAdminRoute = path.startsWith('/admin')
     const isEducatorRoute = path.startsWith('/educator')
-    const isLoginPage = path === '/educator/login'
+    const isAdminLogin = path === '/admin/login'
+    const isEducatorLogin = path === '/educator/login'
 
-    // If env vars are missing, fail CLOSED — send unauthenticated users to login
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        if ((isAdminRoute || isEducatorRoute) && !isLoginPage) {
-            const loginUrl = new URL('/educator/login', request.url)
-            loginUrl.searchParams.set('redirect', path)
-            return NextResponse.redirect(loginUrl)
+    // Don't redirect the login pages themselves
+    if (isAdminLogin || isEducatorLogin) {
+        // If already logged in, redirect to proper dashboard
+        if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+            try {
+                const supabase = createServerClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+                    { cookies: { getAll() { return request.cookies.getAll() }, setAll() { } } }
+                )
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    const { data: profile } = await supabase
+                        .from('profiles').select('role').eq('id', user.id).single()
+                    if (profile?.role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
+                    if (profile?.role === 'educator') return NextResponse.redirect(new URL('/educator/start', request.url))
+                }
+            } catch { /* ignore */ }
         }
+        return response
+    }
+
+    // Fail CLOSED if env vars missing
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
+        if (isEducatorRoute) return NextResponse.redirect(new URL('/educator/login', request.url))
         return response
     }
 
@@ -41,36 +61,36 @@ export async function middleware(request: NextRequest) {
 
         const { data: { user } } = await supabase.auth.getUser()
 
-        // Unauthenticated → redirect to login
-        if (!user && (isAdminRoute || isEducatorRoute) && !isLoginPage) {
-            const loginUrl = new URL('/educator/login', request.url)
-            loginUrl.searchParams.set('redirect', path)
-            return NextResponse.redirect(loginUrl)
+        // Unauthenticated — send to the correct login page for that route type
+        if (!user) {
+            if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
+            if (isEducatorRoute) {
+                const loginUrl = new URL('/educator/login', request.url)
+                loginUrl.searchParams.set('redirect', path)
+                return NextResponse.redirect(loginUrl)
+            }
         }
 
         // Role-based access for authenticated users
-        if (user && (isAdminRoute || isEducatorRoute)) {
+        if (user) {
             const { data: profile } = await supabase
                 .from('profiles').select('role').eq('id', user.id).single()
             const role = profile?.role
 
+            // Wrong role for admin routes
             if (isAdminRoute && role !== 'admin') {
                 return NextResponse.redirect(new URL('/educator/start', request.url))
             }
+            // Wrong role for educator routes
             if (isEducatorRoute && role !== 'educator' && role !== 'admin') {
                 return NextResponse.redirect(new URL('/', request.url))
             }
         }
 
-        // Already logged in, visiting login → redirect to start
-        if (user && isLoginPage) {
-            return NextResponse.redirect(new URL('/educator/start', request.url))
-        }
-
     } catch {
-        // If ANY auth check fails (Supabase unreachable, invalid config, etc.)
-        // fail CLOSED — send to login rather than letting through
-        if ((isAdminRoute || isEducatorRoute) && !isLoginPage) {
+        // Supabase unreachable — fail closed
+        if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
+        if (isEducatorRoute) {
             const loginUrl = new URL('/educator/login', request.url)
             loginUrl.searchParams.set('redirect', path)
             return NextResponse.redirect(loginUrl)
@@ -83,3 +103,4 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: ['/admin/:path*', '/educator/:path*'],
 }
+
