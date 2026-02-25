@@ -1,54 +1,68 @@
 @import "tailwindcss";
 
 /* ─── Premium Fonts ────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 /* ─── Design Tokens ────────────────────────────────────────── */
 :root {
-  --bg-base: #06060A;
-  --bg-surface: #0D0D14;
-  --bg-elevated: #13131C;
-  --bg-hover: #1A1A26;
+  /* Backgrounds */
+  --bg-base: #07070C;
+  --bg-surface: #0E0E17;
+  --bg-elevated: #141421;
+  --bg-hover: #1B1B2A;
 
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-bg-hover: rgba(255, 255, 255, 0.055);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-strong: rgba(255, 255, 255, 0.14);
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.025);
+  --glass-bg-hover: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-border-strong: rgba(255, 255, 255, 0.13);
 
+  /* Borders */
   --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.13);
-  --border-accent: rgba(139, 92, 246, 0.35);
+  --border-accent: rgba(99, 102, 241, 0.4);
 
-  --text-primary: #F0F0F8;
-  --text-secondary: #8A8AA8;
-  --text-tertiary: #44445A;
+  /* Text */
+  --text-primary: #EDEDF5;
+  --text-secondary: #888899;
+  --text-tertiary: #42425A;
 
-  --accent: #7C5CF6;
-  --accent-2: #5E5CF6;
-  --accent-hover: #6D4FE8;
-  --accent-dim: rgba(124, 92, 246, 0.12);
+  /* Accent — Indigo (more institutional than violet) */
+  --accent: #6366F1;
+  --accent-soft: #818CF8;
+  --accent-hover: #4F46E5;
+  --accent-dim: rgba(99, 102, 241, 0.10);
+  --accent-2: #818CF8;
 
-  --grad-a: #7C5CF6;
-  --grad-b: #A78BFA;
+  /* Gradients */
+  --grad-a: #6366F1;
+  --grad-b: #818CF8;
 
-  --success: #3ECF8E;
-  --success-dim: rgba(62, 207, 142, 0.12);
+  /* Status */
+  --success: #22C55E;
+  --success-dim: rgba(34, 197, 94, 0.10);
   --warning: #F59E0B;
-  --warning-dim: rgba(245, 158, 11, 0.12);
+  --warning-dim: rgba(245, 158, 11, 0.10);
   --danger: #EF4444;
-  --danger-dim: rgba(239, 68, 68, 0.10);
+  --danger-dim: rgba(239, 68, 68, 0.08);
 
+  /* Fonts */
   --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 
+  /* Border Radius */
   --radius-sm: 6px;
   --radius: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-2xl: 20px;
+
+  /* Student page specific */
+  --student-primary: #1A1A2E;
 }
 
-/* ─── Base ─────────────────────────────────────────────────── */
+/* ─── Base Reset ────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -61,6 +75,7 @@ html {
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -84,6 +99,7 @@ h5 {
 /* ─── Scrollbars ──────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -95,7 +111,7 @@ h5 {
   border-radius: 4px;
 }
 
-/* ─── Animations ──────────────────────────────────────────── */
+/* ─── Keyframes ───────────────────────────────────────────── */
 @keyframes fadeUp {
   from {
     opacity: 0;
@@ -105,6 +121,16 @@ h5 {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
@@ -146,6 +172,105 @@ h5 {
   }
 }
 
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 16px rgba(99, 102, 241, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
+}
+
+@keyframes pulse-wide {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes cooldown-sweep {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes signal-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chart-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+@keyframes slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes success-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Animation Utility Classes ───────────────────────────── */
 .animate-fade-up {
   animation: fadeUp 0.6s ease forwards;
 }
@@ -162,6 +287,26 @@ h5 {
   animation: fadeUp 0.6s 0.35s ease both;
 }
 
+.animate-fade-up-delay-4 {
+  animation: fadeUp 0.6s 0.5s ease both;
+}
+
+.animate-signal-arrive {
+  animation: signal-arrive 0.22s ease-out both;
+}
+
+.animate-slide-right {
+  animation: slide-right 0.22s ease-out both;
+}
+
+.animate-success-enter {
+  animation: success-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.chart-revealed {
+  animation: chart-reveal 0.6s ease-in-out forwards;
+}
+
 /* ─── Glass Card ──────────────────────────────────────────── */
 .glass-card {
   background: var(--glass-bg);
@@ -175,19 +320,24 @@ h5 {
 .glass-card:hover {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-strong);
+}
+
+.glass-card-interactive:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-strong);
   transform: translateY(-2px);
 }
 
 /* ─── Gradient Text ───────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #E0D7FF 0%, #A78BFA 40%, #7C5CF6 80%);
+  background: linear-gradient(135deg, #C7D2FE 0%, #818CF8 40%, #6366F1 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gradient-text-shimmer {
-  background: linear-gradient(90deg, #E0D7FF, #7C5CF6, #A78BFA, #7C5CF6, #E0D7FF);
+  background: linear-gradient(90deg, #C7D2FE, #6366F1, #818CF8, #6366F1, #C7D2FE);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -206,24 +356,24 @@ h5 {
   font-weight: 700;
   letter-spacing: -0.01em;
   border-radius: 100px;
-  border: 1px solid rgba(124, 92, 246, 0.5);
-  background: linear-gradient(135deg, #7C5CF6, #5E5CF6);
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
   color: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 0 0 0 rgba(124, 92, 246, 0);
   text-decoration: none;
   white-space: nowrap;
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px -6px rgba(124, 92, 246, 0.45);
-  background: linear-gradient(135deg, #8B6BF7, #6D6DF7);
+  box-shadow: 0 8px 25px -6px rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, #818CF8, #6366F1);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
 }
 
 .btn-ghost {
@@ -237,8 +387,7 @@ h5 {
   letter-spacing: -0.01em;
   border-radius: 100px;
   border: 1px solid var(--glass-border-strong);
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -247,13 +396,17 @@ h5 {
 }
 
 .btn-ghost:hover {
-  background: var(--glass-bg-hover);
+  background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.2);
   color: var(--text-primary);
   transform: translateY(-1px);
 }
 
-/* Small button variant */
+.btn-ghost:active {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(0);
+}
+
 .btn-sm {
   padding: 0.4rem 0.9rem;
   font-size: 0.8rem;
@@ -266,23 +419,23 @@ h5 {
   font-size: 0.875rem;
   font-family: var(--font-body);
   color: var(--text-primary);
-  background: var(--glass-bg);
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   outline: none;
-  transition: border-color 0.15s;
-  backdrop-filter: blur(8px);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .lx-input:focus {
   border-color: var(--border-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .lx-input::placeholder {
   color: var(--text-tertiary);
 }
 
-/* ─── Badge/Chip ──────────────────────────────────────────── */
+/* ─── Badge / Chip ────────────────────────────────────────── */
 .lx-badge {
   display: inline-flex;
   align-items: center;
@@ -299,7 +452,7 @@ h5 {
 }
 
 .lx-badge-live {
-  border-color: rgba(62, 207, 142, 0.3);
+  border-color: rgba(34, 197, 94, 0.3);
   background: var(--success-dim);
   color: var(--success);
 }
@@ -307,10 +460,10 @@ h5 {
 .lx-badge-accent {
   border-color: var(--border-accent);
   background: var(--accent-dim);
-  color: #A78BFA;
+  color: var(--accent-soft);
 }
 
-/* ─── Stats Number ────────────────────────────────────────── */
+/* ─── Stat Number ─────────────────────────────────────────── */
 .lx-stat-number {
   font-family: var(--font-display);
   font-size: 2rem;
@@ -322,6 +475,7 @@ h5 {
 
 /* ─── Section Label ───────────────────────────────────────── */
 .section-label {
+  font-family: var(--font-body);
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -335,7 +489,7 @@ h5 {
   background: var(--border);
 }
 
-/* ─── Nav Link hover ──────────────────────────────────────── */
+/* ─── Nav Link ────────────────────────────────────────────── */
 a.nav-link {
   color: var(--text-secondary);
   transition: color 0.15s;
@@ -348,7 +502,121 @@ a.nav-link:hover {
   color: var(--text-primary);
 }
 
-/* ─── Feature card hover ──────────────────────────────────── */
+/* ─── Feature/Pitch Card Link hover ──────────────────────── */
 a.feature-card-link:hover {
   background: var(--glass-bg-hover) !important;
+}
+
+/* ─── State Banner ────────────────────────────────────────── */
+.state-banner {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  flex-shrink: 0;
+}
+
+.state-banner-calm {
+  background: rgba(99, 102, 241, 0.04);
+  color: var(--text-tertiary);
+  border-bottom-color: var(--border);
+}
+
+.state-banner-watch {
+  background: rgba(245, 158, 11, 0.06);
+  color: var(--warning);
+  border-bottom-color: rgba(245, 158, 11, 0.15);
+}
+
+.state-banner-alert {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--danger);
+  border-bottom-color: rgba(239, 68, 68, 0.15);
+  animation: pulse-wide 2s ease-in-out infinite;
+}
+
+/* ─── Admin Rail ──────────────────────────────────────────── */
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 0.857rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+
+.admin-nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.admin-nav-item.active {
+  background: var(--accent-dim);
+  color: var(--accent-soft);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ─── Signal Row Entrance ─────────────────────────────────── */
+.signal-row-enter {
+  animation: signal-arrive 0.22s ease-out both;
+}
+
+/* ─── Rotated Label ───────────────────────────────────────── */
+.rotated-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  cursor: default;
+  transition: color 0.15s ease;
+  user-select: none;
+}
+
+.rotated-label:hover {
+  color: var(--accent);
+}
+
+/* ─── Pull Quote ──────────────────────────────────────────── */
+.pull-quote {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.25;
+  color: var(--text-primary);
+  border-left: 3px solid var(--accent);
+  padding-left: 1.25rem;
+}
+
+/* ─── Persona Panel transition ────────────────────────────── */
+.persona-panel {
+  animation: slide-right 0.2s ease-out both;
+}
+
+/* ─── Admin panel crossfade ───────────────────────────────── */
+.admin-panel-enter {
+  animation: slide-right 0.22s ease-out both;
 }
