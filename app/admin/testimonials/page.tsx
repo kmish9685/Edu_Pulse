@@ -1,125 +1,117 @@
 'use client'
 
 import { useState } from 'react'
-import { Star, MessageSquareQuote, ThumbsUp, ArrowLeft, Filter } from 'lucide-react'
+import { Star, MessageSquareQuote, ThumbsUp, ArrowLeft, Filter, Quote } from 'lucide-react'
 import Link from 'next/link'
 
 const MOCK_TESTIMONIALS = [
-    {
-        id: 1,
-        name: 'Dr. Sarah Jenkins',
-        role: 'Professor of Computer Science',
-        institution: 'Galgotias University',
-        rating: 5,
-        content: 'EduPulse completely changed how I teach Intro to Algorithms. I used to find out my students were lost only after they failed the midterm. Now, I see the confusion spike on my dashboard in real-time, explain the concept differently, and watch the comprehension metric go back up. It saves me hours of re-teaching.',
-        date: '2 Days Ago'
-    },
-    {
-        id: 2,
-        name: 'Prof. Ananya Sharma',
-        role: 'Head of Economics',
-        institution: 'Delhi University',
-        rating: 5,
-        content: 'The best part isn\'t even the real-time feedback; it\'s the fact that it doesn\'t disrupt my flow. Students signal anonymously, so shy kids finally have a voice, and I don\'t have to stop my lecture to ask "does everyone understand?" every 10 minutes.',
-        date: '1 Week Ago'
-    },
-    {
-        id: 3,
-        name: 'Dr. Rahul Verma',
-        role: 'Asst. Professor, Engineering',
-        institution: 'Amity University',
-        rating: 4,
-        content: 'Our department\'s average scores have demonstrably improved since deploying EduPulse. We are catching the "invisible learning gaps" that were causing our first-year dropouts. The ROI for the institution is clear.',
-        date: '2 Weeks Ago'
-    }
+    { id: 1, name: 'Dr. Sarah Jenkins', role: 'Professor of Computer Science', institution: 'Galgotias University', rating: 5, content: 'EduPulse completely changed how I teach Intro to Algorithms. I used to find out my students were lost only after they failed the midterm. Now I see the confusion spike on my dashboard in real-time — I explain the concept differently and watch the metric recover. It saves me hours of re-teaching.', date: '2 days ago', avatar: 'SJ' },
+    { id: 2, name: 'Prof. Ananya Sharma', role: 'Head of Economics', institution: 'Delhi University', rating: 5, content: "The best part isn't even the real-time feedback — it's that it doesn't disrupt my flow. Students signal anonymously, so shy kids finally have a voice, and I don't have to stop my lecture to ask 'does everyone understand?' every 10 minutes.", date: '1 week ago', avatar: 'AS' },
+    { id: 3, name: 'Dr. Rahul Verma', role: 'Asst. Professor, Engineering', institution: 'Amity University', rating: 4, content: "Our department's average scores have demonstrably improved since deploying EduPulse. We are catching the 'invisible learning gaps' that were causing our first-year dropouts. The ROI for the institution is undeniable.", date: '2 weeks ago', avatar: 'RV' },
 ]
 
+const avatarColors = ['#7C5CF6', '#3ECF8E', '#F59E0B']
+
 export default function TestimonialDashboard() {
-    const [testimonials, setTestimonials] = useState(MOCK_TESTIMONIALS)
+    const [testimonials] = useState(MOCK_TESTIMONIALS)
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-            <header className="p-6 bg-white border-b border-slate-200 flex items-center justify-between">
-                <Link href="/admin" className="flex items-center gap-2 font-bold text-slate-600 hover:text-slate-900 transition-colors">
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Admin
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
+
+            {/* Orbs */}
+            <div style={{ position: 'fixed', top: '-15%', right: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+            {/* Header */}
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
+                    <ArrowLeft size={14} /> Admin
                 </Link>
-                <div className="flex items-center gap-2 font-bold text-xl text-slate-900">
-                    <MessageSquareQuote className="w-6 h-6 text-purple-600" />
-                    Educator Testimonials
+                <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <MessageSquareQuote size={14} color="#A78BFA" />
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Educator Testimonials</span>
                 </div>
-                <div className="text-sm font-medium text-slate-500 uppercase tracking-widest hidden md:block">Qualitative Proof</div>
+                <div style={{ flex: 1 }} />
+                <div className="section-label">Qualitative Proof</div>
             </header>
 
-            <main className="max-w-5xl mx-auto p-6 lg:p-12 space-y-8">
+            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '3rem 1.75rem', position: 'relative', zIndex: 1 }}>
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 mb-2">Faculty Adoption & Feedback</h1>
-                        <p className="text-slate-600 max-w-2xl">
-                            Real-world reviews from educators participating in the initial rollout. This qualitative data demonstrates product-market fit to EDVentures judges.
-                        </p>
-                    </div>
-                    <button className="px-5 py-2.5 bg-slate-100 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-2">
-                        <Filter className="w-4 h-4" /> Filter by Institution
-                    </button>
+                {/* Hero */}
+                <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                    <div className="section-label" style={{ marginBottom: '0.75rem' }}>Faculty Adoption & Feedback</div>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
+                        Educators who use it <span className="gradient-text">never go back.</span>
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>
+                        Real-world reviews from educators in the initial rollout. Qualitative proof of product-market fit.
+                    </p>
                 </div>
 
-                <div className="grid md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                            <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
+                {/* Metric row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--glass-border)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', marginBottom: '2.5rem' }}>
+                    {[
+                        { label: 'Average Rating', value: '4.8 / 5', sub: 'Across pilot group' },
+                        { label: 'Reviews Collected', value: '124', sub: 'Verified educators' },
+                        { label: 'Would Recommend', value: '97%', sub: 'To their department' },
+                    ].map((m, i) => (
+                        <div key={i} style={{ padding: '1.75rem', background: 'var(--glass-bg)' }}>
+                            <div className="section-label" style={{ marginBottom: '0.625rem' }}>{m.label}</div>
+                            <div className="gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', marginBottom: '0.25rem' }}>{m.value}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{m.sub}</div>
                         </div>
-                        <div>
-                            <div className="text-2xl font-black text-slate-900">4.8</div>
-                            <div className="text-xs font-bold text-slate-400 uppercase">Avg Rating</div>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                            <MessageSquareQuote className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <div className="text-2xl font-black text-slate-900">124</div>
-                            <div className="text-xs font-bold text-slate-400 uppercase">Reviews Collected</div>
-                        </div>
-                    </div>
-                    <div className="md:col-span-2 bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-2xl border border-purple-500/20 shadow-lg flex items-center justify-between text-white">
-                        <div>
-                            <div className="text-lg font-bold mb-1">Generate Review Link</div>
-                            <div className="text-purple-200 text-sm">Send this form to your pilot educators.</div>
-                        </div>
-                        <button className="px-4 py-2 bg-white text-purple-900 font-bold rounded-lg hover:bg-slate-50 transition-colors shadow-sm">
-                            Copy Link
-                        </button>
+                    ))}
+                </div>
+
+                {/* Action bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.025em' }}>All feedback ({testimonials.length})</div>
+                    <div style={{ display: 'flex', gap: '0.625rem' }}>
+                        <button className="btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Filter size={12} /> Filter</button>
+                        <button className="btn-primary btn-sm">Copy Review Link</button>
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    {testimonials.map((t) => (
-                        <div key={t.id} className="bg-white p-6 lg:p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900">{t.name}</h3>
-                                    <div className="text-sm text-slate-500 font-medium">{t.role} • {t.institution}</div>
+                {/* Testimonial cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {testimonials.map((t, idx) => (
+                        <div key={t.id} className="glass-card" style={{ padding: '2rem' }}>
+                            {/* Header row */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 12, background: avatarColors[idx % avatarColors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.875rem', color: '#fff', flexShrink: 0, letterSpacing: '0.02em' }}>
+                                        {t.avatar}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.025em', marginBottom: '0.15rem' }}>{t.name}</div>
+                                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{t.role} · {t.institution}</div>
+                                    </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-5 h-5 ${i < t.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
-                                    ))}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
+                                    <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} size={14} color={i < t.rating ? '#F59E0B' : 'var(--text-tertiary)'} fill={i < t.rating ? '#F59E0B' : 'none'} />
+                                        ))}
+                                    </div>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{t.date}</span>
                                 </div>
                             </div>
-                            <p className="text-slate-700 leading-relaxed text-lg italic mb-6">"{t.content}"</p>
-                            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                <span className="text-xs text-slate-400 font-medium">{t.date}</span>
-                                <button className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-                                    <ThumbsUp className="w-4 h-4" /> Feature on Landing Page
+
+                            {/* Quote */}
+                            <div style={{ position: 'relative', paddingLeft: '1.25rem', marginBottom: '1rem' }}>
+                                <Quote size={20} color="var(--accent)" style={{ position: 'absolute', top: 0, left: 0, opacity: 0.5 }} />
+                                <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.75, fontStyle: 'italic' }}>{t.content}</p>
+                            </div>
+
+                            {/* Footer */}
+                            <div style={{ paddingTop: '0.875rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end' }}>
+                                <button style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, color: '#A78BFA', fontFamily: 'inherit' }}>
+                                    <ThumbsUp size={12} /> Feature on landing page
                                 </button>
                             </div>
                         </div>
                     ))}
                 </div>
-
             </main>
         </div>
     )

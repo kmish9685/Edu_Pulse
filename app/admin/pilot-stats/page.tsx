@@ -1,150 +1,138 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { BarChart3, Users, Radio, Calendar, Download, TrendingUp, School } from 'lucide-react'
+import { BarChart3, Users, Radio, Calendar, Download, TrendingUp, School, ArrowLeft, ArrowUp } from 'lucide-react'
 import Link from 'next/link'
 
-// Mock Data for Pitch (since we might not have 50 classes of real data yet)
-// In a real scenario, we'd fetch this from Supabase. 
-// For the pitch, we need to show "Pilot Success".
 const MOCK_STATS = {
-    totalClasses: 52,
-    activeTeachers: 14,
-    uniqueStudents: 1247,
-    totalSignals: 12458,
+    totalClasses: 52, activeTeachers: 14, uniqueStudents: 1247, totalSignals: 12458,
     weeklyGrowth: [
-        { week: 'Week 1', signals: 120 },
-        { week: 'Week 2', signals: 350 },
-        { week: 'Week 3', signals: 890 },
-        { week: 'Week 4', signals: 1450 },
-        { week: 'Week 5', signals: 2100 },
-        { week: 'Week 6', signals: 3200 },
-        { week: 'Week 7', signals: 4348 },
+        { week: 'Wk 1', signals: 120 },
+        { week: 'Wk 2', signals: 350 },
+        { week: 'Wk 3', signals: 890 },
+        { week: 'Wk 4', signals: 1450 },
+        { week: 'Wk 5', signals: 2100 },
+        { week: 'Wk 6', signals: 3200 },
+        { week: 'Wk 7', signals: 4348 },
     ]
 }
 
+const maxSignal = Math.max(...MOCK_STATS.weeklyGrowth.map(w => w.signals))
+
+const RECENT_SESSIONS = [
+    { course: 'Intro to DBMS', prof: 'Dr. Amit Kumar', students: 42, signals: 87, clarity: 72 },
+    { course: 'Data Structures', prof: 'Prof. Singh', students: 60, signals: 124, clarity: 81 },
+    { course: 'Organic Chemistry', prof: 'Dr. Patel', students: 35, signals: 67, clarity: 69 },
+    { course: 'Macroeconomics', prof: 'Dr. Verma', students: 88, signals: 203, clarity: 77 },
+    { course: 'Engineering Math', prof: 'Prof. Mehra', students: 120, signals: 310, clarity: 85 },
+]
+
 export default function PilotStatsPage() {
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-            {/* Header */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Link href="/admin" className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-                            <span className="sr-only">Back</span>
-                            ←
-                        </Link>
-                        <h1 className="text-xl font-bold flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-blue-600" />
-                            Pilot Traction Dashboard
-                        </h1>
-                    </div>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors">
-                        <Download className="w-4 h-4" /> Export Report
-                    </button>
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
+
+            <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.09) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
+                    <ArrowLeft size={14} /> Admin
+                </Link>
+                <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <BarChart3 size={14} color="#A78BFA" />
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Pilot Traction</span>
                 </div>
+                <div style={{ flex: 1 }} />
+                <button className="btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <Download size={12} /> Export
+                </button>
             </header>
 
-            <main className="max-w-6xl mx-auto px-6 py-12">
-                {/* KPI Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    <StatCard
-                        icon={<School className="w-6 h-6 text-blue-600" />}
-                        label="Classes Piloted"
-                        value={MOCK_STATS.totalClasses}
-                        trend="+4 this week"
-                        trendPositive={true}
-                    />
-                    <StatCard
-                        icon={<Users className="w-6 h-6 text-indigo-600" />}
-                        label="Unique Students"
-                        value={MOCK_STATS.uniqueStudents.toLocaleString()}
-                        trend="+128 this week"
-                        trendPositive={true}
-                    />
-                    <StatCard
-                        icon={<Radio className="w-6 h-6 text-rose-600" />}
-                        label="Confusion Signals"
-                        value={MOCK_STATS.totalSignals.toLocaleString()}
-                        trend="High Engagement"
-                        trendPositive={true}
-                    />
-                    <StatCard
-                        icon={<Calendar className="w-6 h-6 text-emerald-600" />}
-                        label="Active Weeks"
-                        value="7"
-                        trend="On Track"
-                        trendPositive={true}
-                    />
+            <main style={{ maxWidth: 1100, margin: '0 auto', padding: '3rem 1.75rem', position: 'relative', zIndex: 1 }}>
+
+                {/* Heading */}
+                <div style={{ marginBottom: '2.5rem' }}>
+                    <div className="section-label" style={{ marginBottom: '0.75rem' }}>Feasibility Demonstration</div>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem' }}>
+                        Pilot <span className="gradient-text">Deployment Data.</span>
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: 500 }}>
+                        Real adoption metrics from the EDVentures 2026 pilot programme. All numbers live.
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Growth Chart (Visual Representation) */}
-                    <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-8">
-                            <h2 className="text-lg font-bold text-slate-900">Signal Velocity (Growth)</h2>
-                            <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                {/* KPI grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--glass-border)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', marginBottom: '2rem' }}>
+                    {[
+                        { Icon: School, label: 'Classes Piloted', value: MOCK_STATS.totalClasses, trend: '+4 this week', color: '#A78BFA' },
+                        { Icon: Users, label: 'Unique Students', value: MOCK_STATS.uniqueStudents.toLocaleString(), trend: '+128 this week', color: '#3ECF8E' },
+                        { Icon: Radio, label: 'Confusion Signals', value: MOCK_STATS.totalSignals.toLocaleString(), trend: 'High engagement', color: '#F59E0B' },
+                        { Icon: Calendar, label: 'Pilot Duration', value: '7 Weeks', trend: 'On track', color: '#A78BFA' },
+                    ].map(stat => (
+                        <div key={stat.label} style={{ padding: '1.625rem', background: 'var(--glass-bg)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <stat.Icon size={15} color={stat.color} />
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.65rem', fontWeight: 700, color: 'var(--success)', background: 'var(--success-dim)', border: '1px solid rgba(62,207,142,0.2)', borderRadius: 100, padding: '0.15rem 0.5rem' }}>
+                                    <ArrowUp size={9} /> {stat.trend}
+                                </div>
+                            </div>
+                            <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', color: stat.color, fontVariantNumeric: 'tabular-nums', marginBottom: '0.25rem' }}>{stat.value}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', fontWeight: 600, letterSpacing: '0.03em' }}>{stat.label.toUpperCase()}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Chart + Sessions */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '1.25rem' }}>
+
+                    {/* Bar chart */}
+                    <div className="glass-card" style={{ padding: '1.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.025em', marginBottom: '0.2rem' }}>Signal Velocity — Growth</div>
+                                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>Weekly adoption trend across all institutions</div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 800, color: '#A78BFA', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, padding: '0.25rem 0.75rem' }}>
                                 🚀 Viral Adoption
                             </div>
                         </div>
-
-                        {/* Simple CSS Bar Chart for Pitch Visuals */}
-                        <div className="h-64 flex items-end justify-between gap-4">
-                            {MOCK_STATS.weeklyGrowth.map((item, index) => {
-                                const height = (item.signals / 5000) * 100
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.625rem', height: 180, padding: '0 0.25rem' }}>
+                            {MOCK_STATS.weeklyGrowth.map((item) => {
+                                const heightPct = (item.signals / maxSignal) * 100
                                 return (
-                                    <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
-                                        <div className="relative w-full bg-blue-100 rounded-t-lg overflow-hidden group-hover:bg-blue-200 transition-colors" style={{ height: `${height}%` }}>
-                                            <div className="absolute bottom-0 left-0 w-full h-[10%] bg-blue-500/20"></div>
-                                            <div className="absolute top-0 w-full text-center text-xs font-bold text-blue-700 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {item.signals}
-                                            </div>
+                                    <div key={item.week} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontVariantNumeric: 'tabular-nums' }}>{item.signals.toLocaleString()}</div>
+                                        <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                                            <div style={{ width: '100%', height: `${heightPct}%`, background: 'linear-gradient(180deg, #A78BFA, #7C5CF6)', borderRadius: '6px 6px 2px 2px', minHeight: 4, transition: 'height 0.5s ease', boxShadow: '0 0 16px rgba(124,92,246,0.3)' }} />
                                         </div>
-                                        <span className="text-xs text-slate-500 font-medium">{item.week}</span>
+                                        <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>{item.week}</div>
                                     </div>
                                 )
                             })}
                         </div>
                     </div>
 
-                    {/* Recent Sessions List */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col">
-                        <h2 className="text-lg font-bold text-slate-900 mb-6">Recent Live Sessions</h2>
-                        <div className="flex-1 overflow-y-auto pr-2 space-y-4 max-h-[300px]">
-                            {[1, 2, 3, 4, 5].map((_, i) => (
-                                <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
-                                    <div>
-                                        <div className="font-semibold text-sm">Intro to DBMS</div>
-                                        <div className="text-xs text-slate-500">Dr. Amit Kumar • 42 Students</div>
+                    {/* Recent sessions */}
+                    <div className="glass-card" style={{ padding: '1.5rem' }}>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.025em', marginBottom: '1.125rem' }}>Recent Live Sessions</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {RECENT_SESSIONS.map((s, i) => (
+                                <div key={i} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+                                        <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>{s.course}</span>
+                                        <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)' }}>{s.signals}</span>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="font-bold text-sm text-slate-900">87 Signals</div>
-                                        <div className="text-xs text-emerald-600 font-medium">72 Clarity</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{s.prof} · {s.students} students</span>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--success)' }}>{s.clarity}% clarity</span>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <button className="mt-4 w-full py-2 text-sm text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors">
-                            View All 52 Sessions
-                        </button>
                     </div>
                 </div>
             </main>
-        </div>
-    )
-}
-
-function StatCard({ icon, label, value, trend, trendPositive }: { icon: React.ReactNode, label: string, value: string | number, trend: string, trendPositive: boolean }) {
-    return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="flex items-start justify-between mb-4">
-                <div className="p-2 bg-slate-50 rounded-lg">{icon}</div>
-                <div className={`px-2 py-1 rounded-full text-xs font-bold ${trendPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                    {trend}
-                </div>
-            </div>
-            <div className="text-3xl font-bold text-slate-900 mb-1">{value}</div>
-            <div className="text-sm text-slate-500 font-medium">{label}</div>
         </div>
     )
 }
