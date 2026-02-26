@@ -2,8 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    // Forward pathname as a header so server layouts can read it
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
     let response = NextResponse.next({
-        request: { headers: request.headers },
+        request: { headers: requestHeaders },
     })
 
     const path = request.nextUrl.pathname
@@ -101,6 +105,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/educator/:path*'],
+    // Match BOTH the bare root (/admin, /educator/start) AND all sub-paths.
+    // '/admin/:path*' does NOT match '/admin' in Next.js — must list both.
+    matcher: [
+        '/admin',
+        '/admin/:path*',
+        '/educator',
+        '/educator/:path*',
+    ],
 }
 
