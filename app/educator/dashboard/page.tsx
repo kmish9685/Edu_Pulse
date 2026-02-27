@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
-import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles } from 'lucide-react'
+import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { endSession } from '@/app/actions/signals'
 
 // ─── State Banner ──────────────────────────────────────────────
 function StateBanner({ pulseValue }: { pulseValue: number }) {
@@ -42,6 +43,7 @@ function DashboardContent() {
     const [pulseValue, setPulseValue] = useState(0)
     const [totalSignals, setTotalSignals] = useState(0)
     const [chartRevealed, setChartRevealed] = useState(false)
+    const [ending, setEnding] = useState(false)
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -178,8 +180,17 @@ function DashboardContent() {
                 <button style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                     <Download size={12} /> Export
                 </button>
-                <button onClick={() => router.push('/educator/start')} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    <LogOut size={12} /> End
+                <button
+                    disabled={ending}
+                    onClick={async () => {
+                        if (!sessionId) { router.push('/educator/start'); return }
+                        setEnding(true)
+                        await endSession(sessionId)
+                        router.push('/educator/start')
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 700, cursor: ending ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: ending ? 0.7 : 1 }}
+                >
+                    {ending ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Ending…</> : <><LogOut size={12} /> End Session</>}
                 </button>
             </header>
 

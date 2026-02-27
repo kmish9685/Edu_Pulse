@@ -11,34 +11,26 @@ export async function middleware(request: NextRequest) {
     })
 
     const path = request.nextUrl.pathname
-    const isAdminRoute = path.startsWith('/admin')
-    const isEducatorRoute = path.startsWith('/educator')
-    const isAdminLogin = path === '/admin/login'
-    const isEducatorLogin = path === '/educator/login'
 
-    // Don't redirect the login pages themselves
-    if (isAdminLogin || isEducatorLogin) {
-        // If already logged in, redirect to proper dashboard
-        if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-            try {
-                const supabase = createServerClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-                    { cookies: { getAll() { return request.cookies.getAll() }, setAll() { } } }
-                )
-                const { data: { user } } = await supabase.auth.getUser()
-                if (user) {
-                    const { data: profile } = await supabase
-                        .from('profiles').select('role').eq('id', user.id).single()
-                    if (profile?.role === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
-                    if (profile?.role === 'educator') return NextResponse.redirect(new URL('/educator/start', request.url))
-                }
-            } catch { /* ignore */ }
-        }
+    // Public login pages — always allow through, no auth check
+    if (
+        path === '/admin/login' ||
+        path.startsWith('/admin/login/') ||
+        path === '/educator/login' ||
+        path.startsWith('/educator/login/')
+    ) {
         return response
     }
 
-    // Fail CLOSED if env vars missing
+    const isAdminRoute = path.startsWith('/admin')
+    const isEducatorRoute = path.startsWith('/educator')
+
+    // Only protect admin and educator routes
+    if (!isAdminRoute && !isEducatorRoute) {
+        return response
+    }
+
+    // Fail CLOSED — if Supabase not configured, block access
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
         if (isEducatorRoute) return NextResponse.redirect(new URL('/educator/login', request.url))
@@ -54,7 +46,7 @@ export async function middleware(request: NextRequest) {
                     getAll() { return request.cookies.getAll() },
                     setAll(cookiesToSet) {
                         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-                        response = NextResponse.next({ request })
+                        response = NextResponse.next({ request: { headers: requestHeaders } })
                         cookiesToSet.forEach(({ name, value, options }) =>
                             response.cookies.set(name, value, options)
                         )
@@ -65,7 +57,7 @@ export async function middleware(request: NextRequest) {
 
         const { data: { user } } = await supabase.auth.getUser()
 
-        // Unauthenticated — send to the correct login page for that route type
+        // No session → redirect to the correct login page
         if (!user) {
             if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
             if (isEducatorRoute) {
@@ -75,18 +67,18 @@ export async function middleware(request: NextRequest) {
             }
         }
 
-        // Role-based access for authenticated users
+        // Has session → enforce role-based access
         if (user) {
             const { data: profile } = await supabase
                 .from('profiles').select('role').eq('id', user.id).single()
             const role = profile?.role
 
-            // Wrong role for admin routes
             if (isAdminRoute && role !== 'admin') {
+                // Non-admin trying to access admin — send to their dashboard
                 return NextResponse.redirect(new URL('/educator/start', request.url))
             }
-            // Wrong role for educator routes
             if (isEducatorRoute && role !== 'educator' && role !== 'admin') {
+                // Non-educator/non-admin trying to access educator routes
                 return NextResponse.redirect(new URL('/', request.url))
             }
         }
@@ -105,8 +97,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // Match BOTH the bare root (/admin, /educator/start) AND all sub-paths.
-    // '/admin/:path*' does NOT match '/admin' in Next.js — must list both.
+    // Match BOTH the bare root (/admin, /educator) AND all sub-paths.
     matcher: [
         '/admin',
         '/admin/:path*',
@@ -114,4 +105,3 @@ export const config = {
         '/educator/:path*',
     ],
 }
-

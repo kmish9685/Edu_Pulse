@@ -1,55 +1,87 @@
 'use server'
 
+import { createAdminClient } from '@/utils/supabase/admin'
 import { createClient } from '@/utils/supabase/server'
 
-export async function createEducatorUser(email: string, password: string, _displayName: string) {
+export async function createEducatorUser(email: string, password: string, displayName: string) {
+    // Verify the caller is an admin
     const supabase = await createClient()
-
-    // Only admins can call this
     const { data: { user: caller } } = await supabase.auth.getUser()
     if (!caller) return { success: false, error: 'Not authenticated' }
 
     const { data: callerProfile } = await supabase
         .from('profiles').select('role').eq('id', caller.id).single()
-    if (callerProfile?.role !== 'admin') return { success: false, error: 'Unauthorized — admin only' }
-
-    // Create the auth user
-    const { data: newUserData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: undefined },
-    })
-
-    if (signUpError && !signUpError.message.includes('already registered')) {
-        return { success: false, error: signUpError.message }
+    if (callerProfile?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized — admin only' }
     }
 
-    const userId = newUserData?.user?.id
-    if (!userId) {
-        // User may already exist — try to find via API (limited by anon key, so return partial success)
-        return { success: false, error: 'User already registered. Please set role via Supabase dashboard.' }
-    }
+    // Use the admin client to create the user — this bypasses email confirmation entirely
+    try {
+        const adminClient = createAdminClient()
 
-    // Try RPC function (requires the set_user_role function in Supabase)
-    const { error: rpcError } = await supabase.rpc('set_user_role', {
-        target_user_id: userId,
-        new_role: 'educator',
-    })
+        const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,          // Mark email as already confirmed
+            user_metadata: { display_name: displayName },
+        })
 
-    if (rpcError) {
-        // Fallback: try direct upsert — will only succeed if RLS allows it or trigger created the row
-        const { error: upsertError } = await supabase
+        if (createError) {
+            return { success: false, error: createError.message }
+        }
+
+        if (!newUser?.user?.id) {
+            return { success: false, error: 'Failed to create user — no ID returned' }
+        }
+
+        const userId = newUser.user.id
+
+        // Insert into profiles table with educator role
+        const { error: profileError } = await adminClient
             .from('profiles')
-            .upsert({ id: userId, role: 'educator' })
+            .upsert({
+                id: userId,
+                role: 'educator',
+                display_name: displayName || email.split('@')[0],
+            })
 
-        if (upsertError) {
+        if (profileError) {
+            // User was created in auth but profile failed — return partial success with instructions
             return {
                 success: false,
-                error: `Auth user created (ID: ${userId.slice(0, 8)}…) but role not set. Run this in Supabase SQL: INSERT INTO profiles (id, role) VALUES ('${userId}', 'educator') ON CONFLICT (id) DO UPDATE SET role = 'educator';`
+                error: `User created (ID: ${userId.slice(0, 8)}…) but profile insert failed: ${profileError.message}. Run in Supabase SQL: INSERT INTO profiles (id, role, display_name) VALUES ('${userId}', 'educator', '${displayName}') ON CONFLICT (id) DO UPDATE SET role = 'educator';`
             }
         }
-    }
 
-    return { success: true, userId, email }
+        return { success: true, userId, email }
+    } catch (err: any) {
+        if (err.message?.includes('SUPABASE_SERVICE_ROLE_KEY')) {
+            return {
+                success: false,
+                error: 'Service role key not configured. Add SUPABASE_SERVICE_ROLE_KEY to your environment variables.'
+            }
+        }
+        return { success: false, error: err.message || 'Unknown error' }
+    }
 }
 
+export async function listEducators() {
+    const supabase = await createClient()
+    const { data: { user: caller } } = await supabase.auth.getUser()
+    if (!caller) return { success: false, error: 'Not authenticated', educators: [] }
+
+    const { data: callerProfile } = await supabase
+        .from('profiles').select('role').eq('id', caller.id).single()
+    if (callerProfile?.role !== 'admin') {
+        return { success: false, error: 'Unauthorized', educators: [] }
+    }
+
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('id, role, display_name, created_at')
+        .eq('role', 'educator')
+        .order('created_at', { ascending: false })
+
+    if (error) return { success: false, error: error.message, educators: [] }
+    return { success: true, educators: data || [] }
+}

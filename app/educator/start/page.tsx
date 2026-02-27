@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical } from 'lucide-react'
+import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { startSession } from '@/app/actions/signals'
 
 export default function EducatorStart() {
     const [sessionId, setSessionId] = useState('')
@@ -31,7 +32,19 @@ export default function EducatorStart() {
 
     const removeTopic = (i: number) => setAgenda(prev => prev.filter((_, idx) => idx !== i))
 
-    const handleStart = () => {
+    const [starting, setStarting] = useState(false)
+    const [startError, setStartError] = useState<string | null>(null)
+
+    const handleStart = async () => {
+        if (!sessionId) return
+        setStarting(true)
+        setStartError(null)
+        const res = await startSession(sessionId)
+        if (!res.success) {
+            setStartError(res.error || 'Failed to register session. Check your connection.')
+            setStarting(false)
+            return
+        }
         const agendaParam = encodeURIComponent(JSON.stringify(agenda))
         router.push(`/educator/dashboard?session=${sessionId}&agenda=${agendaParam}`)
     }
@@ -184,11 +197,16 @@ export default function EducatorStart() {
                         </div>
 
                         {/* Launch CTA */}
-                        <button onClick={handleStart} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.9rem', fontSize: '1rem', borderRadius: 12 }}>
-                            Initialize Dashboard <ArrowRight size={16} />
+                        {startError && (
+                            <div style={{ padding: '0.75rem', background: 'var(--danger-dim)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius)', fontSize: '0.8rem', color: 'var(--danger)', marginBottom: '0.75rem', lineHeight: 1.6 }}>
+                                {startError}
+                            </div>
+                        )}
+                        <button onClick={handleStart} disabled={starting || !sessionId} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '0.9rem', fontSize: '1rem', borderRadius: 12, opacity: starting ? 0.7 : 1 }}>
+                            {starting ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Registering session…</> : <>Initialize Dashboard <ArrowRight size={16} /></>}
                         </button>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textAlign: 'center', marginTop: '0.75rem' }}>
-                            You can start the session first and annotate topics live.
+                            Students can join as soon as the session starts.
                         </p>
                     </div>
                 </div>
