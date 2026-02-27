@@ -35,12 +35,12 @@ function LoginForm() {
             }
 
             if (res.role === 'admin') {
-                // If it's an admin, go to /admin or their intended redirect if it's an admin path
-                router.push(redirect.startsWith('/admin') ? redirect : '/admin')
+                window.location.href = redirect.startsWith('/admin') ? redirect : '/admin'
             } else {
-                router.push(redirect.startsWith('/admin') ? '/educator/start' : redirect)
+                window.location.href = redirect.startsWith('/admin') ? '/educator/start' : redirect
             }
-            router.refresh()
+            // window.location.href forces a hard reload, clearing the Next.js router cache
+            // and ensuring middleware runs fresh with the new cookies.
         } catch (err: any) {
             setError(err.message || 'Server connection failed. Try again.')
             setIsLoading(false)
