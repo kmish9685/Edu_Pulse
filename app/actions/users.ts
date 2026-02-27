@@ -42,14 +42,14 @@ export async function createEducatorUser(email: string, password: string, displa
             .upsert({
                 id: userId,
                 role: 'educator',
-                display_name: displayName || email.split('@')[0],
+                email: email,
             })
 
         if (profileError) {
             // User was created in auth but profile failed — return partial success with instructions
             return {
                 success: false,
-                error: `User created (ID: ${userId.slice(0, 8)}…) but profile insert failed: ${profileError.message}. Run in Supabase SQL: INSERT INTO profiles (id, role, display_name) VALUES ('${userId}', 'educator', '${displayName}') ON CONFLICT (id) DO UPDATE SET role = 'educator';`
+                error: `User created (ID: ${userId.slice(0, 8)}…) but profile insert failed: ${profileError.message}. Run in Supabase SQL: INSERT INTO profiles (id, role, email) VALUES ('${userId}', 'educator', '${email}') ON CONFLICT (id) DO UPDATE SET role = 'educator';`
             }
         }
 

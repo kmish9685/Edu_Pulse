@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Shield, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { loginWithEmail } from '@/app/actions/auth'
 
-export default function AdminLoginPage() {
+function LoginForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirect = searchParams.get('redirect') || '/educator/start'
 
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -21,12 +23,16 @@ export default function AdminLoginPage() {
         setError(null)
 
         try {
-            const res = await loginWithEmail(email, password, 'admin')
+            const res = await loginWithEmail(email, password, 'unified')
             if (!res.success) {
                 throw new Error(res.error || 'Authentication failed')
             }
 
-            router.push('/admin')
+            if (res.role === 'admin') {
+                router.push('/admin')
+            } else {
+                router.push(redirect === '/admin' ? '/educator/start' : redirect)
+            }
             router.refresh()
         } catch (err: any) {
             setError(err.message || 'Server connection failed. Try again.')
@@ -38,7 +44,7 @@ export default function AdminLoginPage() {
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.5rem', position: 'relative', overflow: 'hidden', fontFamily: 'var(--font-body)' }}>
 
             {/* Ambient orbs */}
-            <div style={{ position: 'fixed', top: '-15%', right: '-10%', width: '55%', height: '60%', background: 'radial-gradient(ellipse, rgba(239,68,68,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'fixed', top: '-15%', right: '-10%', width: '55%', height: '60%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'fixed', bottom: '-10%', left: '-5%', width: '40%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
             <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
@@ -46,16 +52,16 @@ export default function AdminLoginPage() {
                 {/* Logo */}
                 <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', marginBottom: '1.5rem' }}>
-                        <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#EF4444,#DC2626)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 22px rgba(239,68,68,0.25)' }}>
+                        <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 22px rgba(99,102,241,0.25)' }}>
                             <Shield size={17} color="#fff" />
                         </div>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.04em' }}>Admin Portal</span>
+                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.04em' }}>EduPulse</span>
                     </div>
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.045em', marginBottom: '0.5rem' }}>
-                        Administrator Access
+                        Portal Login
                     </h1>
                     <p style={{ fontSize: '0.857rem', color: 'var(--text-secondary)' }}>
-                        Restricted to verified institution administrators only.
+                        Sign in as an Educator or Administrator.
                     </p>
                 </div>
 
@@ -72,9 +78,9 @@ export default function AdminLoginPage() {
                     <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <div>
                             <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                Admin Email
+                                Email
                             </label>
-                            <input type="email" id="admin-email" className="lx-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@institution.edu" required autoComplete="email" />
+                            <input type="email" id="email" className="lx-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="contact@institution.edu" required autoComplete="email" />
                         </div>
 
                         <div>
@@ -82,31 +88,31 @@ export default function AdminLoginPage() {
                                 Password
                             </label>
                             <div style={{ position: 'relative' }}>
-                                <input type={showPwd ? 'text' : 'password'} id="admin-password" className="lx-input" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required autoComplete="current-password" style={{ paddingRight: '2.75rem' }} />
+                                <input type={showPwd ? 'text' : 'password'} id="password" className="lx-input" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required autoComplete="current-password" style={{ paddingRight: '2.75rem' }} />
                                 <button type="button" onClick={() => setShowPwd(v => !v)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', padding: 0 }}>
                                     {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
                                 </button>
                             </div>
                         </div>
 
-                        <button type="submit" disabled={isLoading} className="btn-primary" style={{ justifyContent: 'center', padding: '0.8rem', borderRadius: 10, marginTop: '0.375rem', width: '100%', background: isLoading ? undefined : '#DC2626', boxShadow: '0 0 0 0 rgba(239,68,68,0)', opacity: isLoading ? 0.7 : 1 }}>
-                            {isLoading ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Verifying...</> : 'Access Admin Panel'}
+                        <button type="submit" disabled={isLoading} className="btn-primary" style={{ justifyContent: 'center', padding: '0.8rem', borderRadius: 10, marginTop: '0.375rem', width: '100%', opacity: isLoading ? 0.7 : 1 }}>
+                            {isLoading ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Authenticating...</> : 'Sign In'}
                         </button>
                     </form>
                 </div>
 
-                {/* Sep educator link */}
-                <div style={{ marginTop: '1.25rem', textAlign: 'center' }}>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-                        Educator?{' '}
-                        <Link href="/educator/login" style={{ color: 'var(--accent-soft)', textDecoration: 'none', fontWeight: 600 }}>Sign in here instead →</Link>
-                    </p>
-                </div>
-
-                <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+                <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
                     <Link href="/" style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', textDecoration: 'none' }}>← Back to Home</Link>
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function AdminLoginPage() {
+    return (
+        <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)' }}><Loader2 className="animate-spin text-indigo-500" /></div>}>
+            <LoginForm />
+        </Suspense>
     )
 }

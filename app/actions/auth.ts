@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 
-export async function loginWithEmail(email: string, password: string, requestedRole: 'admin' | 'educator') {
+export async function loginWithEmail(email: string, password: string, requestedRole: 'admin' | 'educator' | 'unified') {
     const supabase = await createClient()
 
     try {
@@ -29,7 +29,13 @@ export async function loginWithEmail(email: string, password: string, requestedR
             return { success: false, error: 'Access denied. Administrator privileges required.' }
         }
 
-        if (requestedRole === 'educator' && profile.role !== 'educator' && profile.role !== 'admin') {
+        // If requested role is 'unified', accept either admin or educator
+        if (requestedRole === 'unified') {
+            if (profile.role !== 'admin' && profile.role !== 'educator') {
+                await supabase.auth.signOut()
+                return { success: false, error: 'Access denied. You do not have valid access.' }
+            }
+        } else if (requestedRole === 'educator' && profile.role !== 'educator' && profile.role !== 'admin') {
             await supabase.auth.signOut()
             return { success: false, error: 'Access denied. Educator privileges required.' }
         }
