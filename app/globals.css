@@ -617,3 +617,37 @@ a.feature-card-link:hover {
 .admin-panel-enter {
   animation: slide-right 0.22s ease-out both;
 }
+
+/* ─── Responsive Layouts ────────────────────────────────────── */
+.admin-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: calc(100vh - 52px);
+}
+
+.educator-layout {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 272px;
+  grid-template-rows: auto 1fr;
+  gap: 1.25rem;
+  overflow: auto;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: calc(100vh - 52px);
+  }
+
+  .educator-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+}

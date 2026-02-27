@@ -182,9 +182,9 @@ function DashboardContent() {
                         }
                         setEnding(true)
                         await endSession(sessionId)
-                        const { signOut } = await import('@/app/actions/auth')
-                        await signOut()
-                        window.location.href = '/'
+                        // Pass agenda to the summary page for context
+                        const agendaParam = encodeURIComponent(JSON.stringify(agenda))
+                        router.push(`/educator/summary/${sessionId}?agenda=${agendaParam}`)
                     }}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 700, cursor: ending ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: ending ? 0.7 : 1 }}
                 >
@@ -196,7 +196,7 @@ function DashboardContent() {
             <StateBanner pulseValue={pulseValue} />
 
             {/* Main dashboard grid */}
-            <main style={{ flex: 1, padding: '1.25rem 1.5rem', display: 'grid', gridTemplateColumns: '1fr 272px', gridTemplateRows: 'auto 1fr', gap: '1.25rem', overflow: 'auto', position: 'relative', zIndex: 1 }}>
+            <main className="educator-layout">
 
                 {/* Chart card */}
                 <div className="glass-card" style={{ gridColumn: 1, gridRow: 1, padding: '1.5rem', overflow: 'hidden' }}>

@@ -210,7 +210,7 @@ export default function AdminPage() {
             </header>
 
             {/* Split layout: left rail + right panel */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '240px 1fr', height: 'calc(100vh - 52px)' }}>
+            <div className="admin-layout">
 
                 {/* ── Left Rail ─────────────────────────────────────── */}
                 <aside style={{ borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', overflow: 'hidden' }}>

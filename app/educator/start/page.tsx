@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2 } from 'lucide-react'
+import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { startSession } from '@/app/actions/signals'
+import { generateAgenda } from '@/app/actions/ai'
 
 export default function EducatorStart() {
     const [sessionId, setSessionId] = useState('')
@@ -14,6 +15,8 @@ export default function EducatorStart() {
     const [agenda, setAgenda] = useState<string[]>([])
     const [dragIdx, setDragIdx] = useState<number | null>(null)
     const [copyDone, setCopyDone] = useState(false)
+    const [generatingAgenda, setGeneratingAgenda] = useState(false)
+    const [agendaError, setAgendaError] = useState<string | null>(null)
     const router = useRouter()
 
     useEffect(() => {
@@ -31,6 +34,33 @@ export default function EducatorStart() {
     }
 
     const removeTopic = (i: number) => setAgenda(prev => prev.filter((_, idx) => idx !== i))
+
+    const handleGenerateAgenda = async () => {
+        const t = agendaInput.trim()
+        if (!t) {
+            setAgendaError('Please enter a broad topic in the box first (e.g., "Photosynthesis")')
+            setTimeout(() => setAgendaError(null), 3000)
+            return
+        }
+        setGeneratingAgenda(true)
+        setAgendaError(null)
+
+        try {
+            const res = await generateAgenda(t)
+            if (res.success && res.data) {
+                setAgenda(prev => [...prev, ...res.data!])
+                setAgendaInput('')
+            } else {
+                setAgendaError(res.error || 'Failed to generate agenda.')
+                setTimeout(() => setAgendaError(null), 3000)
+            }
+        } catch (e: any) {
+            setAgendaError('Error connecting to AI.')
+            setTimeout(() => setAgendaError(null), 3000)
+        } finally {
+            setGeneratingAgenda(false)
+        }
+    }
 
     const [starting, setStarting] = useState(false)
     const [startError, setStartError] = useState<string | null>(null)
@@ -151,11 +181,37 @@ export default function EducatorStart() {
                                     onChange={e => setAgendaInput(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && addTopic()}
                                     placeholder="e.g. Introduction to Recursion"
+                                    disabled={generatingAgenda}
                                 />
-                                <button onClick={addTopic} className="btn-ghost btn-sm" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <button disabled={generatingAgenda} onClick={addTopic} className="btn-ghost btn-sm" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <Plus size={13} /> Add
                                 </button>
+                                <button
+                                    disabled={generatingAgenda}
+                                    onClick={handleGenerateAgenda}
+                                    className="btn-sm"
+                                    style={{
+                                        flexShrink: 0,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.375rem',
+                                        background: 'rgba(99,102,241,0.1)',
+                                        color: 'var(--accent)',
+                                        border: '1px solid rgba(99,102,241,0.2)',
+                                        borderRadius: 'var(--radius)',
+                                        fontWeight: 600,
+                                        cursor: generatingAgenda ? 'wait' : 'pointer'
+                                    }}
+                                >
+                                    {generatingAgenda ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={13} />}
+                                    {generatingAgenda ? 'Thinking...' : 'AI Auto-Fill'}
+                                </button>
                             </div>
+                            {agendaError && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.875rem', marginTop: '-0.375rem' }}>
+                                    {agendaError}
+                                </div>
+                            )}
 
                             {/* Agenda list */}
                             <div className="glass-card" style={{ padding: 0, overflow: 'hidden', minHeight: agenda.length === 0 ? 80 : 'auto' }}>
