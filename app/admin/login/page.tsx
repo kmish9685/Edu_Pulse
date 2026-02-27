@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
         } catch (err: any) {
             const msg = err.message || 'Authentication failed'
             if (msg.includes('Missing Supabase') || msg.includes('Failed to fetch')) {
-                setError('Cannot connect to the server. Check that NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your Vercel environment variables, then redeploy.')
+                setError(`Cannot connect to the server (Error: ${msg}). Check Vercel env vars and redeploy.`)
             } else {
                 setError(msg)
             }

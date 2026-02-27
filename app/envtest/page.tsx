@@ -1,3 +1,5 @@
+'use client'
+
 export default function EnvTest() {
     return (
         <div style={{ padding: '2rem', fontFamily: 'monospace' }}>
