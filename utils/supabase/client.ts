@@ -11,5 +11,11 @@ export function createClient() {
         )
     }
 
-    return createBrowserClient(url, key)
+    // If we're on the client (browser), we MUST route through our own domain's proxy
+    // to bypass ISP/DNS blocks (like Jio in India blocking .supabase.co).
+    // The next.config.ts rewrites this path to the actual Supabase server.
+    const isBrowser = typeof window !== 'undefined'
+    const finalUrl = isBrowser ? `${window.location.origin}/supabase-api` : url
+
+    return createBrowserClient(finalUrl, key)
 }

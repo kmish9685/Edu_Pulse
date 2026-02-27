@@ -15,7 +15,12 @@ export function createAdminClient() {
         )
     }
 
-    return createClient(url, serviceRoleKey, {
+    // Admin client is server-only, but just to be 100% safe with edge runtimes
+    // we route through the same proxy if there's any weird DNS hijacking anywhere.
+    const isBrowser = typeof window !== 'undefined'
+    const finalUrl = isBrowser ? `${window.location.origin}/supabase-api` : url
+
+    return createClient(finalUrl, serviceRoleKey, {
         auth: {
             autoRefreshToken: false,
             persistSession: false,
