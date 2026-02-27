@@ -8,7 +8,6 @@ import { createClient } from '@/utils/supabase/client'
 
 export default function AdminLoginPage() {
     const router = useRouter()
-    const supabase = createClient()
 
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -22,6 +21,7 @@ export default function AdminLoginPage() {
         setError(null)
 
         try {
+            const supabase = createClient()
             const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password })
             if (authError) throw authError
             if (!user) throw new Error('No user returned')
@@ -37,7 +37,12 @@ export default function AdminLoginPage() {
             router.push('/admin')
             router.refresh()
         } catch (err: any) {
-            setError(err.message || 'Authentication failed')
+            const msg = err.message || 'Authentication failed'
+            if (msg.includes('Missing Supabase') || msg.includes('Failed to fetch')) {
+                setError('Cannot connect to the server. Check that NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your Vercel environment variables, then redeploy.')
+            } else {
+                setError(msg)
+            }
             setIsLoading(false)
         }
     }
