@@ -25,9 +25,10 @@ export async function generateAgenda(topic: string): Promise<{ success: boolean;
 
         const prompt = `You are an expert educator. The user is teaching a class on the topic: "${topic}".
 Generate a concise, logical agenda of 3 to 5 subtopics. 
-Return ONLY a valid JSON array of strings, where each string is a subtopic. 
+Assume a slow, deliberate teaching pace to ensure students fully understand before moving on. For each subtopic, estimate the time it would take in minutes.
+Return ONLY a valid JSON array of strings, where each string contains the subtopic followed by the duration in parentheses, like "(Xm)".
 Do not include any Markdown formatting like \`\`\`json. Only return the raw JSON array.
-Example: ["Introduction to concept", "Core principles", "Real-world examples", "Q&A"]`;
+Example: ["Introduction to concept (10m)", "Core principles (25m)", "Real-world examples (15m)", "Q&A (10m)"]`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
-import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles, Loader2 } from 'lucide-react'
+import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles, Loader2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -127,6 +127,38 @@ function DashboardContent() {
     const isWatchLoad = pulseValue >= 15 && pulseValue < 30
     const currentTopic = currentTopicIndex < agenda.length ? agenda[currentTopicIndex] : null
 
+    // Auto-advance logic based on AI time estimation (e.g. "Topic Name (15m)")
+    const [timeLeft, setTimeLeft] = useState<number | null>(null)
+
+    useEffect(() => {
+        if (currentTopicIndex >= agenda.length || !agenda[currentTopicIndex]) {
+            setTimeLeft(null)
+            return
+        }
+
+        const topicStr = agenda[currentTopicIndex]
+        const match = topicStr.match(/\((\d+)m\)$/i)
+
+        if (match) {
+            const minutes = parseInt(match[1])
+            let seconds = minutes * 60
+            setTimeLeft(seconds)
+
+            const interval = setInterval(() => {
+                seconds--
+                setTimeLeft(seconds)
+                if (seconds <= 0) {
+                    clearInterval(interval)
+                    setCurrentTopicIndex(prev => prev + 1)
+                }
+            }, 1000)
+
+            return () => clearInterval(interval)
+        } else {
+            setTimeLeft(null) // Manual mode if no time detected
+        }
+    }, [currentTopicIndex, agenda])
+
     const pulseColor = isHighLoad ? 'var(--danger)' : isWatchLoad ? 'var(--warning)' : 'var(--text-primary)'
     const barColor = isHighLoad
         ? 'linear-gradient(90deg, var(--danger), #FF8080)'
@@ -160,12 +192,21 @@ function DashboardContent() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.875rem', borderLeft: '1px solid var(--border)', height: 34, marginLeft: '0.25rem' }}>
                         <Tag size={12} color="var(--accent-soft)" />
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {currentTopic || <span style={{ color: 'var(--text-tertiary)' }}>All topics complete</span>}
+                            {currentTopic ? currentTopic.replace(/\s*\(\d+m\)$/, '') : <span style={{ color: 'var(--text-tertiary)' }}>All topics complete</span>}
                         </span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{Math.min(currentTopicIndex, agenda.length)}/{agenda.length}</span>
+
+                        {/* Auto-advance timer */}
+                        {timeLeft !== null && (
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: timeLeft < 60 ? 'var(--warning)' : 'var(--success)', background: timeLeft < 60 ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Clock size={10} />
+                                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                            </span>
+                        )}
+
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{Math.min(currentTopicIndex + 1, agenda.length)}/{agenda.length}</span>
                         <button onClick={advanceTopic} disabled={currentTopicIndex >= agenda.length}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', padding: '0.25rem 0.625rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: currentTopicIndex >= agenda.length ? 'not-allowed' : 'pointer', opacity: currentTopicIndex >= agenda.length ? 0.4 : 1, fontFamily: 'inherit' }}>
-                            Next <ChevronRight size={11} />
+                            {timeLeft !== null ? 'Skip' : 'Next'} <ChevronRight size={11} />
                         </button>
                     </div>
                 )}
