@@ -43,9 +43,11 @@ export async function createEducatorUser(email: string, password: string, displa
                 id: userId,
                 role: 'educator',
                 email: email,
+                display_name: displayName,
             })
 
         if (profileError) {
+            console.error('Profile Insert Error:', profileError)
             // User was created in auth but profile failed — return partial success with instructions
             return {
                 success: false,
@@ -76,12 +78,22 @@ export async function listEducators() {
         return { success: false, error: 'Unauthorized', educators: [] }
     }
 
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('id, role, display_name, created_at')
-        .eq('role', 'educator')
-        .order('created_at', { ascending: false })
+    try {
+        const adminClient = createAdminClient()
+        const { data, error } = await adminClient
+            .from('profiles')
+            .select('id, role, display_name, email, created_at')
+            .eq('role', 'educator')
+            .order('created_at', { ascending: false })
 
-    if (error) return { success: false, error: error.message, educators: [] }
-    return { success: true, educators: data || [] }
+        if (error) {
+            console.error('List Educators Error:', error)
+            return { success: false, error: error.message, educators: [] }
+        }
+
+        return { success: true, educators: data || [] }
+    } catch (e: any) {
+        console.error('List Educators Exception:', e)
+        return { success: false, error: e.message, educators: [] }
+    }
 }
