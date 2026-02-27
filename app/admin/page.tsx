@@ -79,15 +79,30 @@ export default function AdminPage() {
                 window.location.href = '/admin/login'
                 return
             }
-            const { data: profile } = await supabase
-                .from('profiles').select('role').eq('id', user.id).single()
-            if (profile?.role !== 'admin') {
-                window.location.href = '/admin/login?error=admin_required'
-                return
+
+            // Look for the role in user metadata first (set by JWT)
+            // or fallback to checking the profile if not present.
+            const userRole = user.user_metadata?.role
+
+            if (userRole === 'admin') {
+                // Role confirmed via JWT
+                fetchSignalTypes()
+                fetchRealMetrics()
+                fetchEducators()
+            } else {
+                // Fallback check against profiles table if JWT doesn't have it
+                const { data: profile } = await supabase
+                    .from('profiles').select('role').eq('id', user.id).single()
+
+                if (profile?.role !== 'admin') {
+                    window.location.href = '/admin/login?error=admin_required'
+                    return
+                }
+
+                fetchSignalTypes()
+                fetchRealMetrics()
+                fetchEducators()
             }
-            fetchSignalTypes()
-            fetchRealMetrics()
-            fetchEducators()
         }
 
         checkAuth()
