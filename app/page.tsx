@@ -110,10 +110,9 @@ export default function Home() {
             <Link href="/how-it-works" className="nav-link">How It Works</Link>
             <Link href="/pitch/comparison" className="nav-link">Compare</Link>
             <Link href="/pitch/roi-calculator" className="nav-link">ROI</Link>
-            <Link href="/admin" className="nav-link">Admin</Link>
-            <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
-            <Link href="/admin/login" className="nav-link" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Login</Link>
-            <Link href="/join/demo" className="btn-primary btn-sm">Try as Student</Link>
+            <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 0.25rem' }} />
+            <Link href="/admin/login" className="btn-primary btn-sm" style={{ padding: '0.4rem 1rem' }}>Enter Portal</Link>
+            <Link href="/join/demo" className="btn-ghost btn-sm">Try as Student</Link>
           </nav>
         </div>
       </header>
@@ -162,7 +161,7 @@ export default function Home() {
             {/* CTAs */}
             <div className="animate-fade-up-delay-2" style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '3rem' }}>
               <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
-                Start a Free Session <ArrowRight size={16} />
+                Enter Portal <ArrowRight size={16} />
               </Link>
               <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem' }}>
                 See How It Works

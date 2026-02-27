@@ -73,9 +73,24 @@ export default function AdminPage() {
     const supabase = createClient()
 
     useEffect(() => {
-        fetchSignalTypes()
-        fetchRealMetrics()
-        fetchEducators()
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) {
+                window.location.href = '/admin/login'
+                return
+            }
+            const { data: profile } = await supabase
+                .from('profiles').select('role').eq('id', user.id).single()
+            if (profile?.role !== 'admin') {
+                window.location.href = '/admin/login?error=admin_required'
+                return
+            }
+            fetchSignalTypes()
+            fetchRealMetrics()
+            fetchEducators()
+        }
+
+        checkAuth()
         const interval = setInterval(fetchRealMetrics, 10000)
         return () => clearInterval(interval)
     }, [])
