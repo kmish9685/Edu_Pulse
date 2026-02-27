@@ -160,6 +160,18 @@ export default function AdminPage() {
                     <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Admin</span>
                 </div>
                 <div style={{ flex: 1 }} />
+                <button
+                    onClick={async () => {
+                        const { signOut } = await import('@/app/actions/auth')
+                        await signOut()
+                        window.location.href = '/'
+                    }}
+                    style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, marginRight: '1rem', transition: 'color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--danger)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+                >
+                    Log Out
+                </button>
                 <Link href="/" style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}>

@@ -77,8 +77,10 @@ export async function middleware(request: NextRequest) {
             const role = profile?.role
 
             if (isAdminRoute && role !== 'admin') {
-                // Non-admin trying to access admin — send to their dashboard
-                return NextResponse.redirect(new URL('/educator/start', request.url))
+                // Non-admin trying to access admin — send to login with error
+                const loginUrl = new URL('/admin/login', request.url)
+                loginUrl.searchParams.set('error', 'admin_required')
+                return NextResponse.redirect(loginUrl)
             }
             if (isEducatorRoute && role !== 'educator' && role !== 'admin') {
                 // Non-educator/non-admin trying to access educator routes

@@ -93,11 +93,6 @@ export default function EducatorStart() {
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', fontWeight: 500 }}>New Session</span>
                 <div style={{ flex: 1 }} />
-                <Link href="/admin" style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}>
-                    ← Admin
-                </Link>
             </header>
 
             <div style={{ position: 'relative', zIndex: 1, maxWidth: 1080, margin: '0 auto', padding: '4rem 1.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3.5rem', alignItems: 'start' }}>

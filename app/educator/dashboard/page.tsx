@@ -171,45 +171,24 @@ function DashboardContent() {
                 )}
 
                 <div style={{ flex: 1 }} />
-
-                {/* Right controls */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--success)', padding: '0.3rem 0.75rem', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
-                    Live
-                </div>
-                <button
-                    onClick={() => {
-                        if (recentSignals.length === 0) {
-                            alert('No signals to export yet.');
-                            return;
-                        }
-                        const csvHeader = 'Time,Type\n';
-                        const csvRows = recentSignals.map(s => `${new Date(s.created_at).toLocaleTimeString()},"${s.type}"`).join('\n');
-                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = `EduPulse_Session_${sessionId}_Export.csv`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                    }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
-                    <Download size={12} /> Export
-                </button>
                 <button
                     disabled={ending}
                     onClick={async () => {
-                        if (!sessionId) { router.push('/educator/start'); return }
+                        if (!sessionId) {
+                            const { signOut } = await import('@/app/actions/auth')
+                            await signOut()
+                            window.location.href = '/'
+                            return
+                        }
                         setEnding(true)
                         await endSession(sessionId)
-                        router.push('/educator/start')
+                        const { signOut } = await import('@/app/actions/auth')
+                        await signOut()
+                        window.location.href = '/'
                     }}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 700, cursor: ending ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: ending ? 0.7 : 1 }}
                 >
-                    {ending ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Ending…</> : <><LogOut size={12} /> End Session</>}
+                    {ending ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Ending Session…</> : <><LogOut size={12} /> End Session</>}
                 </button>
             </header>
 

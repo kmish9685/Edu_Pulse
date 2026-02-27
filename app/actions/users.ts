@@ -48,10 +48,16 @@ export async function createEducatorUser(email: string, password: string, displa
 
         if (profileError) {
             console.error('Profile Insert Error:', profileError)
-            // User was created in auth but profile failed — return partial success with instructions
+
+            let suggestion = `INSERT INTO profiles (id, role, email, display_name) VALUES ('${userId}', 'educator', '${email}', '${displayName}') ON CONFLICT (id) DO UPDATE SET role = 'educator', display_name = '${displayName}';`
+
+            if (profileError.message.includes('display_name')) {
+                suggestion = `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS display_name TEXT; \n\nThen run original insert: \n${suggestion}`
+            }
+
             return {
                 success: false,
-                error: `User created (ID: ${userId.slice(0, 8)}…) but profile insert failed: ${profileError.message}. Run in Supabase SQL: INSERT INTO profiles (id, role, email) VALUES ('${userId}', 'educator', '${email}') ON CONFLICT (id) DO UPDATE SET role = 'educator';`
+                error: `User created (ID: ${userId.slice(0, 8)}…) but profile insert failed: ${profileError.message}. \n\nRun in Supabase SQL: \n${suggestion}`
             }
         }
 

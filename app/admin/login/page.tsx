@@ -10,9 +10,15 @@ function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const redirect = searchParams.get('redirect') || '/educator/start'
+    const errorParam = searchParams.get('error')
 
     const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(
+        errorParam === 'admin_required'
+            ? 'Administrator privileges required. Please sign in with an admin account.'
+            : null
+    )
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPwd, setShowPwd] = useState(false)
@@ -29,9 +35,10 @@ function LoginForm() {
             }
 
             if (res.role === 'admin') {
-                router.push('/admin')
+                // If it's an admin, go to /admin or their intended redirect if it's an admin path
+                router.push(redirect.startsWith('/admin') ? redirect : '/admin')
             } else {
-                router.push(redirect === '/admin' ? '/educator/start' : redirect)
+                router.push(redirect.startsWith('/admin') ? '/educator/start' : redirect)
             }
             router.refresh()
         } catch (err: any) {

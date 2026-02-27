@@ -53,3 +53,7 @@ export async function loginWithEmail(email: string, password: string, requestedR
         return { success: false, error: e.message || 'Server-side authentication failed.' }
     }
 }
+export async function signOut() {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+}
