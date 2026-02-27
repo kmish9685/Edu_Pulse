@@ -177,7 +177,26 @@ function DashboardContent() {
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
                     Live
                 </div>
-                <button style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                <button
+                    onClick={() => {
+                        if (recentSignals.length === 0) {
+                            alert('No signals to export yet.');
+                            return;
+                        }
+                        const csvHeader = 'Time,Type\n';
+                        const csvRows = recentSignals.map(s => `${new Date(s.created_at).toLocaleTimeString()},"${s.type}"`).join('\n');
+                        const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `EduPulse_Session_${sessionId}_Export.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>
                     <Download size={12} /> Export
                 </button>
                 <button

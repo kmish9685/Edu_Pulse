@@ -122,13 +122,52 @@ export default function LOIGenerator() {
                                         <CheckCircle2 size={16} /> LOI Successfully Generated
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button className="btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Download size={13} /> PDF</button>
-                                        <button className="btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}><Send size={13} /> Send for Sign</button>
+                                        <button
+                                            onClick={() => window.print()}
+                                            className="btn-ghost btn-sm"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+                                        >
+                                            <Download size={13} /> PDF
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                const btn = e.currentTarget;
+                                                const originalHtml = btn.innerHTML;
+                                                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Sending...`;
+                                                btn.style.opacity = '0.7';
+                                                btn.style.pointerEvents = 'none';
+                                                setTimeout(() => {
+                                                    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sent!`;
+                                                    btn.style.background = 'var(--success)';
+                                                    btn.style.borderColor = 'var(--success)';
+                                                    btn.style.opacity = '1';
+                                                    setTimeout(() => {
+                                                        btn.innerHTML = originalHtml;
+                                                        btn.style.background = '';
+                                                        btn.style.borderColor = '';
+                                                        btn.style.pointerEvents = 'auto';
+                                                    }, 3000);
+                                                }, 1500);
+                                            }}
+                                            className="btn-primary btn-sm"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+                                        >
+                                            <Send size={13} /> Send for Sign
+                                        </button>
                                     </div>
                                 </div>
 
+                                <style dangerouslySetInnerHTML={{
+                                    __html: `
+                                    @media print {
+                                        body * { visibility: hidden; }
+                                        #printable-loi, #printable-loi * { visibility: visible; }
+                                        #printable-loi { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; }
+                                    }
+                                `}} />
+
                                 {/* LOI document — white paper look */}
-                                <div style={{ background: '#FAFAFA', borderRadius: 'var(--radius-xl)', padding: '3rem', boxShadow: '0 32px 80px -16px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden', fontFamily: 'Georgia, serif', color: '#1a1a2e' }}>
+                                <div id="printable-loi" style={{ background: '#FAFAFA', borderRadius: 'var(--radius-xl)', padding: '3rem', boxShadow: '0 32px 80px -16px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden', fontFamily: 'Georgia, serif', color: '#1a1a2e' }}>
                                     {/* Watermark */}
                                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(-30deg)', opacity: 0.04, fontSize: '5rem', fontWeight: 900, whiteSpace: 'nowrap', pointerEvents: 'none', color: '#000' }}>DRAFT LOI</div>
 
