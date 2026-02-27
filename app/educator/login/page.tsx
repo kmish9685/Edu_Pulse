@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Zap, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { loginWithEmail } from '@/app/actions/auth'
 import { Suspense } from 'react'
 
 function LoginForm() {
@@ -24,28 +24,18 @@ function LoginForm() {
         setError(null)
 
         try {
-            const supabase = createClient()
-            const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password })
-            if (authError) throw authError
-            if (!user) throw new Error('No user returned')
+            const res = await loginWithEmail(email, password, 'educator')
 
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles').select('role').eq('id', user.id).single()
+            if (!res.success) {
+                throw new Error(res.error || 'Authentication failed')
+            }
 
-            if (profileError) throw new Error('User profile not found. Contact support.')
-
-            if (profile.role === 'admin') router.push('/admin')
-            else if (profile.role === 'educator') router.push(redirect === '/admin' ? '/educator/start' : redirect)
-            else router.push('/educator/start')
+            if (res.role === 'admin') router.push('/admin')
+            else router.push(redirect === '/admin' ? '/educator/start' : redirect)
 
             router.refresh()
         } catch (err: any) {
-            const msg = err.message || 'Authentication failed'
-            if (msg.includes('Missing Supabase') || msg.includes('Failed to fetch')) {
-                setError('Cannot connect to the server. Check that NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your Vercel environment variables, then redeploy.')
-            } else {
-                setError(msg)
-            }
+            setError(err.message || 'Server connection failed. Try again.')
             setIsLoading(false)
         }
     }

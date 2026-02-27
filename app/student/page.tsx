@@ -64,7 +64,7 @@ export default function StudentEntryPage() {
                             Fastest way: Scan the QR
                         </div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                            Open your camera app and point it at the code on the classroom display.
+                            No app needed! Just open your phone's built-in camera app and point it at the board.
                         </div>
                     </div>
                 </div>

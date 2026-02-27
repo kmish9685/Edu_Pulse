@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Shield, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { loginWithEmail } from '@/app/actions/auth'
 
 export default function AdminLoginPage() {
     const router = useRouter()
@@ -21,28 +21,15 @@ export default function AdminLoginPage() {
         setError(null)
 
         try {
-            const supabase = createClient()
-            const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password })
-            if (authError) throw authError
-            if (!user) throw new Error('No user returned')
-
-            const { data: profile } = await supabase
-                .from('profiles').select('role').eq('id', user.id).single()
-
-            if (profile?.role !== 'admin') {
-                await supabase.auth.signOut()
-                throw new Error('Access denied. This login is for administrators only.')
+            const res = await loginWithEmail(email, password, 'admin')
+            if (!res.success) {
+                throw new Error(res.error || 'Authentication failed')
             }
 
             router.push('/admin')
             router.refresh()
         } catch (err: any) {
-            const msg = err.message || 'Authentication failed'
-            if (msg.includes('Missing Supabase') || msg.includes('Failed to fetch')) {
-                setError(`Cannot connect to the server (Error: ${msg}). Check Vercel env vars and redeploy.`)
-            } else {
-                setError(msg)
-            }
+            setError(err.message || 'Server connection failed. Try again.')
             setIsLoading(false)
         }
     }

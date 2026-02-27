@@ -105,8 +105,21 @@ export default function StudentJoin() {
                         Session PIN <strong style={{ fontFamily: 'var(--font-mono)', color: '#EF4444' }}>{sessionId}</strong> doesn't have an active class right now. Your teacher may not have started the session yet, or it may have ended.
                     </p>
                     <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <button onClick={() => validateSession(sessionId).then(r => setSessionValid(r.active))}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.625rem 1.25rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', color: 'var(--accent-soft)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <button onClick={async (e) => {
+                            const btn = e.currentTarget;
+                            const originalHtml = btn.innerHTML;
+                            btn.innerHTML = 'Checking...';
+                            btn.style.opacity = '0.7';
+                            const r = await validateSession(sessionId);
+                            setSessionValid(r.active);
+                            setTimeout(() => {
+                                if (btn) {
+                                    btn.innerHTML = originalHtml;
+                                    btn.style.opacity = '1';
+                                }
+                            }, 500);
+                        }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.625rem 1.25rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', color: 'var(--accent-soft)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s' }}>
                             <Radio size={14} /> Check Again
                         </button>
                         <button onClick={() => router.push('/student')}
