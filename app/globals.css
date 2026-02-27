@@ -651,6 +651,11 @@ a.feature-card-link:hover {
     grid-template-rows: auto auto auto;
   }
 
+  .setup-layout {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
   .hide-on-mobile {
     display: none !important;
   }

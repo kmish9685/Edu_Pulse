@@ -125,7 +125,7 @@ export default function EducatorStart() {
                 <div style={{ flex: 1 }} />
             </header>
 
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: 1080, margin: '0 auto', padding: '4rem 1.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3.5rem', alignItems: 'start' }}>
+            <div className="setup-layout" style={{ position: 'relative', zIndex: 1, maxWidth: 1080, margin: '0 auto', padding: '4rem 1.75rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '3.5rem', alignItems: 'start' }}>
 
                 {/* ── LEFT: Session Setup ───────────────────────────── */}
                 <div style={{ position: 'relative' }}>
