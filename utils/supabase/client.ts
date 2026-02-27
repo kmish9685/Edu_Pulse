@@ -17,5 +17,9 @@ export function createClient() {
     const isBrowser = typeof window !== 'undefined'
     const finalUrl = isBrowser ? `${window.location.origin}/supabase-api` : url
 
-    return createBrowserClient(finalUrl, key)
+    return createBrowserClient(finalUrl, key, {
+        cookieOptions: {
+            name: 'sb-edupulse-auth-token'
+        }
+    })
 }
