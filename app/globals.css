@@ -638,12 +638,40 @@ a.feature-card-link:hover {
   z-index: 1;
 }
 
+.admin-sidebar {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-base);
+  overflow: hidden;
+}
+
+.md-hidden {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   .admin-layout {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
     height: auto;
     min-height: calc(100vh - 52px);
+  }
+
+  .admin-sidebar {
+    display: none;
+  }
+
+  .admin-sidebar.open {
+    display: flex;
+    position: fixed;
+    top: 52px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 52px);
+    z-index: 50;
+    border-right: none;
+    overflow-y: auto;
   }
 
   .educator-layout {
@@ -658,5 +686,9 @@ a.feature-card-link:hover {
 
   .hide-on-mobile {
     display: none !important;
+  }
+
+  .md-hidden {
+    display: inline-flex !important;
   }
 }

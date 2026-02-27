@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home } from 'lucide-react'
+import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home, Menu } from 'lucide-react'
 import Link from 'next/link'
 import { verifyAdminPassword, resetAllData, addSignalType } from '@/app/actions/admin'
 import { createEducatorUser, listEducators } from '@/app/actions/users'
@@ -48,6 +48,7 @@ const QUICK_LINKS = [
 ]
 
 export default function AdminPage() {
+    const [showMobileNav, setShowMobileNav] = useState(false)
     const [activeSection, setActiveSection] = useState<NavSection>('overview')
     const [metrics, setMetrics] = useState<RealMetrics>({ totalSignals: 0, activeSessions: [], signalBreakdown: [] })
     const [loadingMetrics, setLoadingMetrics] = useState(true)
@@ -180,13 +181,16 @@ export default function AdminPage() {
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column' }}>
 
             {/* Top bar */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.75rem', flexShrink: 0, background: 'rgba(7,7,12,0.92)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 20 }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.75rem', flexShrink: 0, background: 'rgba(7,7,12,0.92)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 60 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button className="md-hidden" onClick={() => setShowMobileNav(!showMobileNav)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0.25rem', marginLeft: '-0.5rem' }}>
+                        {showMobileNav ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                    <div className="hide-on-mobile" style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Shield size={11} color="#fff" />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
-                    <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+                    <span className="hide-on-mobile" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
+                    <span className="hide-on-mobile" style={{ color: 'var(--text-tertiary)' }}>/</span>
                     <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Admin</span>
                 </div>
                 <div style={{ flex: 1 }} />
@@ -213,7 +217,7 @@ export default function AdminPage() {
             <div className="admin-layout">
 
                 {/* ── Left Rail ─────────────────────────────────────── */}
-                <aside style={{ borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'var(--bg-base)', overflow: 'hidden' }}>
+                <aside className={`admin-sidebar ${showMobileNav ? 'open' : ''}`}>
 
                     {/* Rail nav */}
                     <div style={{ padding: '1.25rem 0.75rem 0.75rem', flex: 1 }}>
@@ -222,7 +226,7 @@ export default function AdminPage() {
                             {NAV_ITEMS.map(item => (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveSection(item.id)}
+                                    onClick={() => { setActiveSection(item.id); setShowMobileNav(false); }}
                                     className={`admin-nav-item${activeSection === item.id ? ' active' : ''}`}
                                 >
                                     <item.Icon size={14} />
