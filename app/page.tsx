@@ -112,7 +112,7 @@ export default function Home() {
             <Link href="/pitch/roi-calculator" className="nav-link">ROI</Link>
             <Link href="/admin" className="nav-link">Admin</Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
-            <Link href="/admin/login" className="nav-link" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Educator Login</Link>
+            <Link href="/admin/login" className="nav-link" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Login</Link>
             <Link href="/join/demo" className="btn-primary btn-sm">Try as Student</Link>
           </nav>
         </div>
@@ -555,7 +555,7 @@ export default function Home() {
               {[
                 ['/how-it-works', 'How It Works'],
                 ['/admin', 'Admin Panel'],
-                ['/admin/login', 'Educator Login'],
+                ['/admin/login', 'Login'],
                 ['/pitch/roi-calculator', 'ROI Calculator'],
                 ['/pitch/comparison', 'Compare'],
               ].map(([href, label]) => (

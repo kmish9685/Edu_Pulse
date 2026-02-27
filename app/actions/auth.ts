@@ -6,7 +6,14 @@ export async function loginWithEmail(email: string, password: string, requestedR
     const supabase = await createClient()
 
     try {
-        const { data: { user }, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Connection to authentication server timed out. Please check your network or try again later.')), 10000));
+
+        const signInPromise = supabase.auth.signInWithPassword({ email, password });
+
+        const { data: { user }, error: authError } = await Promise.race([
+            signInPromise,
+            timeoutPromise
+        ]) as any;
 
         if (authError) {
             return { success: false, error: authError.message }

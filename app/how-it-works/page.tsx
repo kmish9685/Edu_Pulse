@@ -1,91 +1,101 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, QrCode, ScanLine, Activity, Brain, Shield, BarChart3, Zap, BookOpen, Clock, Tag, AlertTriangle, Check, Users, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, QrCode, ScanLine, Activity, Brain, Shield, Clock, Tag, AlertTriangle, Users, ChevronRight, Zap } from 'lucide-react'
 
 export default function HowItWorks() {
+    const [scrolled, setScrolled] = useState(false)
+
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20)
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
+        <div style={{ minHeight: '100vh', background: 'var(--bg-base)', fontFamily: 'var(--font-body)', position: 'relative', overflowX: 'hidden' }}>
+            {/* Ambient backglow */}
+            <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: '70%', height: '70%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.08) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
+            <div style={{ position: 'fixed', bottom: '-10%', left: '-20%', width: '60%', height: '60%', background: 'radial-gradient(ellipse, rgba(16,185,129,0.05) 0%, transparent 60%)', pointerEvents: 'none', zIndex: 0 }} />
+
             {/* Nav */}
-            <header className="border-b border-white/5 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
-                <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-semibold">
-                        <ArrowLeft className="w-4 h-4" /> Back to Home
+            <header style={{ position: 'fixed', top: 0, width: '100%', zIndex: 50, borderBottom: `1px solid ${scrolled ? 'var(--border-strong)' : 'transparent'}`, backdropFilter: scrolled ? 'blur(24px)' : 'none', background: scrolled ? 'rgba(7,7,12,0.85)' : 'transparent', transition: 'all 0.3s' }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontWeight: 600, textDecoration: 'none', fontSize: '0.85rem' }}>
+                        <ArrowLeft size={16} /> Back to Home
                     </Link>
-                    <Link href="/admin/login" className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition-colors">
-                        Start a Class Now →
+                    <Link href="/admin/login" className="btn-primary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}>
+                        Start a Class Now
                     </Link>
                 </div>
             </header>
 
-            <main className="max-w-4xl mx-auto px-6 py-16 space-y-24">
+            <main style={{ position: 'relative', zIndex: 1, padding: '120px 1.75rem 80px', maxWidth: 900, margin: '0 auto' }}>
 
-                {/* Hero */}
-                <div className="text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-6">
-                        <BookOpen className="w-3 h-3" /> Complete Walkthrough
+                {/* Header */}
+                <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+                    <div className="section-label" style={{ marginBottom: '1rem', display: 'inline-flex', padding: '0.4rem 1rem' }}>
+                        Complete Walkthrough
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6">How EduPulse Works</h1>
-                    <p className="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
-                        Exactly what happens from the moment a teacher opens their laptop to the moment a confused student gets help — step by step, no theory.
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: '1.25rem', color: 'var(--text-primary)' }}>
+                        How EduPulse Works
+                    </h1>
+                    <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 640, margin: '0 auto' }}>
+                        Exactly what happens from the moment an educator opens their laptop to the moment a confused student gets help — step by step, no theory.
                     </p>
                 </div>
 
                 {/* ─── FOR TEACHERS ─── */}
-                <section>
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                            <Users className="w-5 h-5 text-blue-400" />
+                <section style={{ marginBottom: '6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.05))', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Users size={22} color="#818CF8" />
                         </div>
-                        <h2 className="text-2xl font-black text-white">The Teacher's Journey</h2>
+                        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>The Teacher's Journey</h2>
                     </div>
 
-                    <div className="space-y-6">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {[
                             {
-                                step: "01", icon: QrCode, color: "blue",
+                                step: "01", icon: QrCode, color: "#818CF8", bg: "rgba(99,102,241,0.1)", border: "rgba(99,102,241,0.2)",
                                 title: "Open the Educator Launchpad",
-                                detail: "Before class, the teacher goes to /admin/login on their laptop or tablet. Instantly, a unique 4-digit PIN (e.g. 4972) and a large QR code are generated. No setup. No configuration needed.",
-                                action: "Project this screen on the classroom display or whiteboard. Students will see it as they walk in.",
-                                link: { href: "/admin/login", label: "Open Educator Launchpad →" }
+                                detail: "Before class, the teacher goes to /admin/login on their laptop. Instantly, a unique 4-digit PIN and a large QR code are generated. No setup needed.",
+                                action: "Project this screen on the classroom display. Students will see it as they walk in."
                             },
                             {
-                                step: "02", icon: Tag, color: "indigo",
-                                title: "Tag Your Topics During the Lecture",
-                                detail: "Once the dashboard is open, there is a Topic Annotation bar at the top. As the teacher changes topics, they type 'Slide 5: Recursion' or 'Live coding: Binary Search' and hit Enter. This drops a timestamp marker on the confusion timeline graph.",
-                                action: "Now when you see a spike at 10:22 AM, you know it was during the Recursion explanation — not just 'sometime in class.'"
+                                step: "02", icon: Tag, color: "#C084FC", bg: "rgba(192,132,252,0.1)", border: "rgba(192,132,252,0.2)",
+                                title: "Tag Topics During the Lecture",
+                                detail: "Using the Topic Annotation bar, type 'Live coding: Binary Search' and hit Enter as you teach. This drops a timestamp marker on the graph.",
+                                action: "When you see a spike at 10:22 AM, you know it was during the Recursion explanation."
                             },
                             {
-                                step: "03", icon: Activity, color: "purple",
+                                step: "03", icon: Activity, color: "#F472B6", bg: "rgba(244,114,182,0.1)", border: "rgba(244,114,182,0.2)",
                                 title: "Watch the Intelligence Dashboard",
-                                detail: "The timeline graph updates every 3 seconds. The teacher sees a smooth area graph. When confusion is low, it's flat. When multiple students signal within 2 minutes, the graph spikes and the AI assistant changes color from blue to amber.",
+                                detail: "The timeline graph updates every 3s. When multiple students signal within 2 minutes, the graph spikes and the AI assistant changes to amber.",
                                 action: "The color change alone is the signal. No need to stop and read long alerts mid-lecture."
                             },
                             {
-                                step: "04", icon: Brain, color: "emerald",
-                                title: "Respond — Without Breaking Your Flow",
-                                detail: "When the AI assistant turns amber, the teacher makes one of two choices: (A) Quick fix — say 'I'll rephrase that last point' and continue. (B) Log it — click 'Mark for Post-Class Review' to revisit after the lecture ends with the full signal data and topic context.",
-                                action: "The teacher never has to stop, ask the class 'does everyone understand?', and sit in awkward silence."
-                            },
+                                step: "04", icon: Brain, color: "#34D399", bg: "rgba(52,211,153,0.1)", border: "rgba(52,211,153,0.2)",
+                                title: "Respond — Without Breaking Flow",
+                                detail: "When alerted, make a choice: (A) Quick fix: rephrase and continue. (B) Log it: click 'Mark for Post-Class Review' to revisit later.",
+                                action: "Never stop to ask 'does everyone understand?' and sit in awkward silence again."
+                            }
                         ].map((item, i) => (
-                            <div key={i} className={`flex gap-6 p-8 rounded-2xl bg-slate-900 border border-white/5 hover:border-${item.color}-500/20 transition-colors`}>
-                                <div className={`w-12 h-12 bg-${item.color}-500/10 rounded-xl flex items-center justify-center shrink-0 border border-${item.color}-500/20`}>
-                                    <item.icon className={`w-6 h-6 text-${item.color}-400`} />
+                            <div key={i} className="glass-card" style={{ padding: '2rem', display: 'flex', gap: '1.5rem', transition: 'all 0.3s' }}>
+                                <div style={{ width: 56, height: 56, borderRadius: 16, background: item.bg, border: `1px solid ${item.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                    <item.icon size={26} color={item.color} />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <span className={`text-xs font-black text-${item.color}-500 uppercase tracking-widest`}>Step {item.step}</span>
-                                        <h3 className="text-xl font-bold text-white">{item.title}</h3>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: item.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>STEP {item.step}</span>
+                                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>{item.title}</h3>
                                     </div>
-                                    <p className="text-slate-400 leading-relaxed mb-4">{item.detail}</p>
-                                    <div className={`p-4 bg-${item.color}-500/5 border border-${item.color}-500/15 rounded-xl text-sm text-${item.color}-200 font-medium`}>
-                                        💡 {item.action}
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>{item.detail}</p>
+                                    <div style={{ padding: '0.875rem 1rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 10, fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                        <span style={{ fontSize: '1rem' }}>💡</span>
+                                        <span>{item.action}</span>
                                     </div>
-                                    {item.link && (
-                                        <Link href={item.link.href} className={`inline-flex items-center gap-2 mt-4 text-${item.color}-400 font-bold hover:underline text-sm`}>
-                                            {item.link.label} <ChevronRight className="w-4 h-4" />
-                                        </Link>
-                                    )}
                                 </div>
                             </div>
                         ))}
@@ -93,75 +103,55 @@ export default function HowItWorks() {
                 </section>
 
                 {/* ─── FOR STUDENTS ─── */}
-                <section>
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                            <ScanLine className="w-5 h-5 text-emerald-400" />
+                <section style={{ marginBottom: '6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.05))', border: '1px solid rgba(52,211,153,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <ScanLine size={22} color="#34D399" />
                         </div>
-                        <h2 className="text-2xl font-black text-white">The Student's Journey</h2>
+                        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>The Student's Journey</h2>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
                         {[
-                            { icon: ScanLine, color: "emerald", title: "Scan the QR Code", desc: "Open your phone camera and point it at the QR code on the classroom screen. No app download needed. You'll land directly on the signal page." },
-                            { icon: Shield, color: "blue", title: "You are 100% Anonymous", desc: "The system never records your name, ID, or device. Not even the teacher can trace who sent which signal. Shy students signal exactly as often as confident ones." },
-                            { icon: Zap, color: "indigo", title: "Tap Your Feeling", desc: "Two buttons: 'I'm Confused' and 'Too Fast'. That's it. One tap. Your signal hits the teacher's dashboard within 1 second. No explanation needed." },
-                            { icon: Clock, color: "purple", title: "60-Second Cooldown", desc: "After sending a signal, you must wait 60 seconds before sending another. This prevents spam and ensures the data is meaningful. The countdown is displayed on your screen." },
+                            { icon: ScanLine, title: "Scan the QR Code", desc: "Open your phone camera and point it at the QR code on the classroom screen. No app download needed." },
+                            { icon: Shield, title: "100% Anonymous", desc: "The system never records your name, ID, or device. Shy students signal exactly as often as confident ones." },
+                            { icon: Zap, title: "Tap Your Feeling", desc: "Two buttons: 'I'm Confused' and 'Too Fast'. One tap. Your signal hits the dashboard within 1 second." },
+                            { icon: Clock, title: "60-Second Cooldown", desc: "After sending a signal, you must wait 60s before sending another. This prevents spam automatically." },
                         ].map((item, i) => (
-                            <div key={i} className={`p-6 rounded-2xl bg-slate-900 border border-${item.color}-500/10 hover:border-${item.color}-500/30 transition-colors`}>
-                                <div className={`w-10 h-10 bg-${item.color}-500/10 rounded-lg flex items-center justify-center mb-4`}>
-                                    <item.icon className={`w-5 h-5 text-${item.color}-400`} />
+                            <div key={i} className="glass-card" style={{ padding: '1.75rem' }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--bg-base)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                                    <item.icon size={20} color="var(--text-secondary)" />
                                 </div>
-                                <h3 className="font-bold text-white mb-2">{item.title}</h3>
-                                <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{item.title}</h3>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{item.desc}</p>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* ─── Common Questions ─── */}
-                <section>
-                    <div className="flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-amber-400" />
+                {/* ─── FAQ ─── */}
+                <section style={{ marginBottom: '6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(251,191,36,0.05))', border: '1px solid rgba(251,191,36,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <AlertTriangle size={22} color="#FBBF24" />
                         </div>
-                        <h2 className="text-2xl font-black text-white">Every Concern, Answered Directly</h2>
+                        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>Every Concern, Answered</h2>
                     </div>
 
-                    <div className="space-y-4">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                         {[
-                            {
-                                q: "Does this give teachers extra work hours?",
-                                a: "No. EduPulse is designed to eliminate re-teaching time. Because you catch confusion during the lecture, you don't have to revisit it in the next class when quiz marks come back bad. You save 1 preparation hour for every hour of active monitoring."
-                            },
-                            {
-                                q: "What if only ONE shy student is lost?",
-                                a: "Their signal is logged in the system and attached to the topic you were teaching. It does NOT trigger a class-wide alert. After class, you can view the log and send that student a supplementary resource or a personal email. EduPulse handles both the systemic situation (many students confused) and the individual one (one student lost)."
-                            },
-                            {
-                                q: "What if a student tries to spam the button?",
-                                a: "They literally cannot. A hardware-level 60-second cooldown is enforced in the browser's localStorage. Even if they clear the storage, a single student's 2-3 signals will never mathematically trigger a class-wide alert unless there are 3+ students signaling simultaneously. The AI filters isolated noise automatically."
-                            },
-                            {
-                                q: "How does the teacher know what topic caused a spike if they're talking?",
-                                a: "Two ways: (1) The Topic Annotation bar lets the teacher type their current slide name at any time. A timestamp marker is dropped on the confusion graph. (2) Even without annotations, the graph shows the exact minute of the spike — the teacher can cross-reference it with their lesson plan or slide deck timestamps."
-                            },
-                            {
-                                q: "What if the student doesn't have a smartphone?",
-                                a: "Students can also type the 4-digit PIN manually at edupulse.com/join and it loads the same anonymous signal page. Any device with a browser works — no app installation, no account."
-                            },
-                            {
-                                q: "Who owns the classroom data?",
-                                a: "The institution owns all data. It is stored in a private Supabase database and is never shared with third parties. Individual student responses are cryptographically anonymized at submission — they cannot be de-anonymized even with full database access."
-                            }
+                            { q: "Does this give teachers extra work hours?", a: "No. EduPulse is designed to eliminate re-teaching time. Because you catch confusion during the lecture, you don't have to revisit it next week." },
+                            { q: "What if only ONE shy student is lost?", a: "Their signal is logged but does NOT trigger a class-wide alert. After class, view the log and send them a supplementary resource." },
+                            { q: "What if a student tries to spam the button?", a: "A hardware-level 60-second cooldown is enforced. Even if they clear storage, the AI filters isolated noise automatically." },
+                            { q: "Who owns the classroom data?", a: "The institution owns all data. It is never shared with third parties. Responses are cryptographically anonymized at submission." }
                         ].map((item, i) => (
-                            <details key={i} className="group bg-slate-900 border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-colors">
-                                <summary className="p-6 font-bold text-white list-none cursor-pointer flex items-center justify-between gap-4">
-                                    <span>{item.q}</span>
-                                    <ChevronRight className="w-5 h-5 text-slate-500 group-open:rotate-90 transition-transform shrink-0" />
+                            <details key={i} className="glass-card" style={{ padding: '1.5rem', borderRadius: 16, cursor: 'pointer' }}>
+                                <summary style={{ listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', outline: 'none' }}>
+                                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>{item.q}</span>
+                                    <ChevronRight size={18} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />
                                 </summary>
-                                <div className="px-6 pb-6">
-                                    <p className="text-slate-400 leading-relaxed border-t border-white/5 pt-4">{item.a}</p>
+                                <div style={{ paddingTop: '1.25rem', marginTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{item.a}</p>
                                 </div>
                             </details>
                         ))}
@@ -169,15 +159,19 @@ export default function HowItWorks() {
                 </section>
 
                 {/* CTA */}
-                <div className="text-center bg-gradient-to-b from-slate-900 to-slate-950 rounded-3xl p-12 border border-white/5">
-                    <h2 className="text-3xl font-black text-white mb-4">Ready to try it for real?</h2>
-                    <p className="text-slate-400 mb-8 max-w-xl mx-auto">Open the Educator Launchpad, project the QR code, and ask someone to scan it. The confusion timeline updates in 3 seconds.</p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/admin/login" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-blue-900/30">
+                <div style={{ textAlign: 'center', background: 'linear-gradient(180deg, rgba(99,102,241,0.05) 0%, transparent 100%)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 24, padding: '4rem 2rem' }}>
+                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                        Ready to try it for real?
+                    </h2>
+                    <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '2.5rem', maxWidth: 460, margin: '0 auto 2.5rem' }}>
+                        Open the Educator Launchpad, project the QR code, and ask someone to scan it. The timeline updates in 3 seconds.
+                    </p>
+                    <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                        <Link href="/admin/login" className="btn-primary" style={{ padding: '0.875rem 2rem', fontSize: '0.95rem' }}>
                             Start a Session →
                         </Link>
-                        <Link href="/pitch/roi-calculator" className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-colors">
-                            Calculate Your ROI
+                        <Link href="/pitch/roi-calculator" className="btn-ghost" style={{ padding: '0.875rem 2rem', fontSize: '0.95rem', background: 'var(--bg-surface)' }}>
+                            Calculate ROI
                         </Link>
                     </div>
                 </div>
@@ -186,3 +180,4 @@ export default function HowItWorks() {
         </div>
     )
 }
+
