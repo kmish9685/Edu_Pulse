@@ -32,8 +32,11 @@ export async function middleware(request: NextRequest) {
 
     // Fail CLOSED — if Supabase not configured, block access
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
-        if (isEducatorRoute) return NextResponse.redirect(new URL('/educator/login', request.url))
+        if (isAdminRoute || isEducatorRoute) {
+            const loginUrl = new URL('/admin/login', request.url)
+            if (isEducatorRoute) loginUrl.searchParams.set('redirect', path)
+            return NextResponse.redirect(loginUrl)
+        }
         return response
     }
 
@@ -62,12 +65,9 @@ export async function middleware(request: NextRequest) {
 
         // No session → redirect to the correct login page
         if (!user) {
-            if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
-            if (isEducatorRoute) {
-                const loginUrl = new URL('/educator/login', request.url)
-                loginUrl.searchParams.set('redirect', path)
-                return NextResponse.redirect(loginUrl)
-            }
+            const loginUrl = new URL('/admin/login', request.url)
+            if (isEducatorRoute) loginUrl.searchParams.set('redirect', path)
+            return NextResponse.redirect(loginUrl)
         }
 
         // Has session → enforce role-based access
@@ -88,12 +88,9 @@ export async function middleware(request: NextRequest) {
 
     } catch {
         // Supabase unreachable — fail closed
-        if (isAdminRoute) return NextResponse.redirect(new URL('/admin/login', request.url))
-        if (isEducatorRoute) {
-            const loginUrl = new URL('/educator/login', request.url)
-            loginUrl.searchParams.set('redirect', path)
-            return NextResponse.redirect(loginUrl)
-        }
+        const loginUrl = new URL('/admin/login', request.url)
+        if (isEducatorRoute) loginUrl.searchParams.set('redirect', path)
+        return NextResponse.redirect(loginUrl)
     }
 
     return response

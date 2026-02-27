@@ -57,6 +57,12 @@ export async function startSession(pin: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Not authenticated' }
 
+    // Enforce role authorization
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!profile || (profile.role !== 'educator' && profile.role !== 'admin')) {
+        return { success: false, error: 'Unauthorized: Only registered educators can start sessions.' }
+    }
+
     // Upsert — if same PIN was used before (unlikely) reset it to active
     const { error } = await supabase
         .from('active_sessions')

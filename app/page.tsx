@@ -49,7 +49,7 @@ const PERSONAS = [
     headline: 'Stop Teaching Into the Void',
     desc: 'Know exactly which concept lost the class — in real time, while you can still do something about it. Live confusion graph. AI-generated insight. Zero guesswork.',
     cta: 'Open Live Dashboard',
-    href: '/educator/login',
+    href: '/admin/login',
   },
   {
     role: 'Dept. Heads',
@@ -112,7 +112,7 @@ export default function Home() {
             <Link href="/pitch/roi-calculator" className="nav-link">ROI</Link>
             <Link href="/admin" className="nav-link">Admin</Link>
             <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
-            <Link href="/educator/login" className="nav-link" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Educator Login</Link>
+            <Link href="/admin/login" className="nav-link" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Educator Login</Link>
             <Link href="/join/demo" className="btn-primary btn-sm">Try as Student</Link>
           </nav>
         </div>
@@ -161,7 +161,7 @@ export default function Home() {
 
             {/* CTAs */}
             <div className="animate-fade-up-delay-2" style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '3rem' }}>
-              <Link href="/educator/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
+              <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
                 Start a Free Session <ArrowRight size={16} />
               </Link>
               <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem' }}>
@@ -531,7 +531,7 @@ export default function Home() {
                 No installation. No accounts for students. Live signal data in under 60 seconds. Join the pilot programme.
               </p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link href="/educator/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
+                <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
                   Start a Free Session <ArrowRight size={17} />
                 </Link>
                 <Link href="/admin/loi-generator" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem' }}>
@@ -555,7 +555,7 @@ export default function Home() {
               {[
                 ['/how-it-works', 'How It Works'],
                 ['/admin', 'Admin Panel'],
-                ['/educator/login', 'Educator Login'],
+                ['/admin/login', 'Educator Login'],
                 ['/pitch/roi-calculator', 'ROI Calculator'],
                 ['/pitch/comparison', 'Compare'],
               ].map(([href, label]) => (

@@ -12,7 +12,7 @@ export default function HowItWorks() {
                     <Link href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-semibold">
                         <ArrowLeft className="w-4 h-4" /> Back to Home
                     </Link>
-                    <Link href="/educator/start" className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition-colors">
+                    <Link href="/admin/login" className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition-colors">
                         Start a Class Now →
                     </Link>
                 </div>
@@ -45,9 +45,9 @@ export default function HowItWorks() {
                             {
                                 step: "01", icon: QrCode, color: "blue",
                                 title: "Open the Educator Launchpad",
-                                detail: "Before class, the teacher goes to /educator/start on their laptop or tablet. Instantly, a unique 4-digit PIN (e.g. 4972) and a large QR code are generated. No setup. No configuration needed.",
+                                detail: "Before class, the teacher goes to /admin/login on their laptop or tablet. Instantly, a unique 4-digit PIN (e.g. 4972) and a large QR code are generated. No setup. No configuration needed.",
                                 action: "Project this screen on the classroom display or whiteboard. Students will see it as they walk in.",
-                                link: { href: "/educator/start", label: "Open Educator Launchpad →" }
+                                link: { href: "/admin/login", label: "Open Educator Launchpad →" }
                             },
                             {
                                 step: "02", icon: Tag, color: "indigo",
@@ -173,7 +173,7 @@ export default function HowItWorks() {
                     <h2 className="text-3xl font-black text-white mb-4">Ready to try it for real?</h2>
                     <p className="text-slate-400 mb-8 max-w-xl mx-auto">Open the Educator Launchpad, project the QR code, and ask someone to scan it. The confusion timeline updates in 3 seconds.</p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/educator/start" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-blue-900/30">
+                        <Link href="/admin/login" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-xl shadow-blue-900/30">
                             Start a Session →
                         </Link>
                         <Link href="/pitch/roi-calculator" className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-colors">

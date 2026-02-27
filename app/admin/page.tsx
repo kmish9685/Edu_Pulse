@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home } from 'lucide-react'
 import Link from 'next/link'
 import { verifyAdminPassword, resetAllData, addSignalType } from '@/app/actions/admin'
-import { createEducatorUser } from '@/app/actions/users'
+import { createEducatorUser, listEducators } from '@/app/actions/users'
 import { createClient } from '@/utils/supabase/client'
 
 type NavSection = 'overview' | 'signals' | 'sessions' | 'danger' | 'users'
@@ -18,6 +18,13 @@ interface RealMetrics {
 interface LiveSignal {
     id: string
     type: string
+    created_at: string
+}
+
+interface EducatorRow {
+    id: string
+    email?: string
+    display_name: string
     created_at: string
 }
 
@@ -52,21 +59,35 @@ export default function AdminPage() {
     const [isVerifying, setIsVerifying] = useState(false)
     const [resetDone, setResetDone] = useState(false)
     const [resetError, setResetError] = useState('')
-    // User creation
+
+    // User creation & listing
     const [newEmail, setNewEmail] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [newName, setNewName] = useState('')
     const [creating, setCreating] = useState(false)
     const [createResult, setCreateResult] = useState<{ ok: boolean; msg: string } | null>(null)
+    const [educators, setEducators] = useState<EducatorRow[]>([])
+    const [loadingEducators, setLoadingEducators] = useState(true)
+
     const tickerRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
 
     useEffect(() => {
         fetchSignalTypes()
         fetchRealMetrics()
+        fetchEducators()
         const interval = setInterval(fetchRealMetrics, 10000)
         return () => clearInterval(interval)
     }, [])
+
+    async function fetchEducators() {
+        setLoadingEducators(true)
+        const res = await listEducators()
+        if (res.success) {
+            setEducators(res.educators as EducatorRow[])
+        }
+        setLoadingEducators(false)
+    }
 
     // Supabase realtime for the ticker
     useEffect(() => {
@@ -334,10 +355,48 @@ export default function AdminPage() {
                                 </div>
                             </div>
 
-                            <div style={{ padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                            <div style={{ padding: '0.875rem 1rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: 10, marginBottom: '2.5rem' }}>
                                 <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', lineHeight: 1.65 }}>
-                                    New educators will receive one unified login at <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>/educator/login</span>. Their role is set to <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-soft)' }}>educator</span> automatically — they will only see classroom tools, not admin pages.
+                                    New educators will receive one unified login at <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-secondary)' }}>/admin/login</span>. Their role is set to <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-soft)' }}>educator</span> automatically — they will only see classroom tools, not admin pages.
                                 </p>
+                            </div>
+
+                            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Registered Educators</div>
+                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                                {loadingEducators ? (
+                                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.857rem' }}>
+                                        Loading educators...
+                                    </div>
+                                ) : educators.length === 0 ? (
+                                    <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.857rem' }}>
+                                        No educators found. Create one above to get started.
+                                    </div>
+                                ) : (
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.857rem' }}>
+                                        <thead>
+                                            <tr style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
+                                                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Name</th>
+                                                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Email</th>
+                                                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Role</th>
+                                                <th style={{ padding: '0.75rem 1.25rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {educators.map((edu, i) => (
+                                                <tr key={edu.id} style={{ borderBottom: i < educators.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                                                    <td style={{ padding: '0.875rem 1.25rem', color: 'var(--text-primary)', fontWeight: 500 }}>{edu.display_name || '—'}</td>
+                                                    <td style={{ padding: '0.875rem 1.25rem', color: 'var(--text-secondary)' }}>{edu.email || '—'}</td>
+                                                    <td style={{ padding: '0.875rem 1.25rem' }}>
+                                                        <span style={{ padding: '0.2rem 0.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, fontSize: '0.7rem', fontWeight: 700, color: 'var(--accent-soft)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Educator</span>
+                                                    </td>
+                                                    <td style={{ padding: '0.875rem 1.25rem', color: 'var(--text-tertiary)', fontSize: '0.78rem' }}>
+                                                        {new Date(edu.created_at).toLocaleDateString()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
                     )}
