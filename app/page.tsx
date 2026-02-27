@@ -107,12 +107,12 @@ export default function Home() {
             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.05em' }}>EduPulse</span>
           </div>
           <nav style={{ display: 'flex', alignItems: 'center', gap: '1.75rem' }}>
-            <Link href="/how-it-works" className="nav-link">How It Works</Link>
-            <Link href="/pitch/comparison" className="nav-link">Compare</Link>
-            <Link href="/pitch/roi-calculator" className="nav-link">ROI</Link>
-            <div style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 0.25rem' }} />
+            <Link href="/how-it-works" className="nav-link hide-on-mobile">How It Works</Link>
+            <Link href="/pitch/comparison" className="nav-link hide-on-mobile">Compare</Link>
+            <Link href="/pitch/roi-calculator" className="nav-link hide-on-mobile">ROI</Link>
+            <div className="hide-on-mobile" style={{ width: 1, height: 16, background: 'var(--border)', margin: '0 0.25rem' }} />
             <Link href="/admin/login" className="btn-primary btn-sm" style={{ padding: '0.4rem 1rem' }}>Portal</Link>
-            <Link href="/join/demo" className="btn-ghost btn-sm">Try as Student</Link>
+            <Link href="/student" className="btn-ghost btn-sm">Student</Link>
           </nav>
         </div>
       </header>

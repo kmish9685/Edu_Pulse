@@ -650,4 +650,8 @@ a.feature-card-link:hover {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
   }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
 }

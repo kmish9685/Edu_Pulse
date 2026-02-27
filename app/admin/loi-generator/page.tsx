@@ -160,9 +160,21 @@ export default function LOIGenerator() {
                                 <style dangerouslySetInnerHTML={{
                                     __html: `
                                     @media print {
-                                        body * { visibility: hidden; }
+                                        body * { visibility: hidden; margin: 0; padding: 0; }
                                         #printable-loi, #printable-loi * { visibility: visible; }
-                                        #printable-loi { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; }
+                                        #printable-loi { 
+                                            position: absolute; 
+                                            left: 0; 
+                                            top: 0; 
+                                            width: 100%; 
+                                            padding: 1in !important; 
+                                            margin: 0 !important;
+                                            box-shadow: none !important; 
+                                            border: none !important; 
+                                            background: white !important;
+                                        }
+                                        /* Hide the Next Steps / Button sidebar during print */
+                                        aside { display: none !important; }
                                     }
                                 `}} />
 

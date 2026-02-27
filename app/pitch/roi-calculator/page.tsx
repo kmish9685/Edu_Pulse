@@ -111,7 +111,29 @@ export default function ROICalculator() {
                     </div>
 
                     {/* Results */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div className="print-area" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
+                            @media print {
+                                body * { visibility: hidden; margin: 0; padding: 0; }
+                                .print-area, .print-area * { visibility: visible; }
+                                .print-area { 
+                                    position: absolute; 
+                                    left: 0; 
+                                    top: 0; 
+                                    width: 100%; 
+                                    padding: 1in !important; 
+                                    margin: 0 !important;
+                                    box-shadow: none !important; 
+                                    border: none !important; 
+                                    background: white !important;
+                                    color: black !important;
+                                }
+                                .glass-card { border: 1px solid #ccc !important; background: white !important; }
+                                .gradient-text { background: none !important; -webkit-text-fill-color: black !important; color: black !important; }
+                                .hide-print { display: none !important; }
+                            }
+                        `}} />
 
                         {/* Loss box */}
                         <div className="glass-card" style={{ padding: '1.75rem', borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.04)', position: 'relative', overflow: 'hidden' }}>
@@ -166,8 +188,8 @@ export default function ROICalculator() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                    <button className="btn-ghost" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                                <div className="hide-print" style={{ display: 'flex', gap: '0.75rem' }}>
+                                    <button onClick={() => window.print()} className="btn-ghost flex-1 justify-center relative overflow-hidden group" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                                         <Download size={13} /> Export Report
                                     </button>
                                     <Link href="/admin/loi-generator" className="btn-primary" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
