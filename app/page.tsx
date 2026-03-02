@@ -255,7 +255,7 @@ export default function Home() {
             transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {[
               { target: 60, suffix: '%', label: 'of students never raise their hand in a lecture hall', sub: 'Source: Active Learning Research' },
               { prefix: '₹', target: 21, suffix: 'M+', label: 'annual revenue at risk per institution from preventable dropout', sub: 'Based on 2024 AICTE data' },
@@ -290,7 +290,7 @@ export default function Home() {
             { n: '03', Icon: Brain, title: 'Act on live intelligence', body: 'Your confusion graph updates every 3 seconds. Topic annotations let you correlate every spike to your exact slide.' },
           ].map(({ n, Icon, title, body }, i) => (
             <div key={n}>
-              <div style={{ display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 1fr' : '1fr 1fr', gap: '4rem', alignItems: 'center', padding: '3rem 0' }}>
+              <div className="how-grid" style={{ display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 1fr' : '1fr 1fr', gap: '4rem', alignItems: 'center', padding: '3rem 0' }}>
                 {/* Step number side */}
                 {i % 2 === 0 ? (
                   <>
@@ -345,7 +345,7 @@ export default function Home() {
           </div>
 
           {/* Assymetric grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: 1, background: 'var(--border)', borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: 1, background: 'var(--border)', borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border)' }}>
 
             {/* Row 1 */}
             <div style={{ padding: '2rem', background: 'var(--bg-surface)' }}>
@@ -409,7 +409,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '3rem', alignItems: 'start' }}>
+          <div className="persona-grid" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '3rem', alignItems: 'start' }}>
             {/* Left rail */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               {PERSONAS.map((p, i) => (

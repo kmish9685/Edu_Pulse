@@ -691,4 +691,30 @@ a.feature-card-link:hover {
   .md-hidden {
     display: inline-flex !important;
   }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .how-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+    text-align: left !important;
+  }
+
+  .how-grid>div:last-child {
+    text-align: left !important;
+  }
+
+  .how-grid p {
+    margin-left: 0 !important;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .persona-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
