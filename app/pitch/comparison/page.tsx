@@ -108,49 +108,53 @@ export default function CompetitiveComparison() {
 
                 {/* Table */}
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2rem' }}>
-                    {/* Column headers */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.02)' }}>
-                        <div style={{ padding: '1.25rem 1.5rem' }}>
-                            <span className="section-label">Core Capability</span>
-                        </div>
-                        {/* EduPulse header — highlighted */}
-                        <div style={{ padding: '1.25rem 1rem', borderLeft: '1px solid var(--glass-border)', background: 'var(--accent-dim)', textAlign: 'center', borderRight: '1px solid rgba(124,92,246,0.15)' }}>
-                            <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#7C5CF6,#5E5CF6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem', boxShadow: '0 0 16px rgba(124,92,246,0.3)' }}>
-                                <Zap size={16} color="#fff" fill="#fff" />
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                        <div style={{ minWidth: 600 }}>
+                            {/* Column headers */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: '1px solid var(--glass-border)', background: 'rgba(255,255,255,0.02)' }}>
+                                <div style={{ padding: '1.25rem 1.5rem' }}>
+                                    <span className="section-label">Core Capability</span>
+                                </div>
+                                {/* EduPulse header — highlighted */}
+                                <div style={{ padding: '1.25rem 1rem', borderLeft: '1px solid var(--glass-border)', background: 'var(--accent-dim)', textAlign: 'center', borderRight: '1px solid rgba(124,92,246,0.15)' }}>
+                                    <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg,#7C5CF6,#5E5CF6)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem', boxShadow: '0 0 16px rgba(124,92,246,0.3)' }}>
+                                        <Zap size={16} color="#fff" fill="#fff" />
+                                    </div>
+                                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>EduPulse</div>
+                                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#A78BFA', marginTop: '0.25rem' }}>INSTITUTIONAL PLATFORM</div>
+                                </div>
+                                {[
+                                    { title: 'Polling Tools', sub: 'Mentimeter, Slido' },
+                                    { title: 'Traditional LMS', sub: 'Blackboard, Canvas' },
+                                ].map(col => (
+                                    <div key={col.title} style={{ padding: '1.25rem 1rem', borderLeft: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-secondary)', letterSpacing: '-0.015em' }}>{col.title}</div>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>{col.sub}</div>
+                                    </div>
+                                ))}
                             </div>
-                            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>EduPulse</div>
-                            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#A78BFA', marginTop: '0.25rem' }}>INSTITUTIONAL PLATFORM</div>
-                        </div>
-                        {[
-                            { title: 'Polling Tools', sub: 'Mentimeter, Slido' },
-                            { title: 'Traditional LMS', sub: 'Blackboard, Canvas' },
-                        ].map(col => (
-                            <div key={col.title} style={{ padding: '1.25rem 1rem', borderLeft: '1px solid var(--glass-border)', textAlign: 'center' }}>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-secondary)', letterSpacing: '-0.015em' }}>{col.title}</div>
-                                <div style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>{col.sub}</div>
-                            </div>
-                        ))}
-                    </div>
 
-                    {/* Rows */}
-                    {ROWS.map((row, i) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: i < ROWS.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
-                            <div style={{ padding: '1rem 1.5rem' }}>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', letterSpacing: '-0.02em', marginBottom: '0.2rem' }}>{row.feature}</div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{row.sub}</div>
-                            </div>
-                            {/* EduPulse col — highlighted */}
-                            <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', background: 'rgba(124,92,246,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Cell data={row.ep} />
-                            </div>
-                            <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Cell data={row.polling} />
-                            </div>
-                            <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Cell data={row.lms} />
-                            </div>
+                            {/* Rows */}
+                            {ROWS.map((row, i) => (
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: i < ROWS.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
+                                    <div style={{ padding: '1rem 1.5rem' }}>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', letterSpacing: '-0.02em', marginBottom: '0.2rem' }}>{row.feature}</div>
+                                        <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{row.sub}</div>
+                                    </div>
+                                    {/* EduPulse col — highlighted */}
+                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', background: 'rgba(124,92,246,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Cell data={row.ep} />
+                                    </div>
+                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Cell data={row.polling} />
+                                    </div>
+                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Cell data={row.lms} />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
 
                 {/* Judge callout */}

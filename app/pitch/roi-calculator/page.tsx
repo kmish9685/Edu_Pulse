@@ -48,7 +48,7 @@ export default function ROICalculator() {
                 <div className="section-label">For Institutional Pitch</div>
             </header>
 
-            <main style={{ maxWidth: 1060, margin: '0 auto', padding: '3.5rem 1.75rem', position: 'relative', zIndex: 1 }}>
+            <main style={{ maxWidth: 1060, margin: '0 auto', padding: 'max(2rem, 4vw) max(1rem, 4vw)', position: 'relative', zIndex: 1 }}>
 
                 {/* Hero */}
                 <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
@@ -60,7 +60,7 @@ export default function ROICalculator() {
                     </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: '2rem', alignItems: 'start' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
 
                     {/* Inputs */}
                     <div className="glass-card" style={{ padding: '2rem' }}>

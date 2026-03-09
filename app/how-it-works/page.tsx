@@ -31,7 +31,7 @@ export default function HowItWorks() {
                 </div>
             </header>
 
-            <main style={{ position: 'relative', zIndex: 1, padding: '120px 1.75rem 80px', maxWidth: 900, margin: '0 auto' }}>
+            <main style={{ position: 'relative', zIndex: 1, padding: '120px max(1.25rem, 4vw) 80px', maxWidth: 900, margin: '0 auto' }}>
 
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
@@ -82,11 +82,11 @@ export default function HowItWorks() {
                                 action: "Never stop to ask 'does everyone understand?' and sit in awkward silence again."
                             }
                         ].map((item, i) => (
-                            <div key={i} className="glass-card" style={{ padding: '2rem', display: 'flex', gap: '1.5rem', transition: 'all 0.3s' }}>
+                            <div key={i} className="glass-card" style={{ padding: 'clamp(1.25rem, 5vw, 2rem)', display: 'flex', gap: '1.25rem', flexWrap: 'wrap', transition: 'all 0.3s' }}>
                                 <div style={{ width: 56, height: 56, borderRadius: 16, background: item.bg, border: `1px solid ${item.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <item.icon size={26} color={item.color} />
                                 </div>
-                                <div style={{ flex: 1 }}>
+                                <div style={{ flex: '1 1 250px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
                                         <span style={{ fontSize: '0.7rem', fontWeight: 800, color: item.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>STEP {item.step}</span>
                                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>{item.title}</h3>

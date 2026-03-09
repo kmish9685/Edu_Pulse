@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home, Menu } from 'lucide-react'
+import { Shield, Plus, X, AlertTriangle, QrCode, TrendingUp, Activity, MessageSquareQuote, FileText, BarChart3, Zap, ExternalLink, RotateCcw, CheckCircle2, Settings, Map, Tag, Home, Menu, Download, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { verifyAdminPassword, resetAllData, addSignalType } from '@/app/actions/admin'
 import { createEducatorUser, listEducators } from '@/app/actions/users'
@@ -282,29 +282,85 @@ export default function AdminPage() {
                 </aside>
 
                 {/* ── Right Panel ───────────────────────────────────── */}
-                <main key={activeSection} className="admin-panel-enter" style={{ padding: '2rem 2.5rem', overflowY: 'auto' }}>
+                <main key={activeSection} className="admin-panel-enter" style={{ padding: 'max(1.5rem, 4vw) max(1.25rem, 5vw)', overflowY: 'auto' }}>
 
                     {/* ── OVERVIEW ──────────────────────────────────────── */}
                     {activeSection === 'overview' && (
                         <div>
-                            <div style={{ marginBottom: '2rem' }}>
-                                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.375rem' }}>Admin Panel</h1>
-                                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Institution-level overview for the last 24 hours.</p>
+                            <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                                <div>
+                                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.375rem' }}>Admin Panel</h1>
+                                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Institution-level overview for the last 24 hours.</p>
+                                </div>
+                                <button className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1rem', fontSize: '0.85rem' }} onClick={() => alert('Demo Feature: Generating PDF Term Report...')}>
+                                    <Download size={14} /> Export Term Report
+                                </button>
                             </div>
 
                             {/* Stats row */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', marginBottom: '2rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', marginBottom: '2.5rem' }}>
                                 {[
                                     { label: 'Active Sessions', value: loadingMetrics ? '—' : String(metrics.activeSessions.length), sub: metrics.activeSessions.length > 0 ? 'PINs with activity' : 'No sessions yet' },
                                     { label: 'Total Signals', value: loadingMetrics ? '—' : metrics.totalSignals.toLocaleString(), sub: 'from all sessions today' },
                                     { label: 'Top Signal Type', value: loadingMetrics ? '—' : (metrics.signalBreakdown.sort((a, b) => b.count - a.count)[0]?.type || '—'), sub: 'most common today' },
                                 ].map((stat, i) => (
-                                    <div key={i} style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
+                                    <div key={i} style={{ padding: '1.5rem 1.25rem', background: 'var(--bg-surface)' }}>
                                         <div className="section-label" style={{ marginBottom: '0.625rem' }}>{stat.label}</div>
                                         <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', marginBottom: '0.25rem', color: 'var(--text-primary)' }}>{stat.value}</div>
                                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{stat.sub}</div>
                                     </div>
                                 ))}
+                            </div>
+
+                            {/* Institutional Intelligence (Demo) */}
+                            <div style={{ marginBottom: '2.5rem' }}>
+                                <div className="section-label" style={{ marginBottom: '1rem' }}>Institutional Intelligence (30-Day Aggregate)</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+
+                                    {/* At-Risk Topics */}
+                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(244,114,182,0.2)', background: 'linear-gradient(135deg, rgba(244,114,182,0.05), transparent)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                                            <TrendingUp size={15} color="#F472B6" />
+                                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Top At-Risk Topics</span>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                                            {[
+                                                { topic: 'Recursion (CS-101)', count: 450, trend: '+12%' },
+                                                { topic: 'Thermodynamics (PHY-202)', count: 312, trend: '+5%' },
+                                                { topic: 'Organic Chem (CHM-301)', count: 289, trend: '-2%' }
+                                            ].map((t, i) => (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{t.topic}</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: t.trend.startsWith('+') ? 'var(--danger)' : 'var(--success)' }}>{t.trend}</span>
+                                                        <span className="lx-badge" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'var(--bg-base)' }}>{t.count} flags</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Intervention Required */}
+                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.03)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                            <AlertCircle size={15} color="var(--danger)" />
+                                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', color: 'var(--danger)', letterSpacing: '-0.02em' }}>Auto-Flagged Students</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                                            The system detected students consistently signalling confusion across multiple sessions and failing to engage subsequently.
+                                        </p>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', background: 'var(--bg-base)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                                            <div>
+                                                <div style={{ fontSize: '1.5rem', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1, marginBottom: '0.25rem' }}>3</div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Requiring Intervention</div>
+                                            </div>
+                                            <button className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--danger)' }} onClick={() => alert('Demo Feature: Viewing anonymized cohort tracking.')}>
+                                                View Cohort
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
 
                             {/* System status */}

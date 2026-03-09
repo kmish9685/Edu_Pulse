@@ -143,7 +143,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                             <div style={{ lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--accent)' }}>
                                     <Sparkles size={18} />
-                                    <span style={{ fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Gemini AI Analysis</span>
+                                    <span style={{ fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>EduPulse AI Insight</span>
                                 </div>
                                 {summary.split('\n\n').map((paragraph, i) => (
                                     <p key={i} style={{ marginBottom: '1.25rem' }}>{paragraph}</p>
