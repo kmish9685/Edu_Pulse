@@ -90,3 +90,46 @@ Focus on identifying what specific topics or moments might have caused confusion
     }
 }
 
+export async function generateRemediation(agenda: string[], signals: any[]): Promise<{ success: boolean; data?: string; error?: string }> {
+    if (!process.env.GEMINI_API_KEY) {
+        return { success: false, error: 'AI API key not configured.' };
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            generationConfig: { temperature: 0.7 },
+        });
+
+        // Format signals for the prompt
+        const signalCounts: Record<string, number> = {};
+        signals.forEach(s => {
+            signalCounts[s.type] = (signalCounts[s.type] || 0) + 1;
+        });
+        const totalSignals = signals.length;
+
+        const prompt = `You are a helpful teaching assistant writing an email to a class of students.
+The educator just finished a class session.
+        
+Agenda (topics covered):
+${agenda.length > 0 ? agenda.map((a, i) => `${i + 1}. ${a}`).join('\n') : 'General classroom concepts'}
+
+Student Feedback Signals Collected (${totalSignals} total marks of confusion):
+${Object.entries(signalCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No specific confusion recorded.'}
+
+Task:
+Draft a 2-3 paragraph encouraging review email to the class addressing the most confusing topics from today's session based strictly on the provided signals and agenda.
+Then, include a highly relevant, 1-question multiple-choice diagnostic quiz at the end of the email to check their understanding of that confusing concept.
+
+Format the response as plain text with clear spacing. Do NOT use markdown bolding (**) or hashtags.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+
+        return { success: true, data: text };
+
+    } catch (e: any) {
+        console.error('AI Remediation Error:', e);
+        return { success: false, error: e.message || 'Failed to generate remediation via AI.' };
+    }
+}

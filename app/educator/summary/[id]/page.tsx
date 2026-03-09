@@ -3,8 +3,8 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Sparkles, Loader2, LogOut, FileDown, Send } from 'lucide-react'
-import { generateSummary } from '@/app/actions/ai'
+import { Sparkles, Loader2, ArrowLeft, LogOut, Send } from 'lucide-react'
+import { generateSummary, generateRemediation } from '@/app/actions/ai'
 import Link from 'next/link'
 
 export default function EducatorSummary({ params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +19,8 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
     const [error, setError] = useState<string | null>(null)
     const [totalSignals, setTotalSignals] = useState(0)
     const [followUpMode, setFollowUpMode] = useState<'idle' | 'generating' | 'done'>('idle')
+    const [remediationText, setRemediationText] = useState<string | null>(null)
+    const [remediationError, setRemediationError] = useState<string | null>(null)
 
     const agendaParam = searchParams.get('agenda')
     const agenda: string[] = agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : []
@@ -62,34 +64,30 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
         window.location.href = '/'
     }
 
-    const handleExportPDF = () => {
-        window.print()
+    const handleGenerateRemediation = async () => {
+        setFollowUpMode('generating')
+        setRemediationError(null)
+
+        const supabase = createClient()
+        const { data: signalsData } = await supabase
+            .from('signals')
+            .select('*')
+            .eq('block_room', sessionId)
+            .order('created_at', { ascending: true })
+
+        const res = await generateRemediation(agenda, signalsData || [])
+
+        if (res.success && res.data) {
+            setRemediationText(res.data)
+            setFollowUpMode('done')
+        } else {
+            setRemediationError(res.error || 'Failed to generate review material.')
+            setFollowUpMode('idle')
+        }
     }
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
-            <style>{`
-                @media print {
-                    body * { visibility: hidden !important; }
-                    #summary-print-area, #summary-print-area * { visibility: visible !important; }
-                    #summary-print-area {
-                        position: fixed !important;
-                        top: 0; left: 0;
-                        width: 100%;
-                        padding: 2rem 3rem;
-                        background: white !important;
-                        color: black !important;
-                    }
-                    #summary-print-area h1, #summary-print-area p, #summary-print-area span, #summary-print-area div {
-                        color: black !important;
-                    }
-                    #summary-print-area .glass-card {
-                        box-shadow: none !important;
-                        border: 1px solid #ddd !important;
-                        background: white !important;
-                    }
-                }
-            `}</style>
 
             {/* Ambient glow */}
             <div style={{ position: 'fixed', top: '-20%', left: '-10%', width: '60%', height: '70%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -114,7 +112,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
             {/* Content */}
             <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', zIndex: 1, overflowY: 'auto' }}>
-                <div id="summary-print-area" style={{ width: '100%', maxWidth: 700 }}>
+                <div style={{ width: '100%', maxWidth: 700 }}>
 
                     <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
@@ -165,13 +163,15 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                             {followUpMode === 'idle' && (
                                 <div>
                                     <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                                        Draft a review email and a 3-question diagnostic quiz targeted specifically at the concepts that caused the most confusion this session.
+                                        Draft a review email and a single-question diagnostic quiz targeted specifically at the concepts that caused the most confusion this session.
                                     </p>
+                                    {remediationError && (
+                                        <div style={{ color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                            {remediationError}
+                                        </div>
+                                    )}
                                     <button
-                                        onClick={() => {
-                                            setFollowUpMode('generating');
-                                            setTimeout(() => setFollowUpMode('done'), 2500);
-                                        }}
+                                        onClick={handleGenerateRemediation}
                                         className="btn-primary"
                                         style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
                                     >
@@ -187,28 +187,16 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                                 </div>
                             )}
 
-                            {followUpMode === 'done' && (
+                            {followUpMode === 'done' && remediationText && (
                                 <div>
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                                         Generated draft for students:
                                     </p>
                                     <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 10, padding: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                                        <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
-                                            <strong>Subject:</strong> Post-Class Review: Clearing up {agenda.length > 0 ? agenda[0] : 'today\'s concepts'}
-                                        </div>
-                                        <p style={{ marginBottom: '1rem' }}>Hi Class,</p>
-                                        <p style={{ marginBottom: '1rem' }}>Great session today. I noticed from our live feedback that a few of you hit a roadblock around {agenda.length > 0 ? agenda[0] : 'the core topics'}. It's a tricky concept, so don't worry.</p>
-                                        <p style={{ marginBottom: '1rem' }}>I've attached a quick 3-minute video that explains it using a different analogy. Please watch it before our next session:</p>
-                                        <a href="#" style={{ color: 'var(--accent)', textDecoration: 'underline', marginBottom: '1.5rem', display: 'inline-block' }}>▶ Watch Review Video</a>
-
-                                        <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: 8, marginTop: '0.5rem' }}>
-                                            <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.5rem' }}>Diagnostic Check (1 Question):</strong>
-                                            <em>Which of the following best describes the primary mechanism of action here?</em><br />
-                                            <span style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
-                                                <button className="btn-ghost btn-sm" style={{ padding: '0.5rem 1rem' }}>Option A</button>
-                                                <button className="btn-ghost btn-sm" style={{ padding: '0.5rem 1rem' }}>Option B</button>
-                                            </span>
-                                        </div>
+                                        {remediationText.split('\n').map((paragraph: string, i: number) => {
+                                            if (!paragraph.trim()) return <br key={i} />
+                                            return <p key={i} style={{ marginBottom: '0.5rem' }}>{paragraph}</p>
+                                        })}
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
                                         <button className="btn-primary" style={{ flex: 1 }} onClick={() => alert('Demo: Follow-up email sent to student cohort via LMS integration.')}>Approve & Send to LMS</button>
@@ -220,20 +208,12 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                     )}
 
                     {!loading && (
-                        <div style={{ marginTop: '2rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            <button
-                                onClick={handleExportPDF}
-                                className="btn-ghost"
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 1.5rem' }}
-                            >
-                                <FileDown size={15} /> Export as PDF
-                            </button>
+                        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
                             <button
                                 onClick={handleLogOut}
                                 className="btn-primary"
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 1.5rem' }}
                             >
-                                <LogOut size={15} /> Finish &amp; Log Out
+                                Finish & Log Out
                             </button>
                         </div>
                     )}
