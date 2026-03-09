@@ -169,7 +169,7 @@ export default function Home() {
             </div>
 
             {/* Impact narrative */}
-            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 600, width: '100%' }}>
+            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 600, width: '100%', margin: '0 auto' }}>
               <div style={{
                 padding: '1rem 1.5rem',
                 background: 'rgba(99,102,241,0.06)',
