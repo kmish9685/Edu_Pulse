@@ -159,13 +159,29 @@ export default function Home() {
             </p>
 
             {/* CTAs */}
-            <div className="animate-fade-up-delay-2" style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '3rem' }}>
+            <div className="animate-fade-up-delay-2" style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '2.5rem' }}>
               <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
                 Start Class Session <ArrowRight size={16} />
               </Link>
               <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem' }}>
                 See How It Works
               </Link>
+            </div>
+
+            {/* Impact narrative */}
+            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 600, width: '100%' }}>
+              <div style={{
+                padding: '1rem 1.5rem',
+                background: 'rgba(99,102,241,0.06)',
+                border: '1px solid rgba(99,102,241,0.18)',
+                borderRadius: 14,
+                fontSize: '0.88rem',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.7,
+                textAlign: 'center',
+              }}>
+                <strong style={{ color: 'var(--accent-soft)', fontFamily: 'var(--font-display)', fontSize: '1rem' }}>250M+ students</strong> in India sit in classrooms where teachers have no real-time feedback loop. EduPulse changes that — with <strong style={{ color: 'var(--text-primary)' }}>nothing more than the phone already in every student&apos;s pocket.</strong>
+              </div>
             </div>
 
             {/* Trust badges */}

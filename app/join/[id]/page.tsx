@@ -18,8 +18,8 @@ export default function StudentJoin() {
     const [error, setError] = useState<string | null>(null)
 
     const SIGNAL_TYPES = [
-        { id: 'confused', label: "I'm Confused", emoji: '🤔', color: '#EF4444', glow: 'rgba(239,68,68,0.3)' },
-        { id: 'too_fast', label: 'Too Fast', emoji: '⚡', color: '#F59E0B', glow: 'rgba(245,158,11,0.3)' },
+        { id: 'confused', label: "I'm Confused", emoji: '🤔', color: '#EF4444', glow: 'rgba(239,68,68,0.35)', gradientFrom: 'rgba(239,68,68,0.12)', gradientTo: 'rgba(239,68,68,0.04)' },
+        { id: 'too_fast', label: 'Too Fast', emoji: '⚡', color: '#F59E0B', glow: 'rgba(245,158,11,0.35)', gradientFrom: 'rgba(245,158,11,0.12)', gradientTo: 'rgba(245,158,11,0.04)' },
     ]
 
     // Validate session on load + check cooldown
@@ -75,16 +75,27 @@ export default function StudentJoin() {
         setSubmitting(null)
     }
 
+    // Shared page shell styles
+    const pageShell: React.CSSProperties = {
+        minHeight: '100vh',
+        background: 'var(--bg-base)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        fontFamily: 'var(--font-body)',
+    }
+
     // ── Loading state ──────────────────────────────────────────────
     if (sessionValid === null) {
         return (
-            <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-body)' }}>
+            <div style={pageShell}>
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: 48, height: 48, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-dot 2s infinite' }}>
-                        <Zap size={22} color="#fff" fill="#fff" />
+                    <div style={{ width: 56, height: 56, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'pulse-dot 2s infinite', boxShadow: '0 0 32px rgba(99,102,241,0.4)' }}>
+                        <Zap size={24} color="#fff" fill="#fff" />
                     </div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.03em' }}>Joining session…</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>PIN: {sessionId}</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.03em' }}>Joining session…</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-tertiary)', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '0.2rem 0.75rem', borderRadius: 100 }}>PIN: {sessionId}</div>
                 </div>
             </div>
         )
@@ -93,37 +104,33 @@ export default function StudentJoin() {
     // ── No active session ──────────────────────────────────────────
     if (!sessionValid) {
         return (
-            <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'var(--font-body)' }}>
-                <div style={{ textAlign: 'center', maxWidth: 380 }}>
-                    <div style={{ width: 64, height: 64, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                        <WifiOff size={28} color="#EF4444" />
+            <div style={pageShell}>
+                <div style={{ textAlign: 'center', width: '100%', maxWidth: 380 }}>
+                    <div style={{ width: 72, height: 72, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 32px rgba(239,68,68,0.1)' }}>
+                        <WifiOff size={30} color="#EF4444" />
                     </div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 5vw, 1.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
                         No active session
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.65, marginBottom: '2rem' }}>
-                        Session PIN <strong style={{ fontFamily: 'var(--font-mono)', color: '#EF4444' }}>{sessionId}</strong> doesn't have an active class right now. Your teacher may not have started the session yet, or it may have ended.
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.65, marginBottom: '2rem', padding: '0 0.5rem' }}>
+                        Session PIN <strong style={{ fontFamily: 'var(--font-mono)', color: '#EF4444' }}>{sessionId}</strong> doesn&apos;t have an active class right now. Your teacher may not have started yet.
                     </p>
-                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
                         <button onClick={async (e) => {
                             const btn = e.currentTarget;
-                            const originalHtml = btn.innerHTML;
-                            btn.innerHTML = 'Checking...';
+                            btn.textContent = 'Checking...';
                             btn.style.opacity = '0.7';
                             const r = await validateSession(sessionId);
                             setSessionValid(r.active);
                             setTimeout(() => {
-                                if (btn) {
-                                    btn.innerHTML = originalHtml;
-                                    btn.style.opacity = '1';
-                                }
+                                if (btn) { btn.innerHTML = '<span>Check Again</span>'; btn.style.opacity = '1'; }
                             }, 500);
                         }}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.625rem 1.25rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', color: 'var(--accent-soft)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s' }}>
-                            <Radio size={14} /> Check Again
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.875rem 1.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 14, color: 'var(--accent-soft)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s', width: '100%' }}>
+                            <Radio size={15} /> Check Again
                         </button>
                         <button onClick={() => router.push('/student')}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.625rem 1.25rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.875rem 1.5rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 14, color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
                             Try a Different PIN
                         </button>
                     </div>
@@ -135,23 +142,23 @@ export default function StudentJoin() {
     // ── Signal Sent ────────────────────────────────────────────────
     if (signaled && cooldown) {
         return (
-            <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', fontFamily: 'var(--font-body)' }}>
-                <div style={{ textAlign: 'center', maxWidth: 340 }}>
-                    <div style={{ width: 72, height: 72, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 32px rgba(34,197,94,0.15)' }}>
-                        <CheckCircle size={34} color="#22C55E" />
+            <div style={pageShell}>
+                <div style={{ textAlign: 'center', width: '100%', maxWidth: 360 }}>
+                    <div style={{ width: 80, height: 80, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 48px rgba(34,197,94,0.18)' }}>
+                        <CheckCircle size={38} color="#22C55E" />
                     </div>
-                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                        Signal received!
+                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
+                        Signal received! ✓
                     </h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: 1.65, marginBottom: '1.5rem' }}>
-                        Your teacher has been notified anonymously. You can signal again after the cooldown.
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.75rem', padding: '0 0.5rem' }}>
+                        Your teacher has been notified <strong style={{ color: 'var(--text-primary)' }}>anonymously</strong>. You can signal again after the cooldown.
                     </p>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', borderRadius: 100, fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
-                        <Clock size={13} />
-                        You can signal again in {cooldownSecs}s
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600 }}>
+                        <Clock size={14} />
+                        Signal again in {cooldownSecs}s
                     </div>
-                    <div style={{ marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                        100% anonymous · No account needed
+                    <div style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                        🔒 100% anonymous · No account needed
                     </div>
                 </div>
             </div>
@@ -167,16 +174,16 @@ export default function StudentJoin() {
             <div style={{ position: 'fixed', bottom: '-10%', right: '-5%', width: '50%', height: '60%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.25rem', gap: '0.5rem', backdropFilter: 'blur(12px)', background: 'rgba(6,6,10,0.85)', position: 'sticky', top: 0, zIndex: 10 }}>
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1rem', gap: '0.5rem', backdropFilter: 'blur(12px)', background: 'rgba(6,6,10,0.85)', position: 'sticky', top: 0, zIndex: 10 }}>
                 <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Zap size={11} color="#fff" fill="#fff" />
                 </div>
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
                 <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>/</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Session</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.85rem', padding: '0.15rem 0.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-soft)', letterSpacing: '0.1em' }}>{sessionId}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Session</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', padding: '0.15rem 0.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-soft)', letterSpacing: '0.1em' }}>{sessionId}</span>
                 <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '0.2rem 0.625rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '0.2rem 0.625rem', flexShrink: 0 }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
                     Live
                 </div>
@@ -186,23 +193,23 @@ export default function StudentJoin() {
             <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.25rem', position: 'relative', zIndex: 1 }}>
 
                 {/* Top text */}
-                <div style={{ textAlign: 'center', marginBottom: '3rem', maxWidth: 340 }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.75rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
+                <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: 380, width: '100%' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.875rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Class in session</span>
                     </div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                        How are you keeping up?
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 7vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.1 }}>
+                        How are you<br />keeping up?
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.65 }}>
-                        Tap a button below. Your feedback is <strong style={{ color: 'var(--text-primary)' }}>100% anonymous</strong> — your teacher won't know it's you.
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>
+                        Tap a button below. Your feedback is <strong style={{ color: 'var(--text-primary)' }}>100% anonymous</strong> — your teacher won&apos;t know it&apos;s you.
                     </p>
                 </div>
 
                 {/* Signal buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: 360 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: 400 }}>
                     {error && (
-                        <div style={{ padding: '0.75rem 1rem', background: 'var(--danger-dim)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 'var(--radius)', fontSize: '0.8rem', color: 'var(--danger)', textAlign: 'center' }}>
+                        <div style={{ padding: '0.875rem 1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 14, fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
                             {error}
                         </div>
                     )}
@@ -214,32 +221,36 @@ export default function StudentJoin() {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'flex-start',
                                 gap: '1rem',
-                                padding: '1.5rem 2rem',
-                                background: cooldown ? 'rgba(255,255,255,0.02)' : `rgba(${sig.color === '#EF4444' ? '239,68,68' : '245,158,11'},0.06)`,
-                                border: `1px solid ${cooldown ? 'var(--glass-border)' : `${sig.color}33`}`,
-                                borderRadius: 18,
+                                padding: 'clamp(1.1rem, 4vw, 1.5rem) clamp(1.1rem, 5vw, 1.75rem)',
+                                background: cooldown
+                                    ? 'rgba(255,255,255,0.02)'
+                                    : `linear-gradient(135deg, ${sig.gradientFrom}, ${sig.gradientTo})`,
+                                border: `1px solid ${cooldown ? 'var(--glass-border)' : `${sig.color}44`}`,
+                                borderRadius: 20,
                                 cursor: cooldown || submitting ? 'not-allowed' : 'pointer',
                                 fontFamily: 'inherit',
                                 width: '100%',
-                                transition: 'all 0.2s ease',
-                                opacity: cooldown ? 0.5 : 1,
-                                boxShadow: cooldown ? 'none' : `0 0 0 0 ${sig.glow}`,
+                                transition: 'all 0.25s ease',
+                                opacity: cooldown ? 0.45 : 1,
+                                boxShadow: cooldown ? 'none' : `0 4px 24px -8px ${sig.glow}`,
+                                textAlign: 'left',
                             }}
-                            onMouseEnter={e => { if (!cooldown && !submitting) (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 24px ${sig.glow}` }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none' }}
+                            onMouseEnter={e => { if (!cooldown && !submitting) (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px -8px ${sig.glow}, 0 0 0 1px ${sig.color}55` }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = cooldown ? 'none' : `0 4px 24px -8px ${sig.glow}` }}
                         >
-                            <span style={{ fontSize: '2rem', lineHeight: 1 }}>{sig.emoji}</span>
-                            <div style={{ textAlign: 'left' }}>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', color: cooldown ? 'var(--text-tertiary)' : 'var(--text-primary)', letterSpacing: '-0.025em' }}>
+                            <span style={{ fontSize: 'clamp(1.75rem, 8vw, 2.25rem)', lineHeight: 1, flexShrink: 0 }}>{sig.emoji}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1rem, 4vw, 1.2rem)', color: cooldown ? 'var(--text-tertiary)' : 'var(--text-primary)', letterSpacing: '-0.025em', whiteSpace: 'nowrap' }}>
                                     {submitting === sig.id ? 'Sending…' : sig.label}
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '0.15rem' }}>
-                                    {sig.id === 'confused' ? 'Tap if you\'re lost on the current topic' : 'Tap if the pace is too fast for you'}
+                                <div style={{ fontSize: 'clamp(0.7rem, 3vw, 0.8rem)', color: 'var(--text-tertiary)', marginTop: '0.2rem', lineHeight: 1.4 }}>
+                                    {sig.id === 'confused' ? "Tap if you're lost on the current topic" : 'Tap if the pace is too fast for you'}
                                 </div>
                             </div>
                             {submitting === sig.id && (
-                                <Loader2 size={16} color="var(--text-tertiary)" style={{ marginLeft: 'auto', animation: 'spin 1s linear infinite' }} />
+                                <Loader2 size={18} color="var(--text-tertiary)" style={{ flexShrink: 0, animation: 'spin 1s linear infinite' }} />
                             )}
                         </button>
                     ))}
@@ -247,8 +258,8 @@ export default function StudentJoin() {
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
-                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', borderRadius: 100, fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
-                        <Clock size={13} />
+                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.125rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', borderRadius: 100, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
+                        <Clock size={14} />
                         Wait {cooldownSecs}s before signaling again
                     </div>
                 )}

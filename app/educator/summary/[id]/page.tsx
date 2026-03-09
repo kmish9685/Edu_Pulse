@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Sparkles, Loader2, ArrowLeft, LogOut } from 'lucide-react'
+import { Sparkles, Loader2, LogOut, FileDown } from 'lucide-react'
 import { generateSummary } from '@/app/actions/ai'
 import Link from 'next/link'
 
@@ -61,8 +61,34 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
         window.location.href = '/'
     }
 
+    const handleExportPDF = () => {
+        window.print()
+    }
+
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
+            <style>{`
+                @media print {
+                    body * { visibility: hidden !important; }
+                    #summary-print-area, #summary-print-area * { visibility: visible !important; }
+                    #summary-print-area {
+                        position: fixed !important;
+                        top: 0; left: 0;
+                        width: 100%;
+                        padding: 2rem 3rem;
+                        background: white !important;
+                        color: black !important;
+                    }
+                    #summary-print-area h1, #summary-print-area p, #summary-print-area span, #summary-print-area div {
+                        color: black !important;
+                    }
+                    #summary-print-area .glass-card {
+                        box-shadow: none !important;
+                        border: 1px solid #ddd !important;
+                        background: white !important;
+                    }
+                }
+            `}</style>
 
             {/* Ambient glow */}
             <div style={{ position: 'fixed', top: '-20%', left: '-10%', width: '60%', height: '70%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -87,7 +113,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
             {/* Content */}
             <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', zIndex: 1, overflowY: 'auto' }}>
-                <div style={{ width: '100%', maxWidth: 700 }}>
+                <div id="summary-print-area" style={{ width: '100%', maxWidth: 700 }}>
 
                     <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
@@ -127,12 +153,20 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                     </div>
 
                     {!loading && (
-                        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+                        <div style={{ marginTop: '2rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={handleExportPDF}
+                                className="btn-ghost"
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 1.5rem' }}
+                            >
+                                <FileDown size={15} /> Export as PDF
+                            </button>
                             <button
                                 onClick={handleLogOut}
                                 className="btn-primary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 1.5rem' }}
                             >
-                                Finish & Log Out
+                                <LogOut size={15} /> Finish &amp; Log Out
                             </button>
                         </div>
                     )}
