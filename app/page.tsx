@@ -415,6 +415,17 @@ export default function Home() {
               </p>
             </div>
 
+            {/* Feature 6: Frictionless */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <QrCode size={20} color="var(--text-primary)" />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Zero-Friction Student Setup</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                Phone camera → scan QR → one tap. No apps to download. No passwords to remember. Connects instantly even on 3G networks.
+              </p>
+            </div>
+
             {/* Feature 5: The Holy Grail */}
             <div className="glass-card" style={{ padding: '2.5rem', gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(79,70,229,0.03))', borderColor: 'rgba(99,102,241,0.2)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap' }}>
@@ -445,17 +456,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Feature 6: Frictionless */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <QrCode size={20} color="var(--text-primary)" />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Zero-Friction Student Setup</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                Phone camera → scan QR → one tap. No apps to download. No passwords to remember. Connects instantly even on 3G networks.
-              </p>
             </div>
 
           </div>
