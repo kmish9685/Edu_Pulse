@@ -343,7 +343,7 @@ export default function Home() {
           ))}
         </section>
 
-        {/* ══ SECTION 05 — FEATURES (asymmetric grid) ══════════ */}
+        {/* ══ SECTION 05 — FEATURES (Massive AI Showcase) ══════════ */}
         <section
           ref={featReveal.ref}
           style={{
@@ -354,57 +354,110 @@ export default function Home() {
           }}
         >
           <div style={{ marginBottom: '3rem' }}>
-            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Core Features</div>
+            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Core Capabilities & Roadmap</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
-              Built for the realities of a classroom.
+              The AI-Powered Retention Engine.
             </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 640, marginTop: '1rem' }}>
+              We don't just collect data. We use AI to actively intervene, protect tuition revenue, and make teachers better in the moment.
+            </p>
           </div>
 
-          {/* Assymetric grid */}
-          <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: 1, background: 'var(--border)', borderRadius: 18, overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.25rem' }}>
 
-            {/* Row 1 */}
-            <div style={{ padding: '2rem', background: 'var(--bg-surface)' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>01</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.03em', marginBottom: '0.625rem' }}>AI-Powered Insight Engine</h3>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>The system detects whether a spike is isolated noise or a real class-wide confusion moment. One student panicking ≠ the same response as five students panicking simultaneously.</p>
-            </div>
-            <div style={{ padding: '2rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>02</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Pre-set Lecture Agenda</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>Add topics before class. Hit "Next Topic" once. Every signal timestamped and correlated.</p>
-            </div>
-
-            {/* Row 2 — flipped col widths */}
-            <div style={{ gridColumn: '1 / -1', height: 1, background: 'var(--border)' }} />
-
-            <div style={{ padding: '2rem', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-              {/* TYPE-ONLY pull quote cell */}
-              <p className="pull-quote">
-                "Five students confused simultaneously is a classroom event.<br />
-                One student is a personal moment."
+            {/* Feature 1: Live Intelligence */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <Activity size={20} color="var(--accent-soft)" />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Live Signal Intelligence</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                Our core engine detects whether a spike is isolated noise or a real class-wide confusion event within 3 seconds. Topic annotations correlate spikes to exact slides.
               </p>
-              <div style={{ marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>— EduPulse Signal Intelligence</div>
-            </div>
-            <div style={{ padding: '2rem', background: 'var(--bg-surface)' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>03</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Spam-Proof & Anonymous</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>60-second cooldown prevents spam. No accounts. No personal data. PDPA and FERPA-aligned.</p>
             </div>
 
-            <div style={{ gridColumn: '1 / -1', height: 1, background: 'var(--border)' }} />
+            {/* Feature 2: Automated Remediation */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'linear-gradient(135deg, rgba(167,139,250,0.06), transparent)', borderColor: 'rgba(167,139,250,0.2)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <Brain size={20} color="#A78BFA" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>Automated Remediation</h3>
+                <span className="lx-badge" style={{ fontSize: '0.65rem', background: 'var(--accent)', color: '#fff' }}>NEW</span>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                AI analyzes the session's most confusing topics and automatically drafts a targeted review email and diagnostic quiz for the students affected.
+              </p>
+            </div>
 
-            {/* Row 3 */}
-            <div style={{ padding: '2rem', background: 'var(--bg-surface)' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>04</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.03em', marginBottom: '0.625rem' }}>Institutional Intelligence</h3>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>The admin panel shows cross-session metrics, confusion patterns by topic, and pilot ROI data. Give your head of department a live dashboard that proves impact.</p>
+            {/* Feature 3: Predictive Dropout */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'linear-gradient(135deg, rgba(239,68,68,0.04), transparent)', borderColor: 'rgba(239,68,68,0.15)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <TrendingUp size={20} color="var(--danger)" />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>Predictive Dropout Modeling</h3>
+                <span className="lx-badge" style={{ fontSize: '0.65rem', background: 'var(--danger)', color: '#fff' }}>NEW</span>
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                We feed time-series confusion data into an institutional model to flag at-risk students 3-4 weeks *before* they fail a midterm or drop out.
+              </p>
             </div>
-            <div style={{ padding: '2rem', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>05</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.03em', marginBottom: '0.5rem' }}>Zero-Friction for Students</h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>Phone camera → scan QR → one tap. No download. No account. Works on 3G.</p>
+
+            {/* Feature 4: Spam Proof */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <Shield size={20} color="var(--text-primary)" />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Spam-Proof & Anonymous</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                A 60-second cooldown prevents malicious spamming. No accounts or personal data required. Fully PDPA and FERPA-aligned by design.
+              </p>
             </div>
+
+            {/* Feature 5: The Holy Grail */}
+            <div className="glass-card" style={{ padding: '2.5rem', gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(79,70,229,0.03))', borderColor: 'rgba(99,102,241,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 400px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <Sparkles size={16} color="var(--accent-soft)" />
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-soft)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Vision Roadmap</span>
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '-0.03em', marginBottom: '1rem' }}>The Holy Grail: Real-Time Prompting</h3>
+                  <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                    In the future, EduPulse will listen to lecture audio using a real-time LLM. When a confusion spike hits, the teacher doesn't just see a red graph—they instantly see an AI-generated suggestion on their screen: <em style={{ color: 'var(--text-primary)' }}>"High confusion on Binary Trees. Suggest using the analogy of a filing cabinet."</em>
+                  </p>
+                </div>
+                {/* Mockup visual of the prompt */}
+                <div style={{ flex: '1 1 300px', background: 'rgba(6,6,10,0.6)', border: '1px solid var(--glass-border)', borderRadius: 12, padding: '1.5rem' }}>
+                  <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Live Teleprompter Preview</div>
+                  <div style={{ background: 'var(--danger-dim)', border: '1px solid rgba(239,68,68,0.2)', padding: '1rem', borderRadius: 8, marginBottom: '0.75rem' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--danger)' }}>14 Signals</span> <span style={{ color: 'var(--text-secondary)' }}>in last 30s during "Pointer Arithmetic"</span>
+                  </div>
+                  <div style={{ background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '1.25rem', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <Sparkles size={14} color="#A78BFA" />
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>Suggested Pivot</span>
+                    </div>
+                    <div style={{ fontSize: '0.95rem', color: '#A78BFA', lineHeight: 1.5 }}>
+                      "Pause here. Ask the class to imagine memory addresses as hotel room numbers before proceeding to arrays."
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 6: Frictionless */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <QrCode size={20} color="var(--text-primary)" />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Zero-Friction Student Setup</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                Phone camera → scan QR → one tap. No apps to download. No passwords to remember. Connects instantly even on 3G networks.
+              </p>
+            </div>
+
           </div>
         </section>
 
