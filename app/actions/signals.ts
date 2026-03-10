@@ -8,7 +8,8 @@ export async function submitSignal(data: {
     lat?: number,
     lng?: number,
     block_room?: string,
-    additional_text?: string
+    additional_text?: string,
+    device_id?: string
 }) {
     const supabase = await createClient()
 
@@ -34,6 +35,7 @@ export async function submitSignal(data: {
             lng: data.lng,
             block_room: data.block_room,
             additional_text: data.additional_text?.substring(0, 120),
+            device_id: data.device_id ?? null,
         })
 
     if (error) return { success: false, error: error.message }

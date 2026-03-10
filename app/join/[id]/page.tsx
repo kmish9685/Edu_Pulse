@@ -10,6 +10,18 @@ export default function StudentJoin() {
     const router = useRouter()
     const sessionId = params.id as string
 
+    // Generate or retrieve a persistent anonymous device ID
+    // This never contains any personal info — just a random string
+    const getOrCreateDeviceId = (): string => {
+        const key = 'edupulse_device_id'
+        let id = localStorage.getItem(key)
+        if (!id) {
+            id = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36)
+            localStorage.setItem(key, id)
+        }
+        return id
+    }
+
     const [sessionValid, setSessionValid] = useState<boolean | null>(null) // null = checking
     const [signaled, setSignaled] = useState(false)
     const [cooldown, setCooldown] = useState(false)
@@ -57,7 +69,8 @@ export default function StudentJoin() {
         if (cooldown || submitting) return
         setSubmitting(type)
         setError(null)
-        const res = await submitSignal({ type, block_room: sessionId, additional_text: '' })
+        const deviceId = getOrCreateDeviceId()
+        const res = await submitSignal({ type, block_room: sessionId, additional_text: '', device_id: deviceId })
         if (res.success) {
             setSignaled(true)
             setCooldown(true)
