@@ -44,6 +44,8 @@ function DashboardContent() {
     const [totalSignals, setTotalSignals] = useState(0)
     const [chartRevealed, setChartRevealed] = useState(false)
     const [ending, setEnding] = useState(false)
+    const [muted, setMuted] = useState(false)
+    const alertFired = useRef(false) // prevents repeated firing every 3s poll
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -54,6 +56,44 @@ function DashboardContent() {
     const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([])
 
     const supabase = createClient()
+
+    // ── Sound alert via Web Audio API (no file needed) ──────────────
+    const playAlertSound = () => {
+        if (muted) return
+        try {
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+            const playTone = (freq: number, startTime: number, duration: number) => {
+                const osc = ctx.createOscillator()
+                const gain = ctx.createGain()
+                osc.connect(gain)
+                gain.connect(ctx.destination)
+                osc.type = 'sine'
+                osc.frequency.setValueAtTime(freq, startTime)
+                gain.gain.setValueAtTime(0, startTime)
+                gain.gain.linearRampToValueAtTime(0.5, startTime + 0.02)
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
+                osc.start(startTime)
+                osc.stop(startTime + duration)
+            }
+            // Double-ping: two tones for attention
+            playTone(880, ctx.currentTime, 0.25)
+            playTone(660, ctx.currentTime + 0.3, 0.35)
+        } catch (e) {
+            // Audio not available (e.g. server-side render) — fail silently
+        }
+    }
+
+    // Fire alert when confusion crosses 30% threshold
+    useEffect(() => {
+        if (pulseValue >= 30 && !alertFired.current) {
+            alertFired.current = true
+            playAlertSound()
+        }
+        // Reset so it can fire again if load drops below 15% and climbs back
+        if (pulseValue < 15) {
+            alertFired.current = false
+        }
+    }, [pulseValue, muted])
 
     useEffect(() => {
         setTopicLog([{ time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), label: 'Session Started' }])
@@ -212,6 +252,14 @@ function DashboardContent() {
                 )}
 
                 <div style={{ flex: 1 }} />
+                {/* Mute toggle */}
+                <button
+                    onClick={() => setMuted(m => !m)}
+                    title={muted ? 'Unmute alerts' : 'Mute alerts'}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.25rem 0.65rem', background: muted ? 'rgba(239,68,68,0.08)' : 'var(--accent-dim)', border: `1px solid ${muted ? 'rgba(239,68,68,0.25)' : 'var(--border-accent)'}`, borderRadius: 'var(--radius)', color: muted ? 'var(--danger)' : 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                    {muted ? '🔇 Muted' : '🔔 Alerts On'}
+                </button>
                 <button
                     disabled={ending}
                     onClick={async () => {
