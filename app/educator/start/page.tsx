@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles } from 'lucide-react'
+import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles, BarChart2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { startSession } from '@/app/actions/signals'
@@ -123,6 +123,9 @@ export default function EducatorStart() {
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', fontWeight: 500 }}>New Session</span>
                 <div style={{ flex: 1 }} />
+                <Link href="/educator/history" className="btn-ghost btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                    <BarChart2 size={13} /> History
+                </Link>
             </header>
 
             <div className="setup-layout" style={{ position: 'relative', zIndex: 1, maxWidth: 1080, margin: '0 auto', padding: '4rem 1.75rem', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '3.5rem', alignItems: 'start' }}>
