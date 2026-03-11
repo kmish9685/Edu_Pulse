@@ -135,7 +135,9 @@ function DashboardContent() {
 
         const oneMinAgo = new Date(Date.now() - 60000).toISOString()
         const recentCount = allSignals.filter(s => s.created_at > oneMinAgo).length
-        setPulseValue(allSignals.length > 0 ? Math.round((recentCount / Math.max(allSignals.length, 1)) * 100) : 0)
+        // Count-based load: each recent signal = 10%, capped at 100%
+        // 1 signal = 10% (calm), 2 = 20% (watch), 3+ = 30%+ (alert)
+        setPulseValue(Math.min(recentCount * 10, 100))
 
         const timeSeriesMap = new Map<string, { time: string; signals: number }>()
         for (let i = 29; i >= 0; i--) {
