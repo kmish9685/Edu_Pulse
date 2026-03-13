@@ -121,16 +121,46 @@ export default function AdminPage() {
         setLoadingEducators(false)
     }
 
-    // Supabase realtime for the ticker
+    // Supabase Realtime — updates ticker AND metrics instantly, no refresh needed
     useEffect(() => {
         const channel = supabase
             .channel('admin-live-ticker')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signals' }, payload => {
-                setLiveSignals(prev => [payload.new as LiveSignal, ...prev].slice(0, 8))
-                // Auto-scroll ticker
+                const newSig = payload.new as LiveSignal & { active_topic?: string }
+
+                // 1. Update ticker
+                setLiveSignals(prev => [newSig, ...prev].slice(0, 8))
                 if (tickerRef.current) {
                     tickerRef.current.scrollTop = 0
                 }
+
+                // 2. Immediately update metrics in-memory — no page refresh required
+                setMetrics(prev => {
+                    const normType = newSig.type === 'confused' ? "I'm Confused" : newSig.type
+
+                    // Update total
+                    const newTotal = prev.totalSignals + 1
+
+                    // Update breakdown
+                    const bdMap: Record<string, number> = {}
+                    prev.signalBreakdown.forEach(b => { bdMap[b.type] = b.count })
+                    bdMap[normType] = (bdMap[normType] || 0) + 1
+                    const newBreakdown = Object.entries(bdMap).map(([type, count]) => ({ type, count }))
+
+                    // Update top topics
+                    let newTopics = [...prev.topTopics]
+                    if (newSig.active_topic) {
+                        const existing = newTopics.find(t => t.topic === newSig.active_topic)
+                        if (existing) {
+                            newTopics = newTopics.map(t => t.topic === newSig.active_topic ? { ...t, count: t.count + 1 } : t)
+                        } else {
+                            newTopics = [...newTopics, { topic: newSig.active_topic!, count: 1, trend: '+0%' }]
+                        }
+                        newTopics = newTopics.sort((a, b) => b.count - a.count).slice(0, 3)
+                    }
+
+                    return { ...prev, totalSignals: newTotal, signalBreakdown: newBreakdown, topTopics: newTopics }
+                })
             })
             .subscribe()
         return () => { supabase.removeChannel(channel) }
