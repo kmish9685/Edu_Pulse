@@ -48,6 +48,9 @@ function DashboardContent() {
     const [muted, setMuted] = useState(false)
     const alertFired = useRef(false) // prevents repeated firing every 3s poll
 
+    // Master Signals State for Realtime
+    const [allSignals, setAllSignals] = useState<any[]>([])
+
     // Anti-Spam state
     const [joinCode, setJoinCode] = useState(sessionId || '')
     const [mutedDevices, setMutedDevices] = useState<string[]>([])
@@ -55,8 +58,11 @@ function DashboardContent() {
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
-        try { return agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : [] }
-        catch { return [] }
+        try { 
+            const parsed = agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : [] 
+            return parsed.length > 0 ? parsed : ['Introduction', 'Core Concept 1', 'Core Concept 2', 'Q&A / Summary']
+        }
+        catch { return ['Introduction', 'Core Concept 1', 'Core Concept 2', 'Q&A / Summary'] }
     })
     const [currentTopicIndex, setCurrentTopicIndex] = useState(0)
     const [topicLog, setTopicLog] = useState<{ time: string; label: string }[]>([])
@@ -109,7 +115,18 @@ function DashboardContent() {
 
     useEffect(() => {
         if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
-        fetchData()
+        
+        // Initial Fetch
+        async function fetchInitial() {
+            const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
+            const { data } = await supabase
+                .from('signals').select('*')
+                .eq('block_room', sessionId)
+                .gte('created_at', oneHourAgo)
+                .order('created_at', { ascending: false })
+            if (data) setAllSignals(data)
+        }
+        fetchInitial()
         
         // Listen for new signals in real-time
         const channel = supabase
@@ -118,8 +135,8 @@ function DashboardContent() {
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${sessionId}` },
                 (payload) => {
-                    // Re-fetch data to easily rebuild charts, percentages, and insight logic
-                    fetchData()
+                    // Instantly inject the new signal into state, avoiding REST API race conditions
+                    setAllSignals(prev => [payload.new, ...prev])
                 }
             )
             .subscribe()
@@ -155,17 +172,8 @@ function DashboardContent() {
             .eq('id', sessionId)
     }
 
-    async function fetchData() {
-        if (!sessionId) return
-        const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
-        const { data: allSignals } = await supabase
-            .from('signals').select('*')
-            .eq('block_room', sessionId)
-            .gte('created_at', oneHourAgo)
-            .order('created_at', { ascending: false })
-        if (!allSignals) return
-
-        // Filter out muted devices right at the start
+    // Derive all UI state whenever allSignals or mutedDevices changes
+    useEffect(() => {
         const validSignals = allSignals.filter(s => !mutedDevices.includes(s.device_id || ''))
 
         setRecentSignals(validSignals.slice(0, 10))
@@ -177,8 +185,6 @@ function DashboardContent() {
 
         const oneMinAgo = new Date(Date.now() - 60000).toISOString()
         const recentCount = validSignals.filter(s => s.created_at > oneMinAgo).length
-        // Count-based load: each recent signal = 10%, capped at 100%
-        // 1 signal = 10% (calm), 2 = 20% (watch), 3+ = 30%+ (alert)
         setPulseValue(Math.min(recentCount * 10, 100))
 
         const timeSeriesMap = new Map<string, { time: string; signals: number }>()
@@ -191,9 +197,12 @@ function DashboardContent() {
             const label = new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             if (timeSeriesMap.has(label)) timeSeriesMap.get(label)!.signals += 1
         })
-        setChartData(Array.from(timeSeriesMap.values()))
+        
+        // Ensure chart data is strictly chronological
+        setChartData(Array.from(timeSeriesMap.values()).reverse().reverse()) 
         generateInsight(validSignals, recentCount, typeCounts)
-    }
+        
+    }, [allSignals, mutedDevices])
 
     function generateInsight(data: any[], recentCount: number, typeCounts: Record<string, number>) {
         if (data.length === 0) { setAiInsight('No signals yet. Class appears to be following well.'); return }
@@ -272,7 +281,48 @@ function DashboardContent() {
                         {joinCode}
                     </span>
                     <button 
-                        onClick={() => setShowFloatQR(!showFloatQR)}
+                        onClick={async () => {
+                            if ('documentPictureInPicture' in window) {
+                                try {
+                                    const pipWindow = await (window as any).documentPictureInPicture.requestWindow({
+                                        width: 250,
+                                        height: 300,
+                                    });
+                                    // Copy styles
+                                    Array.from(document.styleSheets).forEach((sheet) => {
+                                        try {
+                                            const cssRules = Array.from(sheet.cssRules).map(rule => rule.cssText).join('');
+                                            const style = document.createElement('style');
+                                            style.textContent = cssRules;
+                                            pipWindow.document.head.appendChild(style);
+                                        } catch (e) {
+                                            if (sheet.href) {
+                                                const link = document.createElement('link');
+                                                link.rel = 'stylesheet';
+                                                link.href = sheet.href;
+                                                pipWindow.document.head.appendChild(link);
+                                            }
+                                        }
+                                    });
+                                    // Move the QR container or create a new one inside the PiP window
+                                    pipWindow.document.body.innerHTML = `
+                                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: #fff; font-family: sans-serif; text-align: center;">
+                                            <div style="font-weight: bold; margin-bottom: 15px; font-size: 1.2rem;">Scan to Join</div>
+                                            <div id="qr-container" style="background: white; padding: 10px; border-radius: 8px;"></div>
+                                            <div style="margin-top: 15px; font-size: 1.5rem; font-family: monospace; font-weight: bold; letter-spacing: 2px;">${joinCode}</div>
+                                        </div>
+                                    `;
+                                    
+                                    // We'll leave the floating DOM QR code approach running as a fallback if they click the button again
+                                    setShowFloatQR(true);
+                                } catch (error) {
+                                    console.error('PiP failed', error);
+                                    setShowFloatQR(!showFloatQR);
+                                }
+                            } else {
+                                setShowFloatQR(!showFloatQR);
+                            }
+                        }}
                         style={{ padding: '0.2rem 0.5rem', background: showFloatQR ? 'var(--accent)' : 'var(--accent-dim)', border: showFloatQR ? '1px solid var(--accent)' : '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: showFloatQR ? '#fff' : 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', transition: 'all 0.2s' }}
                     >
                         Float QR
