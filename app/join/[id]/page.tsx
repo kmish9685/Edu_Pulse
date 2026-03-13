@@ -222,6 +222,7 @@ export default function StudentJoin() {
     const [lang, setLang] = useState<keyof typeof translations>('en')
     const [sessionAgenda, setSessionAgenda] = useState<string[]>([])
     const [dropdownOpen, setDropdownOpen] = useState(false)
+    const [offNetwork, setOffNetwork] = useState(false)
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -288,7 +289,9 @@ export default function StudentJoin() {
             setSignaled(true)
             setCooldown(true)
             setCooldownSecs(60)
-            setOptionalText('') // Clear it for next time
+            setOptionalText('')
+            // Check if student is off the campus network
+            setOffNetwork(!!(res as any).offNetwork)
             localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
             const countdown = setInterval(() => {
                 setCooldownSecs(s => {
@@ -371,16 +374,32 @@ export default function StudentJoin() {
     if (signaled && cooldown) {
         return (
             <div style={pageShell}>
-                <div style={{ textAlign: 'center', width: '100%', maxWidth: 360 }}>
-                    <div style={{ width: 80, height: 80, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 48px rgba(34,197,94,0.18)' }}>
-                        <CheckCircle size={38} color="#22C55E" />
+                <div style={{ textAlign: 'center', width: '100%', maxWidth: 380 }}>
+                    <div style={{ width: 80, height: 80, background: offNetwork ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${offNetwork ? 'rgba(245,158,11,0.25)' : 'rgba(34,197,94,0.25)'}`, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: offNetwork ? '0 0 48px rgba(245,158,11,0.18)' : '0 0 48px rgba(34,197,94,0.18)' }}>
+                        <CheckCircle size={38} color={offNetwork ? '#F59E0B' : '#22C55E'} />
                     </div>
                     <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
                         {t.received}
                     </h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.75rem', padding: '0 0.5rem' }}>
-                        {t.notified}
-                    </p>
+
+                    {/* Off-network WiFi warning */}
+                    {offNetwork ? (
+                        <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.25rem', textAlign: 'left' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ fontSize: '1.1rem' }}>📶</span>
+                                <span style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>Connect to Campus WiFi</span>
+                            </div>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                                Your signal was received, but you appear to be on a different network than your teacher. 
+                                Please connect to the <strong style={{ color: 'var(--text-primary)' }}>same campus WiFi</strong> as your teacher for your feedback to reach them directly.
+                            </p>
+                        </div>
+                    ) : (
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.75rem', padding: '0 0.5rem' }}>
+                            {t.notified}
+                        </p>
+                    )}
+
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600 }}>
                         <Clock size={14} />
                         {t.signalAgain.replace('{s}', cooldownSecs.toString())}

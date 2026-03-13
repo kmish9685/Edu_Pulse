@@ -2,6 +2,27 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
+
+// ─── IP Helpers ───────────────────────────────────────────────────
+function getClientIp(headerList: Headers): string | null {
+    // In production (Vercel/Cloudflare), real IP is in x-forwarded-for
+    const forwarded = headerList.get('x-forwarded-for')
+    if (forwarded) return forwarded.split(',')[0].trim()
+    const realIp = headerList.get('x-real-ip')
+    if (realIp) return realIp.trim()
+    return null
+}
+
+// Compare /16 network prefix (first two octets) — same campus WiFi will match
+function isSameNetwork(ip1: string | null, ip2: string | null): boolean {
+    if (!ip1 || !ip2) return true // If we can't determine IP, allow through
+    // Handle IPv6 loopback (localhost testing) — always allow
+    if (ip1.includes(':') || ip2.includes(':')) return true
+    const net1 = ip1.split('.').slice(0, 2).join('.')
+    const net2 = ip2.split('.').slice(0, 2).join('.')
+    return net1 === net2
+}
 
 export async function submitSignal(data: {
     type: string,
@@ -12,14 +33,17 @@ export async function submitSignal(data: {
     device_id?: string
 }) {
     const supabase = await createClient()
+    const headerList = await headers()
+    const studentIp = getClientIp(headerList)
 
-    let activeTopic = null;
+    let activeTopic = null
+    let teacherIp: string | null = null
 
-    // Validate that the session is still active before accepting the signal
+    // Validate session and get teacher IP for geofencing
     if (data.block_room) {
         const { data: session } = await supabase
             .from('active_sessions')
-            .select('id, is_active, current_topic')
+            .select('id, is_active, current_topic, teacher_ip')
             .eq('id', data.block_room)
             .eq('is_active', true)
             .single()
@@ -27,8 +51,18 @@ export async function submitSignal(data: {
         if (!session) {
             return { success: false, error: 'No active session with this PIN. The class may have ended.' }
         }
-        
-        activeTopic = session.current_topic;
+
+        activeTopic = session.current_topic
+        // teacher_ip may not exist as column yet — use optional chaining
+        teacherIp = (session as any).teacher_ip ?? null
+    }
+
+    // ── IP Geofencing: Shadow Ban ──────────────────────────────────
+    // If teacher IP is recorded and student is on a different network — silently drop
+    if (teacherIp && studentIp && !isSameNetwork(studentIp, teacherIp)) {
+        // Return success=true so student doesn't know they're shadow-banned
+        // But also set offNetwork=true so the student UI can show the WiFi message
+        return { success: true, offNetwork: true }
     }
 
     const { error } = await supabase
@@ -44,7 +78,7 @@ export async function submitSignal(data: {
         })
 
     if (error) return { success: false, error: error.message }
-    return { success: true }
+    return { success: true, offNetwork: false }
 }
 
 export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string, agenda?: string[] }> {
@@ -84,13 +118,20 @@ export async function startSession(pin: string, initialTopic?: string, agenda?: 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Not authenticated' }
 
+    // Capture teacher IP for geofencing
+    let teacherIp: string | null = null
+    try {
+        const headerList = await headers()
+        teacherIp = getClientIp(headerList)
+    } catch { /* headers not available in some contexts */ }
+
     // Enforce role authorization
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
     if (!profile || (profile.role !== 'educator' && profile.role !== 'admin')) {
         return { success: false, error: 'Unauthorized: Only registered educators can start sessions.' }
     }
 
-    // Upsert — save agenda to DB so students can see topics in their dropdown
+    // Upsert — save agenda + teacher IP to DB
     const { error } = await supabase
         .from('active_sessions')
         .upsert({
@@ -102,6 +143,7 @@ export async function startSession(pin: string, initialTopic?: string, agenda?: 
             current_topic: initialTopic || null,
             join_code: pin,
             agenda: agenda && agenda.length > 0 ? agenda : null,
+            teacher_ip: teacherIp,
         })
 
     if (error) return { success: false, error: error.message }
