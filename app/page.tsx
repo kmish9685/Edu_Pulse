@@ -163,8 +163,8 @@ export default function Home() {
               <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
                 Start Class Session <ArrowRight size={16} />
               </Link>
-              <Link href="/how-it-works" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem' }}>
-                See How It Works
+              <Link href="/student" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <QrCode size={16} /> Join as Student
               </Link>
             </div>
 
@@ -412,6 +412,17 @@ export default function Home() {
               <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Spam-Proof & Anonymous</h3>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
                 A 60-second cooldown prevents malicious spamming. No accounts or personal data required. Fully PDPA and FERPA-aligned by design.
+              </p>
+            </div>
+
+            {/* Feature 5: Enterprise LMS */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                <BookOpen size={20} color="var(--text-primary)" />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Enterprise LMS Sync</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                Fully compatible with Moodle, Canvas, and Blackboard via LTI 1.3. Sync session rosters, post automated remediation quizzes, and track attendance seamlessly.
               </p>
             </div>
 

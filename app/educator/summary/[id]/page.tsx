@@ -157,7 +157,6 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <Send size={16} color="#A78BFA" />
                                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Automated Remediation</span>
-                                <span className="lx-badge" style={{ fontSize: '0.65rem', marginLeft: 'auto', background: 'var(--accent)', color: '#fff' }}>BETA</span>
                             </div>
 
                             {followUpMode === 'idle' && (
@@ -199,7 +198,10 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                                         })}
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-                                        <button className="btn-primary" style={{ flex: 1 }} onClick={() => alert('Demo: Follow-up email sent to student cohort via LMS integration.')}>Approve & Send to LMS</button>
+                                        <button className="btn-primary" style={{ flex: 1 }} onClick={() => {
+                                            navigator.clipboard.writeText(remediationText || '');
+                                            alert('Text copied to clipboard!');
+                                        }}>Copy Text</button>
                                         <button className="btn-ghost" onClick={() => setFollowUpMode('idle')}>Regenerate</button>
                                     </div>
                                 </div>

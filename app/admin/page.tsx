@@ -13,6 +13,7 @@ interface RealMetrics {
     totalSignals: number
     activeSessions: string[]
     signalBreakdown: { type: string; count: number }[]
+    topTopics: { topic: string; count: number; trend: string }[]
 }
 
 interface LiveSignal {
@@ -50,7 +51,7 @@ const QUICK_LINKS = [
 export default function AdminPage() {
     const [showMobileNav, setShowMobileNav] = useState(false)
     const [activeSection, setActiveSection] = useState<NavSection>('overview')
-    const [metrics, setMetrics] = useState<RealMetrics>({ totalSignals: 0, activeSessions: [], signalBreakdown: [] })
+    const [metrics, setMetrics] = useState<RealMetrics>({ totalSignals: 0, activeSessions: [], signalBreakdown: [], topTopics: [] })
     const [loadingMetrics, setLoadingMetrics] = useState(true)
     const [signalTypes, setSignalTypes] = useState<{ id: number; label: string }[]>([])
     const [newSignalLabel, setNewSignalLabel] = useState('')
@@ -137,14 +138,37 @@ export default function AdminPage() {
 
     async function fetchRealMetrics() {
         const ago = new Date(Date.now() - 24 * 3600000).toISOString()
-        const { data: signals } = await supabase.from('signals').select('id,type,block_room,created_at').gte('created_at', ago).order('created_at', { ascending: false })
+        const { data: signals } = await supabase.from('signals').select('id,type,block_room,created_at,active_topic').gte('created_at', ago).order('created_at', { ascending: false })
         if (signals) {
             const sessions = [...new Set(signals.map(s => s.block_room).filter(Boolean))]
             const breakdown: Record<string, number> = {}
-            signals.forEach(s => { breakdown[s.type] = (breakdown[s.type] || 0) + 1 })
+            const topicMap: Record<string, number> = {}
+            
+            signals.forEach(s => { 
+                // Normalize case for consistency, since some signals might be "I'm Confused" and others "confused"
+                const normType = s.type === "confused" ? "I'm Confused" : s.type;
+                breakdown[normType] = (breakdown[normType] || 0) + 1 
+                
+                if (s.active_topic) {
+                    topicMap[s.active_topic] = (topicMap[s.active_topic] || 0) + 1
+                }
+            })
+            
             const recent = signals.slice(0, 6).map(s => ({ id: s.id, type: s.type, created_at: s.created_at }))
             setLiveSignals(recent)
-            setMetrics({ totalSignals: signals.length, activeSessions: sessions, signalBreakdown: Object.entries(breakdown).map(([type, count]) => ({ type, count })) })
+            
+            // Generate top 3 flagged topics
+            const sortedTopics = Object.entries(topicMap)
+                .map(([topic, count]) => ({ topic, count, trend: '+0%' }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 3)
+
+            setMetrics({ 
+                totalSignals: signals.length, 
+                activeSessions: sessions, 
+                signalBreakdown: Object.entries(breakdown).map(([type, count]) => ({ type, count })),
+                topTopics: sortedTopics
+            })
         }
         setLoadingMetrics(false)
     }
@@ -324,12 +348,12 @@ export default function AdminPage() {
                                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Top At-Risk Topics</span>
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                                            {[
-                                                { topic: 'Recursion (CS-101)', count: 450, trend: '+12%' },
-                                                { topic: 'Thermodynamics (PHY-202)', count: 312, trend: '+5%' },
-                                                { topic: 'Organic Chem (CHM-301)', count: 289, trend: '-2%' }
-                                            ].map((t, i) => (
-                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}>
+                                            {(metrics.topTopics.length > 0 ? metrics.topTopics : [
+                                                { topic: 'Recursion (CS-101) [Demo]', count: 450, trend: '+12%' },
+                                                { topic: 'Thermodynamics (PHY-202) [Demo]', count: 312, trend: '+5%' },
+                                                { topic: 'Organic Chem (CHM-301) [Demo]', count: 289, trend: '-2%' }
+                                            ]).map((t, i) => (
+                                                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: i < ((metrics.topTopics.length || 3) - 1) ? '1px solid var(--border)' : 'none' }}>
                                                     <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{t.topic}</span>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                                         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: t.trend.startsWith('+') ? 'var(--danger)' : 'var(--success)' }}>{t.trend}</span>

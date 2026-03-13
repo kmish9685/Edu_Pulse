@@ -179,10 +179,22 @@ By Topic (Accurate):
 ${Object.entries(topicCounts).map(([topic, count]) => `- During "${topic}": ${count} signals`).join('\n') || 'No specific topic signals recorded.'}
 
 Task:
-Draft a 2-3 paragraph encouraging review email to the class addressing the most confusing topics from today's session based strictly on the provided objective topic signals.
-Then, include a highly relevant, 1-question multiple-choice diagnostic quiz at the end of the email to check their understanding of that confusing concept.
+Draft a review summary and diagnostic quiz based strictly on the provided objective topic signals.
 
-Format the response as plain text with clear spacing. Do NOT use markdown bolding (**) or hashtags.`;
+You MUST use EXACTLY the following format. Do not use markdown bolding (**) or hashtags (#). Use the exact emojis shown.
+
+📚 Session Summary — [Insert Overall Class Topic/Name] ([Insert Today's Date])
+🔴 Most confused topics:
+• [Insert Topic 1]: [Insert Number] signals
+• [Insert Topic 2]: [Insert Number] signals
+📖 Key points to review:
+[Provide a 1-2 paragraph AI-written recap explaining the confusing topics clearly and simply]
+🎥 Helpful resources:
+• [Provide a highly relevant YouTube search title or actual link, e.g., YouTube: Linked Lists in 10 minutes — link]
+• [Provide a relevant web article title or link, e.g., Article: Understanding Pointers — link]
+❓ Practice question:
+[Provide 1 highly relevant multiple-choice diagnostic quiz question to test their understanding with 4 options labeled A, B, C, D]
+—Sent via EduPulse | edupulse.app`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();

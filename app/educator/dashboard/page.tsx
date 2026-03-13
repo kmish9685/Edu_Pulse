@@ -308,7 +308,9 @@ function DashboardContent() {
                                     pipWindow.document.body.innerHTML = `
                                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: #fff; font-family: sans-serif; text-align: center;">
                                             <div style="font-weight: bold; margin-bottom: 15px; font-size: 1.2rem;">Scan to Join</div>
-                                            <div id="qr-container" style="background: white; padding: 10px; border-radius: 8px;"></div>
+                                            <div id="qr-container" style="background: white; padding: 10px; border-radius: 8px;">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin + '/join/' + joinCode)}" alt="QR Code" style="width: 160px; height: 160px; display: block;" />
+                                            </div>
                                             <div style="margin-top: 15px; font-size: 1.5rem; font-family: monospace; font-weight: bold; letter-spacing: 2px;">${joinCode}</div>
                                         </div>
                                     `;
@@ -331,7 +333,7 @@ function DashboardContent() {
 
                 {/* Topic advance */}
                 {agenda.length > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.875rem', borderLeft: '1px solid var(--border)', height: 34, marginLeft: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.875rem', borderLeft: '1px solid var(--border)', marginLeft: '0.25rem' }}>
                         <Tag size={12} color="var(--accent-soft)" />
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {currentTopic ? currentTopic.replace(/\s*\(\d+m\)$/, '') : <span style={{ color: 'var(--text-tertiary)' }}>All topics complete</span>}
@@ -347,8 +349,9 @@ function DashboardContent() {
 
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{Math.min(currentTopicIndex + 1, agenda.length)}/{agenda.length}</span>
                         <button onClick={advanceTopic} disabled={currentTopicIndex >= agenda.length}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', padding: '0.25rem 0.625rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: currentTopicIndex >= agenda.length ? 'not-allowed' : 'pointer', opacity: currentTopicIndex >= agenda.length ? 0.4 : 1, fontFamily: 'inherit' }}>
-                            {timeLeft !== null ? 'Skip' : 'Next'} <ChevronRight size={11} />
+                            className="btn-primary"
+                            style={{ padding: '0.4rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem', marginLeft: '0.5rem', boxShadow: '0 4px 14px rgba(99,102,241,0.3)' }}>
+                            Next Topic <ChevronRight size={14} />
                         </button>
                     </div>
                 )}
