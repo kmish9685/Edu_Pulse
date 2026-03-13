@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { endSession } from '@/app/actions/signals'
+import { endSession, updateJoinCode } from '@/app/actions/signals'
+import { QRCodeSVG } from 'qrcode.react'
 
 // ─── State Banner ──────────────────────────────────────────────
 function StateBanner({ pulseValue }: { pulseValue: number }) {
@@ -46,6 +47,11 @@ function DashboardContent() {
     const [ending, setEnding] = useState(false)
     const [muted, setMuted] = useState(false)
     const alertFired = useRef(false) // prevents repeated firing every 3s poll
+
+    // Anti-Spam state
+    const [joinCode, setJoinCode] = useState(sessionId || '')
+    const [mutedDevices, setMutedDevices] = useState<string[]>([])
+    const [showFloatQR, setShowFloatQR] = useState(false)
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -108,6 +114,17 @@ function DashboardContent() {
         return () => clearInterval(interval)
     }, [sessionId])
 
+    // Code rotation interval
+    useEffect(() => {
+        if (!sessionId) return
+        const rotInt = setInterval(() => {
+            const newCode = Array.from(Array(4), () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')
+            setJoinCode(newCode)
+            updateJoinCode(sessionId, newCode)
+        }, 60000)
+        return () => clearInterval(rotInt)
+    }, [sessionId])
+
     const advanceTopic = async () => {
         if (currentTopicIndex >= agenda.length) return
         const nextIdx = currentTopicIndex + 1
@@ -133,15 +150,18 @@ function DashboardContent() {
             .order('created_at', { ascending: false })
         if (!allSignals) return
 
-        setRecentSignals(allSignals.slice(0, 10))
-        setTotalSignals(allSignals.length)
+        // Filter out muted devices right at the start
+        const validSignals = allSignals.filter(s => !mutedDevices.includes(s.device_id || ''))
+
+        setRecentSignals(validSignals.slice(0, 10))
+        setTotalSignals(validSignals.length)
 
         const typeCounts: Record<string, number> = {}
-        allSignals.forEach(s => { typeCounts[s.type] = (typeCounts[s.type] || 0) + 1 })
+        validSignals.forEach(s => { typeCounts[s.type] = (typeCounts[s.type] || 0) + 1 })
         setStats(typeCounts)
 
         const oneMinAgo = new Date(Date.now() - 60000).toISOString()
-        const recentCount = allSignals.filter(s => s.created_at > oneMinAgo).length
+        const recentCount = validSignals.filter(s => s.created_at > oneMinAgo).length
         // Count-based load: each recent signal = 10%, capped at 100%
         // 1 signal = 10% (calm), 2 = 20% (watch), 3+ = 30%+ (alert)
         setPulseValue(Math.min(recentCount * 10, 100))
@@ -152,12 +172,12 @@ function DashboardContent() {
             const label = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             timeSeriesMap.set(label, { time: label, signals: 0 })
         }
-        allSignals.forEach(s => {
+        validSignals.forEach(s => {
             const label = new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             if (timeSeriesMap.has(label)) timeSeriesMap.get(label)!.signals += 1
         })
         setChartData(Array.from(timeSeriesMap.values()))
-        generateInsight(allSignals, recentCount, typeCounts)
+        generateInsight(validSignals, recentCount, typeCounts)
     }
 
     function generateInsight(data: any[], recentCount: number, typeCounts: Record<string, number>) {
@@ -231,10 +251,18 @@ function DashboardContent() {
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
                 </div>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Session</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', fontWeight: 700, padding: '0.15rem 0.6rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', color: 'var(--accent-soft)', letterSpacing: '0.1em' }}>
-                    {sessionId}
-                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>PIN</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', fontWeight: 800, padding: '0.15rem 0.6rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', letterSpacing: '0.15em' }}>
+                        {joinCode}
+                    </span>
+                    <button 
+                        onClick={() => setShowFloatQR(!showFloatQR)}
+                        style={{ padding: '0.2rem 0.5rem', background: showFloatQR ? 'var(--accent)' : 'var(--accent-dim)', border: showFloatQR ? '1px solid var(--accent)' : '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: showFloatQR ? '#fff' : 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', transition: 'all 0.2s' }}
+                    >
+                        Float QR
+                    </button>
+                </div>
 
                 {/* Topic advance */}
                 {agenda.length > 0 && (
@@ -450,16 +478,68 @@ function DashboardContent() {
                                     }}
                                 >
                                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: signal.type === 'Too Fast' ? 'var(--warning)' : 'var(--danger)', flexShrink: 0, boxShadow: `0 0 6px ${signal.type === 'Too Fast' ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }} />
-                                    <span style={{ flex: 1, fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{signal.type}</span>
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{signal.type}</span>
+                                        {signal.additional_text && (
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '0.1rem' }}>
+                                                &quot;{signal.additional_text}&quot;
+                                            </span>
+                                        )}
+                                    </div>
                                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
                                         {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                     </span>
+                                    {signal.device_id && (
+                                        <button 
+                                            onClick={() => setMutedDevices(d => [...d, signal.device_id])}
+                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.65rem', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: 4, fontFamily: 'var(--font-mono)' }}
+                                            onMouseOver={e => e.currentTarget.style.color = 'var(--danger)'}
+                                            onMouseOut={e => e.currentTarget.style.color = 'var(--text-tertiary)'}
+                                            title={`Mute this student\'s device`}
+                                        >
+                                            Mute
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
             </main>
+
+            {/* Floating QR Overlay */}
+            {showFloatQR && (
+                <div 
+                    style={{ 
+                        position: 'fixed', top: 70, right: 24, zIndex: 100, 
+                        background: 'var(--bg-elevated)', border: '1px solid var(--border-accent)', 
+                        borderRadius: 'var(--radius)', padding: '1.25rem',
+                        boxShadow: '0 12px 32px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
+                        animation: 'enter-fade 0.2s ease-out'
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>Scan to Join</span>
+                        <button onClick={() => setShowFloatQR(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}>✕</button>
+                    </div>
+                    <div style={{ background: '#fff', padding: '0.5rem', borderRadius: 8 }}>
+                        <QRCodeSVG 
+                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${joinCode}`}
+                            size={160}
+                            bgColor={"#ffffff"}
+                            fgColor={"#000000"}
+                            level={"Q"}
+                        />
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Or go to edupulse.com and enter</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-soft)', letterSpacing: '0.15em' }}>{joinCode}</div>
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <Clock size={10} /> Closes & changes every 60s
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

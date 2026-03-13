@@ -47,16 +47,16 @@ export async function submitSignal(data: {
     return { success: true }
 }
 
-export async function validateSession(pin: string): Promise<{ active: boolean }> {
-    if (!pin || pin.length !== 4) return { active: false }
+export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string }> {
+    if (!code) return { active: false }
     const supabase = await createClient()
     const { data } = await supabase
         .from('active_sessions')
         .select('id')
-        .eq('id', pin)
+        .eq('join_code', code)
         .eq('is_active', true)
         .single()
-    return { active: !!data }
+    return { active: !!data, roomId: data?.id }
 }
 
 export async function startSession(pin: string, initialTopic?: string) {
@@ -80,6 +80,7 @@ export async function startSession(pin: string, initialTopic?: string) {
             ended_at: null,
             is_active: true,
             current_topic: initialTopic || null,
+            join_code: pin,
         })
 
     if (error) return { success: false, error: error.message }
@@ -95,6 +96,21 @@ export async function endSession(pin: string) {
         .from('active_sessions')
         .update({ is_active: false, ended_at: new Date().toISOString() })
         .eq('id', pin)
+        .eq('educator_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function updateJoinCode(roomId: string, newCode: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Not authenticated' }
+
+    const { error } = await supabase
+        .from('active_sessions')
+        .update({ join_code: newCode })
+        .eq('id', roomId)
         .eq('educator_id', user.id)
 
     if (error) return { success: false, error: error.message }

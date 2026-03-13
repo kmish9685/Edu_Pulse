@@ -23,7 +23,9 @@ export default function StudentJoin() {
     }
 
     const [sessionValid, setSessionValid] = useState<boolean | null>(null) // null = checking
+    const [roomId, setRoomId] = useState<string | null>(null)
     const [signaled, setSignaled] = useState(false)
+    const [optionalText, setOptionalText] = useState('')
     const [cooldown, setCooldown] = useState(false)
     const [cooldownSecs, setCooldownSecs] = useState(0)
     const [submitting, setSubmitting] = useState<string | null>(null)
@@ -44,6 +46,9 @@ export default function StudentJoin() {
         // Check session validity
         validateSession(sessionId).then(res => {
             setSessionValid(res.active)
+            if (res.active && res.roomId) {
+                setRoomId(res.roomId)
+            }
         })
 
         // Check cooldown
@@ -70,11 +75,12 @@ export default function StudentJoin() {
         setSubmitting(type)
         setError(null)
         const deviceId = getOrCreateDeviceId()
-        const res = await submitSignal({ type, block_room: sessionId, additional_text: '', device_id: deviceId })
+        const res = await submitSignal({ type, block_room: roomId || sessionId, additional_text: optionalText, device_id: deviceId })
         if (res.success) {
             setSignaled(true)
             setCooldown(true)
             setCooldownSecs(60)
+            setOptionalText('') // Clear it for next time
             localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
             const countdown = setInterval(() => {
                 setCooldownSecs(s => {
@@ -135,6 +141,7 @@ export default function StudentJoin() {
                             btn.style.opacity = '0.7';
                             const r = await validateSession(sessionId);
                             setSessionValid(r.active);
+                            if (r.active && r.roomId) setRoomId(r.roomId);
                             setTimeout(() => {
                                 if (btn) { btn.innerHTML = '<span>Check Again</span>'; btn.style.opacity = '1'; }
                             }, 500);
@@ -219,54 +226,74 @@ export default function StudentJoin() {
                     </p>
                 </div>
 
-                {/* Signal buttons */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: 400 }}>
-                    {error && (
-                        <div style={{ padding: '0.875rem 1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 14, fontSize: '0.85rem', color: 'var(--danger)', textAlign: 'center' }}>
-                            {error}
+                {/* Signals */}
+                <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                    {/* Optional Context Field */}
+                        <div style={{ marginBottom: '0.5rem' }}>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textAlign: 'center' }}>
+                                Optional: What specifically is confusing?
+                            </label>
+                            <input
+                                type="text"
+                                value={optionalText}
+                                onChange={(e) => setOptionalText(e.target.value)}
+                                placeholder="e.g. The math in slide 4..."
+                                maxLength={120}
+                                disabled={submitting !== null}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.875rem 1rem',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 'var(--radius)',
+                                    color: 'var(--text-primary)',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'inherit',
+                                    outline: 'none',
+                                    transition: 'border-color 0.2s',
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--accent)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--border)'}
+                            />
                         </div>
-                    )}
-                    {SIGNAL_TYPES.map(sig => (
-                        <button
-                            key={sig.id}
-                            onClick={() => handleSignal(sig.id)}
-                            disabled={!!(cooldown || submitting)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-start',
-                                gap: '1rem',
-                                padding: 'clamp(1.1rem, 4vw, 1.5rem) clamp(1.1rem, 5vw, 1.75rem)',
-                                background: cooldown
-                                    ? 'rgba(255,255,255,0.02)'
-                                    : `linear-gradient(135deg, ${sig.gradientFrom}, ${sig.gradientTo})`,
-                                border: `1px solid ${cooldown ? 'var(--glass-border)' : `${sig.color}44`}`,
-                                borderRadius: 20,
-                                cursor: cooldown || submitting ? 'not-allowed' : 'pointer',
-                                fontFamily: 'inherit',
-                                width: '100%',
-                                transition: 'all 0.25s ease',
-                                opacity: cooldown ? 0.45 : 1,
-                                boxShadow: cooldown ? 'none' : `0 4px 24px -8px ${sig.glow}`,
-                                textAlign: 'left',
-                            }}
-                            onMouseEnter={e => { if (!cooldown && !submitting) (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px -8px ${sig.glow}, 0 0 0 1px ${sig.color}55` }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = cooldown ? 'none' : `0 4px 24px -8px ${sig.glow}` }}
-                        >
-                            <span style={{ fontSize: 'clamp(1.75rem, 8vw, 2.25rem)', lineHeight: 1, flexShrink: 0 }}>{sig.emoji}</span>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1rem, 4vw, 1.2rem)', color: cooldown ? 'var(--text-tertiary)' : 'var(--text-primary)', letterSpacing: '-0.025em', whiteSpace: 'nowrap' }}>
-                                    {submitting === sig.id ? 'Sending…' : sig.label}
-                                </div>
-                                <div style={{ fontSize: 'clamp(0.7rem, 3vw, 0.8rem)', color: 'var(--text-tertiary)', marginTop: '0.2rem', lineHeight: 1.4 }}>
-                                    {sig.id === 'confused' ? "Tap if you're lost on the current topic" : 'Tap if the pace is too fast for you'}
-                                </div>
-                            </div>
-                            {submitting === sig.id && (
-                                <Loader2 size={18} color="var(--text-tertiary)" style={{ flexShrink: 0, animation: 'spin 1s linear infinite' }} />
-                            )}
-                        </button>
-                    ))}
+                    {SIGNAL_TYPES.map(sig => {
+                        const isSubmittingThis = submitting === sig.label
+                        return (
+                            <button
+                                key={sig.id}
+                                disabled={submitting !== null}
+                                onClick={() => handleSignal(sig.label)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'flex-start',
+                                    gap: '1rem',
+                                    padding: 'clamp(1.1rem, 4vw, 1.5rem) clamp(1.1rem, 5vw, 1.75rem)',
+                                    background: cooldown
+                                        ? 'rgba(255,255,255,0.02)'
+                                        : isSubmittingThis
+                                            ? sig.glow
+                                            : `linear-gradient(135deg, ${sig.gradientFrom}, ${sig.gradientTo})`,
+                                    border: `1px solid ${cooldown ? 'var(--glass-border)' : sig.glow}`,
+                                    borderRadius: 24,
+                                    color: cooldown ? 'var(--text-tertiary)' : sig.color,
+                                    fontSize: 'clamp(1.1rem, 4.5vw, 1.25rem)',
+                                    fontWeight: 700,
+                                    cursor: cooldown ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    boxShadow: !cooldown && !isSubmittingThis ? `0 8px 32px ${sig.glow}` : 'none',
+                                    transform: isSubmittingThis ? 'scale(0.98)' : 'scale(1)',
+                                    opacity: cooldown ? 0.5 : 1,
+                                }}
+                            >
+                                <span style={{ fontSize: '1.75rem', filter: cooldown ? 'grayscale(100%)' : 'none' }}>
+                                    {isSubmittingThis ? <Loader2 size={28} style={{ animation: 'spin 1.5s linear infinite' }} /> : sig.emoji}
+                                </span>
+                                {isSubmittingThis ? 'Sending...' : sig.label}
+                            </button>
+                        )
+                    })}
                 </div>
 
                 {/* Cooldown state */}

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles, BarChart2 } from 'lucide-react'
+import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles, BarChart2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { startSession } from '@/app/actions/signals'
-import { generateAgenda } from '@/app/actions/ai'
+import { generateAgenda, generateAgendaFromFile } from '@/app/actions/ai'
 
 export default function EducatorStart() {
     const [sessionId, setSessionId] = useState('')
@@ -16,11 +16,12 @@ export default function EducatorStart() {
     const [dragIdx, setDragIdx] = useState<number | null>(null)
     const [copyDone, setCopyDone] = useState(false)
     const [generatingAgenda, setGeneratingAgenda] = useState(false)
+    const [uploadingPdf, setUploadingPdf] = useState(false)
     const [agendaError, setAgendaError] = useState<string | null>(null)
     const router = useRouter()
 
     useEffect(() => {
-        const pin = Math.floor(1000 + Math.random() * 9000).toString()
+        const pin = Array.from(Array(4), () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')
         const base = typeof window !== 'undefined' ? window.location.origin : 'https://edu-pulse-xi.vercel.app'
         setSessionId(pin)
         setJoinUrl(`${base}/join/${pin}`)
@@ -59,6 +60,47 @@ export default function EducatorStart() {
             setTimeout(() => setAgendaError(null), 3000)
         } finally {
             setGeneratingAgenda(false)
+        }
+    }
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        
+        if (file.type !== 'application/pdf') {
+            setAgendaError('Only PDF files are supported. Please export your PPT as PDF first.')
+            setTimeout(() => setAgendaError(null), 4000)
+            return
+        }
+        
+        if (file.size > 10 * 1024 * 1024) {
+             setAgendaError('File too large. Max 10MB allowed.')
+             setTimeout(() => setAgendaError(null), 4000)
+             return
+        }
+
+        setUploadingPdf(true)
+        setAgendaError(null)
+
+        try {
+            const reader = new FileReader()
+            reader.onload = async () => {
+                const base64Content = (reader.result as string).split(',')[1] // remove data:application/pdf;base64,
+                const res = await generateAgendaFromFile(base64Content, file.type)
+                
+                if (res.success && res.data) {
+                    setAgenda(prev => [...prev, ...res.data!])
+                } else {
+                    setAgendaError(res.error || 'Failed to extract from PDF.')
+                    setTimeout(() => setAgendaError(null), 4000)
+                }
+                setUploadingPdf(false)
+            }
+            reader.readAsDataURL(file)
+        } catch (err) {
+            setAgendaError('Error reading file locally.')
+            setTimeout(() => setAgendaError(null), 4000)
+            setUploadingPdf(false)
         }
     }
 
@@ -209,6 +251,17 @@ export default function EducatorStart() {
                                     {generatingAgenda ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={13} />}
                                     {generatingAgenda ? 'Thinking...' : 'AI Auto-Fill'}
                                 </button>
+                                <label style={{
+                                    flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.375rem', 
+                                    background: 'var(--accent-dim)', color: 'var(--accent-soft)',
+                                    border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', 
+                                    padding: '0 0.875rem', fontWeight: 600, fontSize: '0.8rem', cursor: uploadingPdf ? 'wait' : 'pointer',
+                                    transition: 'all 0.2s'
+                                }}>
+                                    {uploadingPdf ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={13} />}
+                                    {uploadingPdf ? 'Scanning PDF...' : 'Upload PDF'}
+                                    <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={handleFileUpload} disabled={uploadingPdf || generatingAgenda} />
+                                </label>
                             </div>
                             {agendaError && (
                                 <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.875rem', marginTop: '-0.375rem' }}>

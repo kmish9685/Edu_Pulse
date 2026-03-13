@@ -13,9 +13,9 @@ export default function StudentEntryPage() {
 
     const handleJoin = (e: React.FormEvent) => {
         e.preventDefault()
-        const cleaned = pin.trim()
-        if (cleaned.length !== 4 || !/^\d{4}$/.test(cleaned)) {
-            setError('Please enter a valid 4-digit session PIN.')
+        const cleaned = pin.trim().toUpperCase()
+        if (cleaned.length !== 4 || !/^[A-Z0-9]{4}$/.test(cleaned)) {
+            setError('Please enter a valid 4-character session PIN.')
             return
         }
         setLoading(true)
@@ -23,8 +23,8 @@ export default function StudentEntryPage() {
     }
 
     const handlePinChange = (v: string) => {
-        const digits = v.replace(/\D/g, '').slice(0, 4)
-        setPin(digits)
+        const chars = v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 4)
+        setPin(chars)
         if (error) setError('')
     }
 
@@ -80,13 +80,11 @@ export default function StudentEntryPage() {
                 <form onSubmit={handleJoin} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                     <div style={{ position: 'relative' }}>
                         <input
-                            type="tel"
-                            inputMode="numeric"
-                            pattern="\d{4}"
+                            type="text"
                             maxLength={4}
                             value={pin}
                             onChange={e => handlePinChange(e.target.value)}
-                            placeholder="0000"
+                            placeholder="ABCD"
                             autoFocus
                             style={{
                                 width: '100%',
