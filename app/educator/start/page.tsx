@@ -111,7 +111,7 @@ export default function EducatorStart() {
         if (!sessionId) return
         setStarting(true)
         setStartError(null)
-        const res = await startSession(sessionId, agenda.length > 0 ? agenda[0] : undefined)
+        const res = await startSession(sessionId, agenda.length > 0 ? agenda[0] : undefined, agenda)
         if (!res.success) {
             setStartError(res.error || 'Failed to register session. Check your connection.')
             setStarting(false)

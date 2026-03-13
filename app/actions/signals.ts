@@ -79,7 +79,7 @@ export async function validateSession(code: string): Promise<{ active: boolean, 
     return { active: true, roomId: data.id, agenda }
 }
 
-export async function startSession(pin: string, initialTopic?: string) {
+export async function startSession(pin: string, initialTopic?: string, agenda?: string[]) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Not authenticated' }
@@ -90,7 +90,7 @@ export async function startSession(pin: string, initialTopic?: string) {
         return { success: false, error: 'Unauthorized: Only registered educators can start sessions.' }
     }
 
-    // Upsert — if same PIN was used before (unlikely) reset it to active
+    // Upsert — save agenda to DB so students can see topics in their dropdown
     const { error } = await supabase
         .from('active_sessions')
         .upsert({
@@ -101,6 +101,7 @@ export async function startSession(pin: string, initialTopic?: string) {
             is_active: true,
             current_topic: initialTopic || null,
             join_code: pin,
+            agenda: agenda && agenda.length > 0 ? agenda : null,
         })
 
     if (error) return { success: false, error: error.message }
