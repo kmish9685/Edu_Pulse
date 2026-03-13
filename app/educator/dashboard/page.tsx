@@ -110,8 +110,23 @@ function DashboardContent() {
     useEffect(() => {
         if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
         fetchData()
-        const interval = setInterval(fetchData, 3000)
-        return () => clearInterval(interval)
+        
+        // Listen for new signals in real-time
+        const channel = supabase
+            .channel(`room_${sessionId}`)
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${sessionId}` },
+                (payload) => {
+                    // Re-fetch data to easily rebuild charts, percentages, and insight logic
+                    fetchData()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [sessionId])
 
     // Code rotation interval
