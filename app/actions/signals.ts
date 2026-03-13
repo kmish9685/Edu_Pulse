@@ -50,13 +50,33 @@ export async function submitSignal(data: {
 export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string, agenda?: string[] }> {
     if (!code) return { active: false }
     const supabase = await createClient()
+    
+    // Primary query — only select guaranteed columns. This must NEVER fail due to missing columns.
     const { data } = await supabase
         .from('active_sessions')
-        .select('id, agenda')
+        .select('id')
         .eq('join_code', code)
         .eq('is_active', true)
         .single()
-    return { active: !!data, roomId: data?.id, agenda: data?.agenda || [] }
+
+    if (!data) return { active: false }
+
+    // Secondary query — try to get agenda separately. If column doesn't exist, fail silently.
+    let agenda: string[] = []
+    try {
+        const { data: sessionData } = await supabase
+            .from('active_sessions')
+            .select('agenda')
+            .eq('id', data.id)
+            .single()
+        if (sessionData?.agenda && Array.isArray(sessionData.agenda)) {
+            agenda = sessionData.agenda
+        }
+    } catch {
+        // agenda column may not exist yet — that's fine, topics just won't show in dropdown
+    }
+
+    return { active: true, roomId: data.id, agenda }
 }
 
 export async function startSession(pin: string, initialTopic?: string) {
