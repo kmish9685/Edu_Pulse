@@ -144,7 +144,7 @@ Focus on identifying what specific topics or moments might have caused confusion
     }
 }
 
-export async function generateRemediation(agenda: string[], signals: any[]): Promise<{ success: boolean; data?: string; error?: string }> {
+export async function generateRemediation(agenda: string[], signals: any[], teacherResources?: string): Promise<{ success: boolean; data?: string; error?: string }> {
     if (!process.env.GEMINI_API_KEY) {
         return { success: false, error: 'AI API key not configured.' };
     }
@@ -156,48 +156,57 @@ export async function generateRemediation(agenda: string[], signals: any[]): Pro
         });
 
         // Format signals for the prompt
-        const typeCounts: Record<string, number> = {};
-        const topicCounts: Record<string, number> = {};
+        const typeCounts: Record<string, number> = {}
+        const topicCounts: Record<string, number> = {}
         signals.forEach(s => {
-            typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
+            typeCounts[s.type] = (typeCounts[s.type] || 0) + 1
             if (s.active_topic) {
-                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1;
+                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1
             }
-        });
-        const totalSignals = signals.length;
+        })
+        const totalSignals = signals.length
 
-        const prompt = `You are a helpful teaching assistant writing an email to a class of students.
-The educator just finished a class session.
+        const resourceSection = teacherResources && teacherResources.trim().length > 0
+            ? `Teacher-Provided Resources (USE THESE EXACT LINKS/TITLES — do not invent or modify them):
+${teacherResources.trim()}`
+            : `No resources provided by teacher. In the 🎥 Helpful resources section, suggest descriptive resource titles only (e.g., "YouTube: Linked Lists Explained — search on YouTube"). Do NOT fabricate any URLs.`
+
+        const prompt = `You are a helpful teaching assistant writing a post-session student review.
         
 Agenda (topics covered):
 ${agenda.length > 0 ? agenda.map((a, i) => `${i + 1}. ${a}`).join('\n') : 'General classroom concepts'}
 
-Student Feedback Signals Collected (${totalSignals} total marks of confusion):
+Student Feedback Signals Collected (${totalSignals} total):
 By Type:
 ${Object.entries(typeCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No specific confusion recorded.'}
-By Topic (Accurate):
+By Topic:
 ${Object.entries(topicCounts).map(([topic, count]) => `- During "${topic}": ${count} signals`).join('\n') || 'No specific topic signals recorded.'}
 
+${resourceSection}
+
 Task:
-Draft a review summary and diagnostic quiz based strictly on the provided objective topic signals.
+Draft a post-session review for students based strictly on the provided objective data.
 
 You MUST use EXACTLY the following format. Do not use markdown bolding (**) or hashtags (#). Use the exact emojis shown.
 
-📚 Session Summary — [Insert Overall Class Topic/Name] ([Insert Today's Date])
+📚 Session Summary — [Insert Overall Class Topic/Name] ([Insert Today's Date as: March 13, 2026])
 🔴 Most confused topics:
-• [Insert Topic 1]: [Insert Number] signals
+• [Insert Topic 1 with the highest signals]: [Insert Number] signals
 • [Insert Topic 2]: [Insert Number] signals
 📖 Key points to review:
-[Provide a 1-2 paragraph AI-written recap explaining the confusing topics clearly and simply]
+[A clear, plain-language explanation of each confused topic — write as if explaining to a student who is struggling. Be specific, not generic.]
 🎥 Helpful resources:
-• [Provide a highly relevant YouTube search title or actual link, e.g., YouTube: Linked Lists in 10 minutes — link]
-• [Provide a relevant web article title or link, e.g., Article: Understanding Pointers — link]
-❓ Practice question:
-[Provide 1 highly relevant multiple-choice diagnostic quiz question to test their understanding with 4 options labeled A, B, C, D]
+[Use the teacher-provided resources if any were given above. List each on its own line starting with •. If no resources provided, suggest descriptive search titles only.]
+❓ Practice questions (3 questions):
+Q1. [Write a multiple-choice question targeting the FIRST most confused topic. Include 4 options labeled A, B, C, D]
+
+Q2. [Write a multiple-choice question targeting the SECOND most confused topic OR a different aspect of the first. Include 4 options labeled A, B, C, D]
+
+Q3. [Write a short-answer or true/false question testing deeper understanding. Make it slightly harder than Q1 and Q2.]
 —Sent via EduPulse | edupulse.app`;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        const result = await model.generateContent(prompt)
+        const text = result.response.text()
 
         return { success: true, data: text };
 

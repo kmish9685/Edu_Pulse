@@ -47,16 +47,16 @@ export async function submitSignal(data: {
     return { success: true }
 }
 
-export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string }> {
+export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string, agenda?: string[] }> {
     if (!code) return { active: false }
     const supabase = await createClient()
     const { data } = await supabase
         .from('active_sessions')
-        .select('id')
+        .select('id, agenda')
         .eq('join_code', code)
         .eq('is_active', true)
         .single()
-    return { active: !!data, roomId: data?.id }
+    return { active: !!data, roomId: data?.id, agenda: data?.agenda || [] }
 }
 
 export async function startSession(pin: string, initialTopic?: string) {

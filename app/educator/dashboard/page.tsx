@@ -117,7 +117,7 @@ function DashboardContent() {
         if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
         
         // Initial Fetch
-        async function fetchInitial() {
+        async function fetchSignals() {
             const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
             const { data } = await supabase
                 .from('signals').select('*')
@@ -126,22 +126,33 @@ function DashboardContent() {
                 .order('created_at', { ascending: false })
             if (data) setAllSignals(data)
         }
-        fetchInitial()
+        fetchSignals()
         
-        // Listen for new signals in real-time
+        // ── Polling fallback (3s) — works even if Realtime is not enabled ──
+        // This guarantees signals always appear. Realtime is a performance bonus on top.
+        const pollInterval = setInterval(fetchSignals, 3000)
+
+        // ── Supabase Realtime subscription (instant delivery when available) ──
         const channel = supabase
             .channel(`room_${sessionId}`)
             .on(
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${sessionId}` },
                 (payload) => {
-                    // Instantly inject the new signal into state, avoiding REST API race conditions
-                    setAllSignals(prev => [payload.new, ...prev])
+                    // Instantly inject the new signal into state
+                    setAllSignals(prev => {
+                        // Deduplicate — don't add if polling already picked it up
+                        if (prev.some(s => s.id === payload.new.id)) return prev
+                        return [payload.new, ...prev]
+                    })
                 }
             )
-            .subscribe()
+            .subscribe((status) => {
+                console.log('[EduPulse Realtime] Channel status:', status)
+            })
 
         return () => {
+            clearInterval(pollInterval)
             supabase.removeChannel(channel)
         }
     }, [sessionId])

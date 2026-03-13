@@ -220,6 +220,8 @@ export default function StudentJoin() {
     const [submitting, setSubmitting] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [lang, setLang] = useState<keyof typeof translations>('en')
+    const [sessionAgenda, setSessionAgenda] = useState<string[]>([])
+    const [dropdownOpen, setDropdownOpen] = useState(false)
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -251,6 +253,9 @@ export default function StudentJoin() {
             if (res.active && res.roomId) {
                 setRoomId(res.roomId)
             }
+            if (res.agenda && res.agenda.length > 0) {
+                setSessionAgenda(res.agenda)
+            }
         })
 
         // Check cooldown
@@ -276,6 +281,7 @@ export default function StudentJoin() {
         if (cooldown || submitting) return
         setSubmitting(type)
         setError(null)
+        setDropdownOpen(false)
         const deviceId = getOrCreateDeviceId()
         const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: optionalText, device_id: deviceId })
         if (res.success) {
@@ -444,41 +450,138 @@ export default function StudentJoin() {
                 <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                     {/* Optional Context Field (Dropdown) */}
+                    {/* Topic / Reason Picker — Premium Custom Dropdown */}
                     <div style={{ marginBottom: '0.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem', textAlign: 'center' }}>
+                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.625rem', textAlign: 'center' }}>
                             {t.optional}
                         </label>
+
+                        {/* Custom dropdown trigger */}
                         <div style={{ position: 'relative' }}>
-                            <select
-                                value={optionalText}
-                                onChange={(e) => setOptionalText(e.target.value)}
+                            <button
+                                onClick={() => !submitting && setDropdownOpen(o => !o)}
                                 disabled={submitting !== null}
                                 style={{
                                     width: '100%',
-                                    padding: '0.875rem 1rem',
-                                    background: 'var(--accent-dim)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: 'var(--radius)',
+                                    padding: '0.875rem 1.125rem',
+                                    background: optionalText ? 'rgba(99,102,241,0.08)' : 'var(--accent-dim)',
+                                    border: `1px solid ${optionalText ? 'rgba(99,102,241,0.35)' : 'var(--border)'}`,
+                                    borderRadius: dropdownOpen ? '14px 14px 0 0' : 14,
                                     color: optionalText ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                                    fontSize: '0.95rem',
+                                    fontSize: '0.9rem',
                                     fontFamily: 'inherit',
-                                    outline: 'none',
-                                    appearance: 'none',
-                                    transition: 'border-color 0.2s',
-                                    cursor: 'pointer'
+                                    fontWeight: optionalText ? 600 : 400,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'left',
                                 }}
                             >
-                                <option value="" disabled>{t.selectReason}</option>
-                                <option value="I missed the last explanation" style={{ background: '#111' }}>{t.opt1}</option>
-                                <option value="I don't understand the core concept" style={{ background: '#111' }}>{t.opt2}</option>
-                                <option value="The math/formula is confusing" style={{ background: '#111' }}>{t.opt3}</option>
-                                <option value="The slide changed too fast" style={{ background: '#111' }}>{t.opt4}</option>
-                                <option value="I need an example to understand" style={{ background: '#111' }}>{t.opt5}</option>
-                                <option value="Other / Not listed" style={{ background: '#111' }}>{t.opt6}</option>
-                            </select>
-                            <div style={{ position: 'absolute', right: '1.2rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>
-                                ▼
-                            </div>
+                                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {optionalText || t.selectReason}
+                                </span>
+                                <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', opacity: 0.5, transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                            </button>
+
+                            {/* Dropdown panel */}
+                            {dropdownOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    left: 0, right: 0,
+                                    top: '100%',
+                                    zIndex: 50,
+                                    background: 'var(--bg-surface)',
+                                    border: '1px solid var(--border)',
+                                    borderTop: 'none',
+                                    borderRadius: '0 0 14px 14px',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+                                }}>
+                                    {/* Session topics */}
+                                    {sessionAgenda.length > 0 && (
+                                        <>
+                                            <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--accent-soft)', textTransform: 'uppercase' }}>
+                                                📚 Session Topics
+                                            </div>
+                                            {sessionAgenda.map((topic, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => { setOptionalText(`Confused about: ${topic}`); setDropdownOpen(false) }}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.75rem 1.125rem',
+                                                        background: optionalText === `Confused about: ${topic}` ? 'rgba(99,102,241,0.12)' : 'transparent',
+                                                        border: 'none',
+                                                        borderLeft: optionalText === `Confused about: ${topic}` ? '3px solid var(--accent)' : '3px solid transparent',
+                                                        color: optionalText === `Confused about: ${topic}` ? 'var(--accent-soft)' : 'var(--text-primary)',
+                                                        fontSize: '0.88rem',
+                                                        fontWeight: 600,
+                                                        fontFamily: 'inherit',
+                                                        textAlign: 'left',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.15s',
+                                                        display: 'block',
+                                                    }}
+                                                    onMouseEnter={e => { if (optionalText !== `Confused about: ${topic}`) e.currentTarget.style.background = 'rgba(99,102,241,0.06)' }}
+                                                    onMouseLeave={e => { if (optionalText !== `Confused about: ${topic}`) e.currentTarget.style.background = 'transparent' }}
+                                                >
+                                                    🎯 {topic}
+                                                </button>
+                                            ))}
+                                            <div style={{ height: 1, background: 'var(--border)', margin: '0.25rem 0' }} />
+                                            <div style={{ padding: '0.25rem 1rem 0.25rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
+                                                General reasons
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* Generic reasons */}
+                                    {[
+                                        { value: 'I missed the last explanation', label: t.opt1, icon: '👂' },
+                                        { value: "I don't understand the core concept", label: t.opt2, icon: '🧠' },
+                                        { value: 'The math/formula is confusing', label: t.opt3, icon: '📐' },
+                                        { value: 'The slide changed too fast', label: t.opt4, icon: '⚡' },
+                                        { value: 'I need an example to understand', label: t.opt5, icon: '💡' },
+                                        { value: 'Other / Not listed', label: t.opt6, icon: '💬' },
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            onClick={() => { setOptionalText(opt.value); setDropdownOpen(false) }}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.7rem 1.125rem',
+                                                background: optionalText === opt.value ? 'rgba(99,102,241,0.08)' : 'transparent',
+                                                border: 'none',
+                                                borderLeft: optionalText === opt.value ? '3px solid var(--accent)' : '3px solid transparent',
+                                                color: optionalText === opt.value ? 'var(--accent-soft)' : 'var(--text-secondary)',
+                                                fontSize: '0.85rem',
+                                                fontFamily: 'inherit',
+                                                fontWeight: 500,
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.15s',
+                                                display: 'block',
+                                            }}
+                                            onMouseEnter={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+                                            onMouseLeave={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'transparent' }}
+                                        >
+                                            {opt.icon} {opt.label}
+                                        </button>
+                                    ))}
+
+                                    {/* Clear option */}
+                                    {optionalText && (
+                                        <button
+                                            onClick={() => { setOptionalText(''); setDropdownOpen(false) }}
+                                            style={{ width: '100%', padding: '0.6rem 1.125rem', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-tertiary)', fontSize: '0.8rem', fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer' }}
+                                        >
+                                            ✕ Clear selection
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                     {SIGNAL_TYPES.map(sig => {

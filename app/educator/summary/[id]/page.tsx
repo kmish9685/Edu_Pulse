@@ -21,6 +21,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
     const [followUpMode, setFollowUpMode] = useState<'idle' | 'generating' | 'done'>('idle')
     const [remediationText, setRemediationText] = useState<string | null>(null)
     const [remediationError, setRemediationError] = useState<string | null>(null)
+    const [teacherResources, setTeacherResources] = useState('')
 
     const agendaParam = searchParams.get('agenda')
     const agenda: string[] = agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : []
@@ -75,7 +76,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
             .eq('block_room', sessionId)
             .order('created_at', { ascending: true })
 
-        const res = await generateRemediation(agenda, signalsData || [])
+        const res = await generateRemediation(agenda, signalsData || [], teacherResources)
 
         if (res.success && res.data) {
             setRemediationText(res.data)
@@ -161,9 +162,42 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
                             {followUpMode === 'idle' && (
                                 <div>
-                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                                        Draft a review email and a single-question diagnostic quiz targeted specifically at the concepts that caused the most confusion this session.
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                                        Generate a structured student review, resources, and a diagnostic quiz based on today's confusion data.
                                     </p>
+
+                                    {/* Teacher resource input */}
+                                    <div style={{ marginBottom: '1.25rem' }}>
+                                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                            📎 Paste your study materials / links (optional)
+                                        </label>
+                                        <textarea
+                                            value={teacherResources}
+                                            onChange={e => setTeacherResources(e.target.value)}
+                                            placeholder={'Paste YouTube links, article URLs, or your own notes here. The AI will use these exact resources.\n\nExample:\nhttps://youtu.be/oZbTKBbdNa4\nhttps://geeksforgeeks.org/linked-list'}
+                                            rows={4}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.75rem 1rem',
+                                                background: 'var(--bg-base)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: 10,
+                                                color: 'var(--text-primary)',
+                                                fontSize: '0.85rem',
+                                                fontFamily: 'var(--font-mono)',
+                                                lineHeight: 1.6,
+                                                outline: 'none',
+                                                resize: 'vertical',
+                                                transition: 'border-color 0.2s',
+                                                boxSizing: 'border-box'
+                                            }}
+                                            onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                                            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                                        />
+                                        <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: '0.375rem' }}>
+                                            If left empty, the AI will suggest resource titles only (no clickable links).
+                                        </p>
+                                    </div>
                                     {remediationError && (
                                         <div style={{ color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '1rem' }}>
                                             {remediationError}
