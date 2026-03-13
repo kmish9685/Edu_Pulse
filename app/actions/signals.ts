@@ -13,11 +13,13 @@ export async function submitSignal(data: {
 }) {
     const supabase = await createClient()
 
+    let activeTopic = null;
+
     // Validate that the session is still active before accepting the signal
     if (data.block_room) {
         const { data: session } = await supabase
             .from('active_sessions')
-            .select('id, is_active')
+            .select('id, is_active, current_topic')
             .eq('id', data.block_room)
             .eq('is_active', true)
             .single()
@@ -25,6 +27,8 @@ export async function submitSignal(data: {
         if (!session) {
             return { success: false, error: 'No active session with this PIN. The class may have ended.' }
         }
+        
+        activeTopic = session.current_topic;
     }
 
     const { error } = await supabase
@@ -36,6 +40,7 @@ export async function submitSignal(data: {
             block_room: data.block_room,
             additional_text: data.additional_text?.substring(0, 120),
             device_id: data.device_id ?? null,
+            active_topic: activeTopic,
         })
 
     if (error) return { success: false, error: error.message }
@@ -54,7 +59,7 @@ export async function validateSession(pin: string): Promise<{ active: boolean }>
     return { active: !!data }
 }
 
-export async function startSession(pin: string) {
+export async function startSession(pin: string, initialTopic?: string) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Not authenticated' }
@@ -74,6 +79,7 @@ export async function startSession(pin: string) {
             started_at: new Date().toISOString(),
             ended_at: null,
             is_active: true,
+            current_topic: initialTopic || null,
         })
 
     if (error) return { success: false, error: error.message }

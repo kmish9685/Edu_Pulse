@@ -108,12 +108,19 @@ function DashboardContent() {
         return () => clearInterval(interval)
     }, [sessionId])
 
-    const advanceTopic = () => {
+    const advanceTopic = async () => {
         if (currentTopicIndex >= agenda.length) return
+        const nextIdx = currentTopicIndex + 1
         const topic = agenda[currentTopicIndex]
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         setTopicLog(prev => [...prev, { time, label: topic }])
-        setCurrentTopicIndex(prev => prev + 1)
+        setCurrentTopicIndex(nextIdx)
+
+        const activeTopic = nextIdx < agenda.length ? agenda[nextIdx] : null
+        await supabase
+            .from('active_sessions')
+            .update({ current_topic: activeTopic })
+            .eq('id', sessionId)
     }
 
     async function fetchData() {
@@ -191,7 +198,7 @@ function DashboardContent() {
                 setTimeLeft(seconds)
                 if (seconds <= 0) {
                     clearInterval(interval)
-                    setCurrentTopicIndex(prev => prev + 1)
+                    // Auto-advance removed so signals follow teacher logic, not clock
                 }
             }, 1000)
 

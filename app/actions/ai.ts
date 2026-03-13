@@ -62,9 +62,13 @@ export async function generateSummary(agenda: string[], signals: any[]): Promise
         });
 
         // Format signals for the prompt
-        const signalCounts: Record<string, number> = {};
+        const typeCounts: Record<string, number> = {};
+        const topicCounts: Record<string, number> = {};
         signals.forEach(s => {
-            signalCounts[s.type] = (signalCounts[s.type] || 0) + 1;
+            typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
+            if (s.active_topic) {
+                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1;
+            }
         });
         const totalSignals = signals.length;
 
@@ -74,10 +78,13 @@ Agenda (topics planned):
 ${agenda.length > 0 ? agenda.map((a, i) => `${i + 1}. ${a}`).join('\n') : 'No specific agenda provided.'}
 
 Student Feedback Signals Collected (${totalSignals} total):
-${Object.entries(signalCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No confusion signals recorded!'}
+By Type:
+${Object.entries(typeCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No general signals recorded.'}
+By Topic (Accurate):
+${Object.entries(topicCounts).map(([topic, count]) => `- During "${topic}": ${count} signals`).join('\n') || 'No specific topic signals recorded.'}
 
 Please write a concise, encouraging, and highly actionable 2-3 paragraph summary of the session. 
-Focus on identifying what specific topics or moments might have caused confusion (based on the signals) and give 1-2 practical tips for the next class. Do not use generic corporate jargon, speak directly to the teacher.`;
+Focus on identifying what specific topics or moments might have caused confusion (based on the accurate topic signals) and give 1-2 practical tips for the next class. Do not use generic corporate jargon, speak directly to the teacher.`;
 
         const result = await model.generateContent(prompt);
         const text = result.response.text();
@@ -102,9 +109,13 @@ export async function generateRemediation(agenda: string[], signals: any[]): Pro
         });
 
         // Format signals for the prompt
-        const signalCounts: Record<string, number> = {};
+        const typeCounts: Record<string, number> = {};
+        const topicCounts: Record<string, number> = {};
         signals.forEach(s => {
-            signalCounts[s.type] = (signalCounts[s.type] || 0) + 1;
+            typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
+            if (s.active_topic) {
+                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1;
+            }
         });
         const totalSignals = signals.length;
 
@@ -115,10 +126,13 @@ Agenda (topics covered):
 ${agenda.length > 0 ? agenda.map((a, i) => `${i + 1}. ${a}`).join('\n') : 'General classroom concepts'}
 
 Student Feedback Signals Collected (${totalSignals} total marks of confusion):
-${Object.entries(signalCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No specific confusion recorded.'}
+By Type:
+${Object.entries(typeCounts).map(([type, count]) => `- "${type}": ${count} times`).join('\n') || 'No specific confusion recorded.'}
+By Topic (Accurate):
+${Object.entries(topicCounts).map(([topic, count]) => `- During "${topic}": ${count} signals`).join('\n') || 'No specific topic signals recorded.'}
 
 Task:
-Draft a 2-3 paragraph encouraging review email to the class addressing the most confusing topics from today's session based strictly on the provided signals and agenda.
+Draft a 2-3 paragraph encouraging review email to the class addressing the most confusing topics from today's session based strictly on the provided objective topic signals.
 Then, include a highly relevant, 1-question multiple-choice diagnostic quiz at the end of the email to check their understanding of that confusing concept.
 
 Format the response as plain text with clear spacing. Do NOT use markdown bolding (**) or hashtags.`;
