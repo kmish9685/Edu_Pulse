@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { ArrowRight, BarChart3, Zap, TrendingUp, BookOpen, Activity, Sparkles, QrCode, Brain, Bell, Shield, Users, Clock, ChevronRight, CheckCircle, Upload, Mic, Target, Download, ShieldOff, User, Ghost, Globe, CheckSquare, BellRing, Building, MapPin } from 'lucide-react'
 import Link from 'next/link'
-import { ArrowRight, BarChart3, Zap, TrendingUp, BookOpen, Activity, Sparkles, QrCode, Brain, Bell, Shield, Users, Clock, ChevronRight } from 'lucide-react'
-
 // ─── Scroll Reveal Hook ────────────────────────────────────────
 function useScrollReveal(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null)
@@ -343,7 +342,7 @@ export default function Home() {
           ))}
         </section>
 
-        {/* ══ SECTION 05 — FEATURES (Massive AI Showcase) ══════════ */}
+        {/* ══ SECTION 05 — THE ULTIMATE FEATURE WALL ════════════════ */}
         <section
           ref={featReveal.ref}
           style={{
@@ -353,119 +352,114 @@ export default function Home() {
             transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
           }}
         >
-          <div style={{ marginBottom: '3rem' }}>
-            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Core Capabilities & Roadmap</div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
-              The AI-Powered Retention Engine.
+          <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
+            <div className="section-label" style={{ marginBottom: '0.875rem', justifyContent: 'center' }}>Everything You Get</div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
+              The complete retention engine.
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 640, marginTop: '1rem' }}>
-              We don't just collect data. We use AI to actively intervene, protect tuition revenue, and make teachers better in the moment.
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.65, maxWidth: 640, margin: '1rem auto 0' }}>
+              We've thought of everything. From 100% anonymous student access to enterprise-grade admin analytics, here is every feature powering EduPulse today.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem' }}>
 
-            {/* Feature 1: Live Intelligence */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Activity size={20} color="var(--accent-soft)" />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Live Signal Intelligence</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                Our core engine detects whether a spike is isolated noise or a real class-wide confusion event within 3 seconds. Topic annotations correlate spikes to exact slides.
-              </p>
-            </div>
-
-            {/* Feature 2: Automated Remediation */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'linear-gradient(135deg, rgba(167,139,250,0.06), transparent)', borderColor: 'rgba(167,139,250,0.2)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Brain size={20} color="#A78BFA" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>Automated Remediation</h3>
-                <span className="lx-badge" style={{ fontSize: '0.65rem', background: 'var(--accent)', color: '#fff' }}>NEW</span>
-              </div>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                AI analyzes the session's most confusing topics and automatically drafts a targeted review email and diagnostic quiz for the students affected.
-              </p>
-            </div>
-
-            {/* Feature 3: Predictive Dropout */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'linear-gradient(135deg, rgba(239,68,68,0.04), transparent)', borderColor: 'rgba(239,68,68,0.15)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <TrendingUp size={20} color="var(--danger)" />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>Predictive Dropout Modeling</h3>
-                <span className="lx-badge" style={{ fontSize: '0.65rem', background: 'var(--danger)', color: '#fff' }}>NEW</span>
-              </div>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                We feed time-series confusion data into an institutional model to flag at-risk students 3-4 weeks *before* they fail a midterm or drop out.
-              </p>
-            </div>
-
-            {/* Feature 4: Spam Proof */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Shield size={20} color="var(--text-primary)" />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Spam-Proof & Anonymous</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                A 60-second cooldown prevents malicious spamming. No accounts or personal data required. Fully PDPA and FERPA-aligned by design.
-              </p>
-            </div>
-
-            {/* Feature 5: Enterprise LMS */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <BookOpen size={20} color="var(--text-primary)" />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Enterprise LMS Sync</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                Fully compatible with Moodle, Canvas, and Blackboard via LTI 1.3. Sync session rosters, post automated remediation quizzes, and track attendance seamlessly.
-              </p>
-            </div>
-
-            {/* Feature 6: Frictionless */}
-            <div className="glass-card" style={{ padding: '2.5rem', background: 'var(--bg-surface)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <QrCode size={20} color="var(--text-primary)" />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.25rem', letterSpacing: '-0.03em', marginBottom: '0.75rem' }}>Zero-Friction Student Setup</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                Phone camera → scan QR → one tap. No apps to download. No passwords to remember. Connects instantly even on 3G networks.
-              </p>
-            </div>
-
-            {/* Feature 5: The Holy Grail */}
-            <div className="glass-card" style={{ padding: '2.5rem', gridColumn: '1 / -1', background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(79,70,229,0.03))', borderColor: 'rgba(99,102,241,0.2)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 400px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <Sparkles size={16} color="var(--accent-soft)" />
-                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-soft)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Vision Roadmap</span>
-                  </div>
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '-0.03em', marginBottom: '1rem' }}>The Holy Grail: Real-Time Prompting</h3>
-                  <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                    In the future, EduPulse will listen to lecture audio using a real-time LLM. When a confusion spike hits, the teacher doesn't just see a red graph—they instantly see an AI-generated suggestion on their screen: <em style={{ color: 'var(--text-primary)' }}>"High confusion on Binary Trees. Suggest using the analogy of a filing cabinet."</em>
-                  </p>
+            {/* --- EDUCATORS --- */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Users size={16} color="var(--accent-soft)" />
                 </div>
-                {/* Mockup visual of the prompt */}
-                <div style={{ flex: '1 1 300px', background: 'rgba(6,6,10,0.6)', border: '1px solid var(--glass-border)', borderRadius: 12, padding: '1.5rem' }}>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)', marginBottom: '0.75rem', textTransform: 'uppercase' }}>Live Teleprompter Preview</div>
-                  <div style={{ background: 'var(--danger-dim)', border: '1px solid rgba(239,68,68,0.2)', padding: '1rem', borderRadius: 8, marginBottom: '0.75rem' }}>
-                    <span style={{ fontWeight: 700, color: 'var(--danger)' }}>14 Signals</span> <span style={{ color: 'var(--text-secondary)' }}>in last 30s during "Pointer Arithmetic"</span>
-                  </div>
-                  <div style={{ background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '1.25rem', borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <Sparkles size={14} color="#A78BFA" />
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>Suggested Pivot</span>
-                    </div>
-                    <div style={{ fontSize: '0.95rem', color: '#A78BFA', lineHeight: 1.5 }}>
-                      "Pause here. Ask the class to imagine memory addresses as hotel room numbers before proceeding to arrays."
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700 }}>For Educators</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { icon: Activity, t: 'Live Confusion Graph', d: 'See real-time spikes in "I\'m Confused" and "Too Fast" signals updating every 3 seconds.' },
+                  { icon: Brain, t: 'AI Remediation Drafts', d: 'AI automatically scripts post-session review emails based on EXACTLY what confused the class.' },
+                  { icon: CheckCircle, t: 'AI Quiz Generation', d: 'Automatically generates 3 custom diagnostic questions targeting the weakest concepts.' },
+                  { icon: Upload, t: 'Custom Study Materials', d: 'Upload PDFs or paste external links to feed the AI exactly what resources to recommend.' },
+                  { icon: Mic, t: 'AI Agenda Generation', d: 'Type "Photosynthesis" and the AI builds your entire lecture agenda instantly.' },
+                  { icon: Target, t: 'Topic-Level Tracking', d: 'Correlate every confusion spike to the exact slide or topic you were discussing.' },
+                  { icon: Download, t: 'Session Reports', d: 'Export beautiful, shareable post-lecture summaries for your teaching portfolio.' },
+                  { icon: ShieldOff, t: 'One-Click Device Mute', d: 'Instantly silence disruptive or spamming devices right from the live dashboard.' },
+                  { icon: Sparkles, t: 'Live Teleprompter', d: '(Roadmap) Real-time AI suggesting exactly what analogy to use when the class gets lost.' }
+                ].map((f, i) => (
+                  <div key={i} className="glass-card" style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <f.icon size={16} color="var(--text-primary)" />
+                      </div>
+                      <div>
+                        <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.35rem' }}>{f.t}</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{f.d}</p>
+                      </div>
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* --- STUDENTS --- */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <User size={16} color="#22C55E" />
                 </div>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700 }}>For Students</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { icon: QrCode, t: 'Zero-Friction QR Join', d: 'No apps to download. No accounts to create. Just point the camera and join the live session.' },
+                  { icon: Ghost, t: '100% Anonymous', d: 'Identity is never tracked. Students feel safe admitting they don\'t understand something.' },
+                  { icon: Globe, t: 'Multi-Language UI', d: 'Interface translates instantly to Hindi, Spanish, Mandarin, French, and Arabic.' },
+                  { icon: CheckSquare, t: 'Specific Topic Selection', d: 'Instead of just "I\'m confused", students select exactly which topic lost them from a premium dropdown.' },
+                  { icon: Clock, t: 'Anti-Spam Cooldown', d: 'A 60-second cooldown timer prevents abuse while guaranteeing every voice is legitimate.' },
+                  { icon: BellRing, t: 'Instant Acknowledgment', d: 'Visual confirmation that their signal reached the teacher\'s dashboard instantly.' }
+                ].map((f, i) => (
+                  <div key={i} className="glass-card" style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <f.icon size={16} color="var(--text-primary)" />
+                      </div>
+                      <div>
+                        <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.35rem' }}>{f.t}</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{f.d}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* --- INSTITUTIONS --- */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Building size={16} color="var(--danger)" />
+                </div>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700 }}>For Institutions & Admins</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {[
+                  { icon: TrendingUp, t: 'Predictive Dropout Modeling', d: 'Aggregate course-level confusion data to identify at-risk student cohorts weeks before midterms.' },
+                  { icon: MapPin, t: 'IP Geofencing / Shadow Ban', d: 'Automatically restrict signals to the campus WiFi network. Off-network signals are silently dropped.' },
+                  { icon: BookOpen, t: 'Enterprise LMS Sync', d: 'Push targeted remediation quizzes directly into Moodle, Canvas, or Blackboard via LTI 1.3.' },
+                  { icon: BarChart3, t: 'Macro Analytics Dashboard', d: 'Track platform adoption, total sessions, and aggregate confusion metrics across the entire university.' },
+                  { icon: Shield, t: 'Role-Based Access Control', d: 'Strict separation between educator and admin capabilities. Educator onboarding management.' },
+                  { icon: Zap, t: 'Real-Time Infrastructure', d: 'Powered by Supabase WebSockets, easily scaling to tens of thousands of concurrent connections.' }
+                ].map((f, i) => (
+                  <div key={i} className="glass-card" style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--glass-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <f.icon size={16} color="var(--text-primary)" />
+                      </div>
+                      <div>
+                        <h4 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.35rem' }}>{f.t}</h4>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{f.d}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

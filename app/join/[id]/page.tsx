@@ -457,6 +457,20 @@ export default function StudentJoin() {
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.classInSession}</span>
                     </div>
+
+                    {/* Pre-signal WiFi Warning */}
+                    <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '0.8rem 1rem', marginBottom: '1.5rem', textAlign: 'left', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                        <div style={{ background: 'rgba(245,158,11,0.15)', padding: '0.4rem', borderRadius: 8 }}>
+                            <span style={{ fontSize: '1rem' }}>📶</span>
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.85rem', marginBottom: '0.15rem' }}>Campus WiFi Required</div>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                                Ensure you are connected to the <strong style={{ color: 'var(--text-primary)' }}>same WiFi as your educator</strong> for your signal to be counted.
+                            </p>
+                        </div>
+                    </div>
+
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 7vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.1 }}>
                         {t.howKeepingUp}{t.howKeepingUpBr && <><br/>{t.howKeepingUpBr}</>}
                     </h1>
