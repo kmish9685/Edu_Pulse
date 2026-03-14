@@ -22,13 +22,13 @@ export default function TestimonialDashboard() {
             <div style={{ position: 'fixed', top: '-15%', right: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.10) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
                 <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <MessageSquareQuote size={14} color="#A78BFA" />
+                    <MessageSquareQuote size={14} color="var(--accent-soft)" />
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Educator Testimonials</span>
                 </div>
                 <div style={{ flex: 1 }} />
@@ -55,7 +55,7 @@ export default function TestimonialDashboard() {
                         { label: 'Reviews Collected', value: '124', sub: 'Verified educators' },
                         { label: 'Would Recommend', value: '97%', sub: 'To their department' },
                     ].map((m, i) => (
-                        <div key={i} style={{ padding: '1.75rem', background: 'var(--glass-bg)' }}>
+                        <div key={i} style={{ padding: '1.75rem', background: 'var(--bg-surface)' }}>
                             <div className="section-label" style={{ marginBottom: '0.625rem' }}>{m.label}</div>
                             <div className="gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', marginBottom: '0.25rem' }}>{m.value}</div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>{m.sub}</div>
@@ -105,7 +105,7 @@ export default function TestimonialDashboard() {
 
                             {/* Footer */}
                             <div style={{ paddingTop: '0.875rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'flex-end' }}>
-                                <button style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, color: '#A78BFA', fontFamily: 'inherit' }}>
+                                <button style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent-soft)', fontFamily: 'inherit' }}>
                                     <ThumbsUp size={12} /> Feature on landing page
                                 </button>
                             </div>

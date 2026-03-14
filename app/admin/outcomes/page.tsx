@@ -34,7 +34,7 @@ export default function OutcomesTracker() {
             <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'rgba(7,7,12,0.9)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
                 <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>

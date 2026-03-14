@@ -23,7 +23,7 @@ export default function TractionDashboard() {
             <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '45%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'rgba(7,7,12,0.9)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
                 <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}
                     onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
@@ -93,7 +93,7 @@ export default function TractionDashboard() {
                                 { time: '1 hour', event: '42 new students authenticated via SSO', type: 'auth' },
                                 { time: '3 hours', event: 'Post-lecture summary generated for Physics Series', type: 'ai' },
                             ].map((item, idx) => (
-                                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.625rem 0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.625rem 0.75rem', background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border)' }}>
                                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.type === 'insight' ? 'var(--warning)' : item.type === 'system' ? 'var(--success)' : 'var(--accent)', marginTop: 5, flexShrink: 0 }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.45 }}>{item.event}</div>
@@ -105,7 +105,7 @@ export default function TractionDashboard() {
                     </div>
 
                     {/* Infrastructure card */}
-                    <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(99,102,241,0.18)', background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(79,70,229,0.04))' }}>
+                    <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(99,102,241,0.18)', background: 'linear-gradient(135deg, rgba(99,102,241,0.05), transparent)' }}>
                         <div style={{ width: 52, height: 52, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
                             <Globe2 size={22} color="var(--accent-soft)" />
                         </div>

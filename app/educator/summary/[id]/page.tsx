@@ -154,9 +154,9 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
                     {/* AI-Powered "Next Best Action" (Automated Remediation) Feature */}
                     {!loading && summary && (
-                        <div className="glass-card" style={{ padding: '2rem', marginTop: '1.5rem', borderColor: 'rgba(167, 139, 250, 0.2)', background: 'linear-gradient(135deg, rgba(167, 139, 250, 0.05), transparent)' }}>
+                        <div className="glass-card" style={{ padding: '2rem', marginTop: '1.5rem', borderColor: 'rgba(99, 102, 241, 0.2)', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <Send size={16} color="#A78BFA" />
+                                <Send size={16} color="var(--accent-soft)" />
                                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Automated Remediation</span>
                             </div>
 

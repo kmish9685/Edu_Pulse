@@ -32,13 +32,13 @@ export default function PilotStatsPage() {
 
             <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.09) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
                 <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                    <BarChart3 size={14} color="#A78BFA" />
+                    <BarChart3 size={14} color="var(--accent-soft)" />
                     <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Pilot Traction</span>
                 </div>
                 <div style={{ flex: 1 }} />
@@ -68,7 +68,7 @@ export default function PilotStatsPage() {
                         { Icon: Radio, label: 'Confusion Signals', value: MOCK_STATS.totalSignals.toLocaleString(), trend: 'High engagement', color: '#F59E0B' },
                         { Icon: Calendar, label: 'Pilot Duration', value: '7 Weeks', trend: 'On track', color: '#A78BFA' },
                     ].map(stat => (
-                        <div key={stat.label} style={{ padding: '1.625rem', background: 'var(--glass-bg)' }}>
+                        <div key={stat.label} style={{ padding: '1.625rem', background: 'var(--bg-surface)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
                                 <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <stat.Icon size={15} color={stat.color} />
@@ -118,7 +118,7 @@ export default function PilotStatsPage() {
                         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.025em', marginBottom: '1.125rem' }}>Recent Live Sessions</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {RECENT_SESSIONS.map((s, i) => (
-                                <div key={i} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)' }}>
+                                <div key={i} style={{ padding: '0.75rem', background: 'var(--bg-base)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                                         <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>{s.course}</span>
                                         <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)' }}>{s.signals}</span>

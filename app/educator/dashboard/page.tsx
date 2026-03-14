@@ -431,7 +431,7 @@ function DashboardContent() {
                                         <stop offset="100%" stopColor="#818CF8" />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="2 5" vertical={false} stroke="rgba(255,255,255,0.04)" />
+                                <CartesianGrid strokeDasharray="2 5" vertical={false} stroke="var(--border)" />
                                 <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'var(--text-tertiary)', fontFamily: 'monospace' }} tickMargin={8} axisLine={false} tickLine={false} minTickGap={45} />
                                 <YAxis tick={{ fontSize: 9, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} allowDecimals={false} />
                                 <Tooltip
@@ -479,7 +479,7 @@ function DashboardContent() {
                             {pulseValue}%
                         </div>
                         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>recent participants signaling</div>
-                        <div style={{ height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                        <div style={{ height: 8, background: 'rgba(0,0,0,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${pulseValue}%`, background: barColor, borderRadius: 99, transition: 'width 0.7s ease, background 0.35s ease' }} />
                         </div>
                     </div>
@@ -527,7 +527,7 @@ function DashboardContent() {
                                         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{type}</span>
                                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{pct}%</span>
                                     </div>
-                                    <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99 }}>
+                                    <div style={{ height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 99 }}>
                                         <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), var(--accent-soft))', borderRadius: 99, transition: 'width 1s ease' }} />
                                     </div>
                                 </div>
@@ -552,7 +552,7 @@ function DashboardContent() {
                                     className="signal-row-enter"
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem',
-                                        background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius)', border: '1px solid var(--border)',
+                                        background: 'var(--bg-surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)',
                                         animationDelay: `${idx * 40}ms`,
                                     }}
                                 >

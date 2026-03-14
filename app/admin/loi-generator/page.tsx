@@ -28,7 +28,7 @@ export default function LOIGenerator() {
             <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '45%', height: '50%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.09) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '1rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(6,6,10,0.85)' }}>
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '1rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
                 <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
@@ -46,8 +46,8 @@ export default function LOIGenerator() {
                 {/* Hero */}
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0.875rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
-                        <Zap size={12} color="#A78BFA" />
-                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', fontWeight: 700, color: '#A78BFA', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Letter of Intent Automation</span>
+                        <Zap size={12} color="var(--accent-soft)" />
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Letter of Intent Automation</span>
                     </div>
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
                         Generate your <span className="gradient-text">Pilot LOI</span> instantly.
@@ -63,7 +63,7 @@ export default function LOIGenerator() {
                     <div className="glass-card" style={{ padding: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--glass-border)' }}>
                             <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Building2 size={16} color="#A78BFA" />
+                                <Building2 size={16} color="var(--accent-soft)" />
                             </div>
                             <div>
                                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Institution Details</div>
@@ -179,7 +179,7 @@ export default function LOIGenerator() {
                                 `}} />
 
                                 {/* LOI document — white paper look */}
-                                <div id="printable-loi" style={{ background: '#FAFAFA', borderRadius: 'var(--radius-xl)', padding: '3rem', boxShadow: '0 32px 80px -16px rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden', fontFamily: 'Georgia, serif', color: '#1a1a2e' }}>
+                                <div id="printable-loi" style={{ background: '#FFFFFF', borderRadius: 'var(--radius-xl)', padding: '3rem', boxShadow: '0 32px 80px -16px rgba(0,0,0,0.1)', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden', fontFamily: 'Georgia, serif', color: '#1a1a2e' }}>
                                     {/* Watermark */}
                                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) rotate(-30deg)', opacity: 0.04, fontSize: '5rem', fontWeight: 900, whiteSpace: 'nowrap', pointerEvents: 'none', color: '#000' }}>DRAFT LOI</div>
 
@@ -213,7 +213,7 @@ export default function LOIGenerator() {
                         ) : (
                             <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center', height: '100%', minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
                                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Calculator size={24} color="#A78BFA" />
+                                    <Calculator size={24} color="var(--accent-soft)" />
                                 </div>
                                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.025em' }}>Document Preview</div>
                                 <div style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', maxWidth: 280, lineHeight: 1.6 }}>Fill in the institution details on the left. Your LOI will appear here, ready to download or send for e-signature.</div>
