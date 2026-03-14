@@ -235,7 +235,7 @@ export default function AdminPage() {
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column' }}>
 
             {/* Top bar */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.75rem', flexShrink: 0, background: 'rgba(7,7,12,0.92)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 60 }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.75rem', flexShrink: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 60 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button className="md-hidden" onClick={() => setShowMobileNav(!showMobileNav)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '0.25rem', marginLeft: '-0.5rem' }}>
                         {showMobileNav ? <X size={20} /> : <Menu size={20} />}
@@ -372,7 +372,7 @@ export default function AdminPage() {
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
 
                                     {/* At-Risk Topics */}
-                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(244,114,182,0.2)', background: 'linear-gradient(135deg, rgba(244,114,182,0.05), transparent)' }}>
+                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(244,114,182,0.2)', background: 'linear-gradient(135deg, rgba(244,114,182,0.1), transparent)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
                                             <TrendingUp size={15} color="#F472B6" />
                                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Top At-Risk Topics</span>
@@ -395,7 +395,7 @@ export default function AdminPage() {
                                     </div>
 
                                     {/* Intervention Required */}
-                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.03)' }}>
+                                    <div className="glass-card" style={{ padding: '1.5rem', borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                                             <AlertCircle size={15} color="var(--danger)" />
                                             <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', color: 'var(--danger)', letterSpacing: '-0.02em' }}>Auto-Flagged Students</span>
@@ -427,7 +427,7 @@ export default function AdminPage() {
                                         { label: 'Anonymous Mode', status: 'Active', color: 'var(--success)' },
                                         { label: 'Geofence', status: 'Configured', color: 'var(--accent-soft)' },
                                     ].map(item => (
-                                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.625rem 0.875rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: 8 }}>
+                                        <div key={item.label} className="glass-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.625rem 0.875rem', background: 'var(--bg-surface)' }}>
                                             <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.857rem', color: 'var(--text-secondary)', flex: 1 }}>{item.label}</span>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                                                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
@@ -446,7 +446,7 @@ export default function AdminPage() {
                                         {metrics.signalBreakdown.sort((a, b) => b.count - a.count).map(item => (
                                             <div key={item.type} style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
                                                 <span style={{ fontSize: '0.857rem', fontWeight: 600, color: 'var(--text-secondary)', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.type}</span>
-                                                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                                                <div style={{ flex: 1, height: 4, background: 'rgba(0,0,0,0.06)', borderRadius: 99, overflow: 'hidden' }}>
                                                     <div style={{ height: '100%', width: `${(item.count / metrics.totalSignals) * 100}%`, background: 'linear-gradient(90deg, var(--accent), var(--accent-soft))', borderRadius: 99, transition: 'width 0.7s ease' }} />
                                                 </div>
                                                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-tertiary)', width: 28, textAlign: 'right' }}>{item.count}</span>

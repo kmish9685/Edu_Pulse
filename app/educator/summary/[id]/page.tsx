@@ -136,7 +136,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>ANALYZING CLASSROOM SIGNALS...</span>
                             </div>
                         ) : error ? (
-                            <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239,68,68,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                            <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239,68,68,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.25)' }}>
                                 {error}
                             </div>
                         ) : summary ? (

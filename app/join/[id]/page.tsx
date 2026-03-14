@@ -424,7 +424,7 @@ export default function StudentJoin() {
             <div style={{ position: 'fixed', bottom: '-10%', right: '-5%', width: '50%', height: '60%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1rem', gap: '0.5rem', backdropFilter: 'blur(12px)', background: 'rgba(6,6,10,0.85)', position: 'sticky', top: 0, zIndex: 10 }}>
+            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1rem', gap: '0.5rem', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.85)', position: 'sticky', top: 0, zIndex: 10 }}>
                 <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Zap size={11} color="#fff" fill="#fff" />
                 </div>
@@ -441,7 +441,7 @@ export default function StudentJoin() {
                     style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 100, color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: 600, outline: 'none', padding: '0.15rem 0.5rem', cursor: 'pointer', appearance: 'none' }}
                 >
                     {Object.keys(translations).map(k => (
-                        <option key={k} value={k} style={{ background: '#111' }}>{k.toUpperCase()}</option>
+                        <option key={k} value={k} style={{ background: '#fff' }}>{k.toUpperCase()}</option>
                     ))}
                 </select>
 
@@ -601,7 +601,7 @@ export default function StudentJoin() {
                                                 transition: 'all 0.15s',
                                                 display: 'block',
                                             }}
-                                            onMouseEnter={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+                                            onMouseEnter={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
                                             onMouseLeave={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'transparent' }}
                                         >
                                             {opt.icon} {opt.label}
@@ -663,11 +663,11 @@ export default function StudentJoin() {
                                     gap: '1rem',
                                     padding: 'clamp(1.1rem, 4vw, 1.5rem) clamp(1.1rem, 5vw, 1.75rem)',
                                     background: cooldown
-                                        ? 'rgba(255,255,255,0.02)'
+                                        ? 'rgba(0,0,0,0.03)'
                                         : isSubmittingThis
                                             ? sig.glow
                                             : `linear-gradient(135deg, ${sig.gradientFrom}, ${sig.gradientTo})`,
-                                    border: `1px solid ${cooldown ? 'var(--glass-border)' : sig.glow}`,
+                                    border: `1px solid ${cooldown ? 'var(--border)' : sig.glow}`,
                                     borderRadius: 24,
                                     color: cooldown ? 'var(--text-tertiary)' : sig.color,
                                     fontSize: 'clamp(1.1rem, 4.5vw, 1.25rem)',
@@ -690,7 +690,7 @@ export default function StudentJoin() {
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
-                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.125rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)', borderRadius: 100, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
+                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.125rem', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 100, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
                         <Clock size={14} />
                         {t.waitCooldown.replace('{s}', cooldownSecs.toString())}
                     </div>

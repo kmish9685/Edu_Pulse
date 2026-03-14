@@ -97,7 +97,7 @@ export default function Home() {
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: `1px solid ${scrolled ? 'var(--border-strong)' : 'var(--border)'}`, backdropFilter: 'blur(24px)', background: 'rgba(7,7,12,0.82)', transition: 'border-color 0.3s' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: `1px solid ${scrolled ? 'var(--border-strong)' : 'var(--border)'}`, backdropFilter: 'blur(24px)', background: 'var(--glass-bg)', transition: 'border-color 0.3s' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{ width: 30, height: 30, background: 'linear-gradient(135deg, #6366F1, #4F46E5)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(99,102,241,0.35)' }}>
@@ -210,8 +210,8 @@ export default function Home() {
               className="glass-card"
               style={{
                 padding: '1.5rem',
-                borderColor: 'rgba(99,102,241,0.18)',
-                boxShadow: '0 60px 120px -30px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.1)',
+                borderColor: 'var(--border-accent)',
+                boxShadow: '0 30px 60px -15px rgba(0,0,0,0.1), 0 0 0 1px rgba(99,102,241,0.05)',
                 transform: dashPreview.visible ? 'translateY(0)' : 'translateY(48px)',
                 opacity: dashPreview.visible ? 1 : 0,
                 transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease',
@@ -578,8 +578,8 @@ export default function Home() {
             style={{
               padding: '5rem 3rem',
               textAlign: 'center',
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.10), rgba(79,70,229,0.04))',
-              borderColor: 'rgba(99,102,241,0.20)',
+              background: 'var(--glass-bg)',
+              borderColor: 'var(--border-accent)',
               position: 'relative',
               overflow: 'hidden',
               transform: ctaReveal.visible ? 'translateY(0)' : 'translateY(32px)',
@@ -597,7 +597,7 @@ export default function Home() {
 
             <div style={{ position: 'relative' }}>
               <div className="section-label" style={{ marginBottom: '1.25rem' }}>Get Started Today</div>
-              <h2 className="gradient-text-shimmer" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '1.25rem' }}>
+              <h2 className="gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '1.25rem' }}>
                 Your next lecture could be<br />your best one yet.
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 2.75rem' }}>

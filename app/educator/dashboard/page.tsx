@@ -277,7 +277,7 @@ function DashboardContent() {
             <div style={{ position: 'fixed', top: '-5%', left: '20%', width: '60%', height: '40%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.05) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Topbar */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 54, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.875rem', flexShrink: 0, zIndex: 10, position: 'relative', backdropFilter: 'blur(12px)', background: 'rgba(7,7,12,0.92)' }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 54, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.875rem', flexShrink: 0, zIndex: 10, position: 'relative', backdropFilter: 'blur(12px)', background: 'var(--glass-bg)' }}>
                 {/* Logo + session */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -454,7 +454,7 @@ function DashboardContent() {
                         style={{
                             padding: '1.5rem',
                             borderColor: isHighLoad ? 'rgba(239,68,68,0.2)' : isWatchLoad ? 'rgba(245,158,11,0.15)' : 'var(--border)',
-                            background: isHighLoad ? 'rgba(239,68,68,0.04)' : 'var(--glass-bg)',
+                            background: isHighLoad ? 'rgba(239,68,68,0.04)' : 'var(--bg-surface)',
                             position: 'relative',
                             overflow: 'hidden',
                             transition: 'border-color 0.35s, background 0.35s',
@@ -485,7 +485,7 @@ function DashboardContent() {
                     </div>
 
                     {/* AI Insight */}
-                    <div className="glass-card" style={{ padding: '1.125rem' }}>
+                    <div className="glass-card" style={{ padding: '1.125rem', background: 'var(--bg-surface)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginBottom: '0.625rem' }}>
                             <Sparkles size={12} color="var(--accent-soft)" />
                             <span className="section-label">AI Insight</span>
