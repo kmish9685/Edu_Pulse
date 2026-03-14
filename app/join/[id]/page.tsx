@@ -238,8 +238,8 @@ export default function StudentJoin() {
     const t = translations[lang]
 
     const SIGNAL_TYPES = [
-        { id: 'confused', label: t.sigConfused, realType: "I'm Confused", emoji: '🤔', color: '#EF4444', glow: 'rgba(239,68,68,0.35)', gradientFrom: 'rgba(239,68,68,0.12)', gradientTo: 'rgba(239,68,68,0.04)' },
-        { id: 'too_fast', label: t.sigFast, realType: 'Too Fast', emoji: '⚡', color: '#F59E0B', glow: 'rgba(245,158,11,0.35)', gradientFrom: 'rgba(245,158,11,0.12)', gradientTo: 'rgba(245,158,11,0.04)' },
+        { id: 'confused', label: t.sigConfused, realType: "I'm Confused", emoji: '🤔', color: '#334155', border: '#E2E8F0', bg: '#F8FAFC' },
+        { id: 'too_fast', label: t.sigFast, realType: 'Too Fast', emoji: '⚡', color: '#334155', border: '#E2E8F0', bg: '#F8FAFC' },
     ]
 
     // Validate session on load + check cooldown
@@ -424,14 +424,13 @@ export default function StudentJoin() {
             <div style={{ position: 'fixed', bottom: '-10%', right: '-5%', width: '50%', height: '60%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1rem', gap: '0.5rem', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.85)', position: 'sticky', top: 0, zIndex: 10 }}>
-                <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Zap size={11} color="#fff" fill="#fff" />
+            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.25rem', gap: '0.75rem', background: 'var(--bg-surface)', position: 'sticky', top: 0, zIndex: 10 }}>
+                <div style={{ width: 24, height: 24, background: '#0F172A', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Zap size={13} color="#fff" fill="#fff" />
                 </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
-                <span style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>/</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{t.session}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', padding: '0.15rem 0.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: 'var(--accent-soft)', letterSpacing: '0.1em' }}>{sessionId}</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse</span>
+                <div style={{ flex: 1 }} />
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.8rem', padding: '0.25rem 0.625rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', letterSpacing: '0.05em' }}>{sessionId}</span>
                 <div style={{ flex: 1 }} />
                 
                 {/* Language Picker */}
@@ -445,9 +444,9 @@ export default function StudentJoin() {
                     ))}
                 </select>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '0.2rem 0.625rem', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.2rem 0.625rem', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, flexShrink: 0 }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
-                    {t.live}
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.live}</span>
                 </div>
             </header>
 
@@ -462,7 +461,7 @@ export default function StudentJoin() {
                     </div>
 
                     {/* Pre-signal WiFi Warning */}
-                    <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '0.8rem 1rem', marginBottom: '1.5rem', textAlign: 'left', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '1rem', marginBottom: '2rem', textAlign: 'left', display: 'flex', gap: '0.875rem', alignItems: 'center', boxShadow: 'var(--shadow-sm)' }}>
                         <div style={{ background: 'rgba(245,158,11,0.15)', padding: '0.4rem', borderRadius: 8 }}>
                             <span style={{ fontSize: '1rem' }}>📶</span>
                         </div>
@@ -623,7 +622,7 @@ export default function StudentJoin() {
                     </div>
 
                     {/* Optional Custom Comment TextArea */}
-                    <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
                         <textarea
                             value={customComment}
                             onChange={(e) => setCustomComment(e.target.value)}
@@ -633,19 +632,20 @@ export default function StudentJoin() {
                             maxLength={80}
                             style={{
                                 width: '100%',
-                                padding: '0.875rem 1.125rem',
-                                background: 'var(--accent-dim)',
+                                padding: '1rem',
+                                background: 'var(--bg-surface)',
                                 border: '1px solid var(--border)',
-                                borderRadius: 14,
+                                borderRadius: 'var(--radius-lg)',
                                 color: 'var(--text-primary)',
                                 fontSize: '0.9rem',
                                 fontFamily: 'inherit',
                                 outline: 'none',
                                 resize: 'none',
-                                transition: 'border-color 0.2s',
+                                transition: 'all 0.2s',
+                                boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)'
                             }}
-                            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--accent-soft)'}
-                            onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-soft)'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(79,70,229,0.1)' }}
+                            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px 0 rgba(0,0,0,0.02)' }}
                         />
                     </div>
 
@@ -659,28 +659,30 @@ export default function StudentJoin() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'flex-start',
+                                    justifyContent: 'center',
                                     gap: '1rem',
-                                    padding: 'clamp(1.1rem, 4vw, 1.5rem) clamp(1.1rem, 5vw, 1.75rem)',
+                                    padding: '1.25rem',
                                     background: cooldown
-                                        ? 'rgba(0,0,0,0.03)'
+                                        ? 'var(--bg-base)'
                                         : isSubmittingThis
-                                            ? sig.glow
-                                            : `linear-gradient(135deg, ${sig.gradientFrom}, ${sig.gradientTo})`,
-                                    border: `1px solid ${cooldown ? 'var(--border)' : sig.glow}`,
-                                    borderRadius: 24,
+                                            ? 'var(--bg-hover)'
+                                            : sig.bg,
+                                    border: `1px solid ${cooldown ? 'var(--border)' : 'var(--border)'}`,
+                                    borderRadius: 'var(--radius-xl)',
                                     color: cooldown ? 'var(--text-tertiary)' : sig.color,
-                                    fontSize: 'clamp(1.1rem, 4.5vw, 1.25rem)',
-                                    fontWeight: 700,
+                                    fontSize: '1.125rem',
+                                    fontWeight: 600,
                                     cursor: cooldown ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    boxShadow: !cooldown && !isSubmittingThis ? `0 8px 32px ${sig.glow}` : 'none',
-                                    transform: isSubmittingThis ? 'scale(0.98)' : 'scale(1)',
-                                    opacity: cooldown ? 0.5 : 1,
+                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    boxShadow: !cooldown && !isSubmittingThis ? 'var(--shadow-md)' : 'none',
+                                    transform: isSubmittingThis ? 'translateY(1px)' : 'scale(1)',
+                                    opacity: cooldown ? 0.6 : 1,
                                 }}
+                                onMouseEnter={e => { if (!cooldown && !isSubmittingThis) { e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
+                                onMouseLeave={e => { if (!cooldown && !isSubmittingThis) { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
                             >
-                                <span style={{ fontSize: '1.75rem', filter: cooldown ? 'grayscale(100%)' : 'none' }}>
-                                    {isSubmittingThis ? <Loader2 size={28} style={{ animation: 'spin 1.5s linear infinite' }} /> : sig.emoji}
+                                <span style={{ fontSize: '1.5rem', filter: cooldown ? 'grayscale(100%)' : 'none', opacity: cooldown ? 0.5 : 1 }}>
+                                    {isSubmittingThis ? <Loader2 size={24} style={{ animation: 'spin 1.5s linear infinite' }} /> : sig.emoji}
                                 </span>
                                 {isSubmittingThis ? t.sending : sig.label}
                             </button>

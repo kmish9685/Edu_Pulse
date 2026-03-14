@@ -13,7 +13,7 @@ import { QRCodeSVG } from 'qrcode.react'
 function StateBanner({ pulseValue }: { pulseValue: number }) {
     const level = pulseValue >= 30 ? 'alert' : pulseValue >= 15 ? 'watch' : 'calm'
     const cfg = {
-        calm: { cls: 'state-banner state-banner-calm', icon: null, text: `Session active · ${level === 'calm' ? 'Class following well' : ''}` },
+        calm: { cls: 'state-banner state-banner-calm', icon: null, text: `Session active · ${pulseValue < 15 ? 'Class following well' : ''}` },
         watch: { cls: 'state-banner state-banner-watch', icon: <Zap size={13} />, text: 'Signals picking up · Consider a quick check-in' },
         alert: { cls: 'state-banner state-banner-alert', icon: <Bell size={13} />, text: 'High confusion load · Pause now and recap the last concept.' },
     }[level]
@@ -279,16 +279,16 @@ function DashboardContent() {
             {/* Topbar */}
             <header style={{ borderBottom: '1px solid var(--border)', height: 54, display: 'flex', alignItems: 'center', padding: '0 1.5rem', gap: '0.875rem', flexShrink: 0, zIndex: 10, position: 'relative', backdropFilter: 'blur(12px)', background: 'var(--glass-bg)' }}>
                 {/* Logo + session */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Zap size={11} color="#fff" fill="#fff" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 24, height: 24, background: '#0F172A', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={13} color="#fff" fill="#fff" />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse</span>
                 </div>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>PIN</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.05rem', fontWeight: 800, padding: '0.15rem 0.6rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', letterSpacing: '0.15em' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', fontWeight: 800, padding: '0.25rem 0.625rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-primary)', letterSpacing: '0.12em' }}>
                         {joinCode}
                     </span>
                     <button 
@@ -336,7 +336,7 @@ function DashboardContent() {
                                 setShowFloatQR(!showFloatQR);
                             }
                         }}
-                        style={{ padding: '0.2rem 0.5rem', background: showFloatQR ? 'var(--accent)' : 'var(--accent-dim)', border: showFloatQR ? '1px solid var(--accent)' : '1px solid var(--border-accent)', borderRadius: 'var(--radius-sm)', color: showFloatQR ? '#fff' : 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', transition: 'all 0.2s' }}
+                        style={{ padding: '0.25rem 0.625rem', background: showFloatQR ? 'var(--accent)' : 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: showFloatQR ? '#fff' : 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                     >
                         Float QR
                     </button>
@@ -344,25 +344,25 @@ function DashboardContent() {
 
                 {/* Topic advance */}
                 {agenda.length > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0 0.875rem', borderLeft: '1px solid var(--border)', marginLeft: '0.25rem' }}>
-                        <Tag size={12} color="var(--accent-soft)" />
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1rem', borderLeft: '1px solid var(--border)', marginLeft: '0.5rem' }}>
+                        <Tag size={13} color="var(--accent-soft)" />
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {currentTopic ? currentTopic.replace(/\s*\(\d+m\)$/, '') : <span style={{ color: 'var(--text-tertiary)' }}>All topics complete</span>}
                         </span>
 
                         {/* Auto-advance timer */}
                         {timeLeft !== null && (
-                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: timeLeft < 60 ? 'var(--warning)' : 'var(--success)', background: timeLeft < 60 ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', padding: '0.1rem 0.35rem', borderRadius: 4, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Clock size={10} />
+                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: timeLeft < 60 ? 'var(--warning)' : 'var(--success)', background: 'var(--bg-base)', border: '1px solid var(--border)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <Clock size={11} />
                                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                             </span>
                         )}
 
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>{Math.min(currentTopicIndex + 1, agenda.length)}/{agenda.length}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>{Math.min(currentTopicIndex + 1, agenda.length)}/{agenda.length}</span>
                         <button onClick={advanceTopic} disabled={currentTopicIndex >= agenda.length}
                             className="btn-primary"
-                            style={{ padding: '0.4rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem', marginLeft: '0.5rem', boxShadow: '0 4px 14px rgba(99,102,241,0.3)' }}>
-                            Next Topic <ChevronRight size={14} />
+                            style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                            Next Topic <ChevronRight size={15} />
                         </button>
                     </div>
                 )}
@@ -372,9 +372,9 @@ function DashboardContent() {
                 <button
                     onClick={() => setMuted(m => !m)}
                     title={muted ? 'Unmute alerts' : 'Mute alerts'}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.25rem 0.65rem', background: muted ? 'rgba(239,68,68,0.08)' : 'var(--accent-dim)', border: `1px solid ${muted ? 'rgba(239,68,68,0.25)' : 'var(--border-accent)'}`, borderRadius: 'var(--radius)', color: muted ? 'var(--danger)' : 'var(--accent-soft)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: muted ? 'var(--danger)' : 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
                 >
-                    {muted ? '🔇 Muted' : '🔔 Alerts On'}
+                    {muted ? '🔇' : '🔔'}
                 </button>
                 <button
                     disabled={ending}
@@ -391,9 +391,9 @@ function DashboardContent() {
                         const agendaParam = encodeURIComponent(JSON.stringify(agenda))
                         router.push(`/educator/summary/${sessionId}?agenda=${agendaParam}`)
                     }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.78rem', fontWeight: 700, cursor: ending ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: ending ? 0.7 : 1 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.4rem 0.8rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--danger)', fontSize: '0.75rem', fontWeight: 600, cursor: ending ? 'wait' : 'pointer' }}
                 >
-                    {ending ? <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Ending Session…</> : <><LogOut size={12} /> End Session</>}
+                    {ending ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Ending...</> : <><LogOut size={13} /> End Session</>}
                 </button>
             </header>
 
@@ -427,19 +427,20 @@ function DashboardContent() {
                             <LineChart data={chartData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                                        <stop offset="0%" stopColor="#6366F1" />
-                                        <stop offset="100%" stopColor="#818CF8" />
+                                        <stop offset="0%" stopColor="var(--accent)" />
+                                        <stop offset="100%" stopColor="var(--accent-soft)" />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="2 5" vertical={false} stroke="var(--border)" />
-                                <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'var(--text-tertiary)', fontFamily: 'monospace' }} tickMargin={8} axisLine={false} tickLine={false} minTickGap={45} />
-                                <YAxis tick={{ fontSize: 9, fill: 'var(--text-tertiary)' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-dim)" />
+                                <XAxis dataKey="time" tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }} tickMargin={10} axisLine={false} tickLine={false} minTickGap={40} />
+                                <YAxis tick={{ fontSize: 10, fill: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} allowDecimals={false} />
                                 <Tooltip
-                                    contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 12, fontFamily: 'var(--font-body)' }}
-                                    itemStyle={{ color: 'var(--accent-soft)' }}
-                                    labelStyle={{ color: 'var(--text-secondary)', marginBottom: 4, fontFamily: 'var(--font-mono)' }}
+                                    cursor={{ stroke: 'var(--border-strong)', strokeWidth: 1 }}
+                                    contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-lg)', color: 'var(--text-primary)', fontSize: 12 }}
+                                    itemStyle={{ color: 'var(--accent-soft)', fontWeight: 600 }}
+                                    labelStyle={{ color: 'var(--text-tertiary)', marginBottom: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
                                 />
-                                <Line type="monotone" dataKey="signals" stroke="url(#lineGrad)" strokeWidth={2.5} dot={false} animationDuration={800} />
+                                <Line type="monotone" dataKey="signals" stroke="url(#lineGrad)" strokeWidth={3} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: 'var(--accent-soft)' }} animationDuration={1000} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -457,30 +458,26 @@ function DashboardContent() {
                             background: isHighLoad ? 'rgba(239,68,68,0.04)' : 'var(--bg-surface)',
                             position: 'relative',
                             overflow: 'hidden',
-                            transition: 'border-color 0.35s, background 0.35s',
                         }}
                     >
-                        {isHighLoad && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, var(--danger), #FF8080)', animation: 'pulse-wide 2s infinite' }} />}
-                        <div className="section-label" style={{ marginBottom: '0.875rem' }}>
-                            {isHighLoad && <Bell size={11} style={{ display: 'inline', marginRight: 4 }} />}
+                        {isHighLoad && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--danger)', animation: 'pulse-wide 2s infinite' }} />}
+                        <div className="section-label" style={{ marginBottom: '1rem' }}>
                             Confusion Load
                         </div>
                         <div style={{
                             fontFamily: 'var(--font-display)',
-                            fontSize: '3.5rem',
-                            fontWeight: 700,
-                            letterSpacing: '-0.06em',
+                            fontSize: '3.75rem',
+                            fontWeight: 800,
+                            letterSpacing: '-0.05em',
                             color: pulseColor,
                             lineHeight: 1,
-                            marginBottom: '0.375rem',
-                            fontVariantNumeric: 'tabular-nums',
-                            transition: 'color 0.35s ease',
+                            marginBottom: '0.5rem',
                         }}>
                             {pulseValue}%
                         </div>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>recent participants signaling</div>
-                        <div style={{ height: 8, background: 'rgba(0,0,0,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${pulseValue}%`, background: barColor, borderRadius: 99, transition: 'width 0.7s ease, background 0.35s ease' }} />
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-tertiary)', marginBottom: '1.25rem' }}>recent participants signaling</div>
+                        <div style={{ height: 6, background: 'var(--bg-base)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pulseValue}%`, background: pulseColor, borderRadius: 99, transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)' }} />
                         </div>
                     </div>
 

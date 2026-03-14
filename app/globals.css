@@ -24,39 +24,37 @@
   --text-secondary: #475569; /* Slate gray */
   --text-tertiary: #64748B; /* Lighter slate */
 
-  /* Accent — Indigo (Professional & Trustworthy) */
-  --accent: #4F46E5; /* Deeper indigo for better contrast on light bg */
-  --accent-soft: #6366F1;
-  --accent-hover: #4338CA;
-  --accent-dim: rgba(79, 70, 229, 0.08);
-  --accent-2: #3B82F6; /* Blue secondary accent */
+  /* Accent — Professional Navy & Indigo */
+  --accent: #334155; /* Slate 700 - very professional */
+  --accent-soft: #4F46E5; /* Keep indigo as a spot color */
+  --accent-hover: #1E293B;
+  --accent-dim: rgba(71, 85, 105, 0.06);
+  --accent-2: #2563EB;
 
-  /* Gradients */
-  --grad-a: #4F46E5;
-  --grad-b: #6366F1;
+  /* Gradients - Much more subtle */
+  --grad-a: #334155;
+  --grad-b: #475569;
 
-  /* Status */
-  --success: #16A34A; /* Slightly darker green for contrast */
-  --success-dim: rgba(22, 163, 74, 0.10);
-  --warning: #D97706; /* Darker amber */
-  --warning-dim: rgba(245, 158, 11, 0.12);
-  --danger: #DC2626; /* Deeper red */
-  --danger-dim: rgba(220, 38, 38, 0.08);
+  /* Fonts - Clean & Balanced */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* Fonts */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  /* Shadows - Natural & Neutral */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   /* Border Radius */
-  --radius-sm: 6px;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
 
   /* Student page specific */
-  --student-primary: #EEF2F6; /* Soft blue-gray for student portal background */
+  --student-primary: #F1F5F9;
 }
 
 /* ─── Base Reset ────────────────────────────────────────────── */
@@ -306,31 +304,28 @@ h5 {
 
 /* ─── Glass Card ──────────────────────────────────────────── */
 .glass-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
 .glass-card:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-strong);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .glass-card-interactive:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-strong);
-  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ─── Gradient Text ───────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #C7D2FE 0%, #818CF8 40%, #6366F1 80%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  font-weight: 800;
 }
 
 .gradient-text-shimmer {
@@ -347,61 +342,52 @@ h5 {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.65rem 1.375rem;
+  padding: 0.75rem 1.5rem;
   font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  border-radius: 100px;
-  border: 1px solid rgba(99, 102, 241, 0.5);
-  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: none;
+  background: #0F172A;
   color: #fff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .btn-primary:hover {
+  background: #1E293B;
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px -6px rgba(99, 102, 241, 0.45);
-  background: linear-gradient(135deg, #818CF8, #6366F1);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-primary:active {
-  transform: translateY(0) scale(0.98);
-  box-shadow: none;
+  transform: translateY(0);
 }
 
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.65rem 1.375rem;
+  padding: 0.75rem 1.5rem;
   font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  border-radius: 100px;
-  border: 1px solid var(--glass-border-strong);
-  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
   color: var(--text-primary);
-  transform: translateY(-1px);
-}
-
-.btn-ghost:active {
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(0);
 }
 
 .btn-sm {
