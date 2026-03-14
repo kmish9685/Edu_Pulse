@@ -215,6 +215,7 @@ export default function StudentJoin() {
     const [roomId, setRoomId] = useState<string | null>(null)
     const [signaled, setSignaled] = useState(false)
     const [optionalText, setOptionalText] = useState('')
+    const [customComment, setCustomComment] = useState('')
     const [cooldown, setCooldown] = useState(false)
     const [cooldownSecs, setCooldownSecs] = useState(0)
     const [submitting, setSubmitting] = useState<string | null>(null)
@@ -284,12 +285,14 @@ export default function StudentJoin() {
         setError(null)
         setDropdownOpen(false)
         const deviceId = getOrCreateDeviceId()
-        const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: optionalText, device_id: deviceId })
+        const combinedText = [optionalText, customComment].filter(Boolean).join(' | ')
+        const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: combinedText, device_id: deviceId })
         if (res.success) {
             setSignaled(true)
             setCooldown(true)
             setCooldownSecs(60)
             setOptionalText('')
+            setCustomComment('')
             // Check if student is off the campus network
             setOffNetwork(!!(res as any).offNetwork)
             localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
@@ -387,11 +390,11 @@ export default function StudentJoin() {
                         <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.25rem', textAlign: 'left' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <span style={{ fontSize: '1.1rem' }}>📶</span>
-                                <span style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>Connect to Campus WiFi</span>
+                                <span style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>Campus WiFi Recommended</span>
                             </div>
                             <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                                Your signal was received, but you appear to be on a different network than your teacher. 
-                                Please connect to the <strong style={{ color: 'var(--text-primary)' }}>same campus WiFi</strong> as your teacher for your feedback to reach them directly.
+                                Your signal was successfully received! 
+                                If possible, connecting to the <strong style={{ color: 'var(--text-primary)' }}>same campus WiFi</strong> as your teacher helps us ensure the best experience.
                             </p>
                         </div>
                     ) : (
@@ -464,9 +467,9 @@ export default function StudentJoin() {
                             <span style={{ fontSize: '1rem' }}>📶</span>
                         </div>
                         <div>
-                            <div style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.85rem', marginBottom: '0.15rem' }}>Campus WiFi Required</div>
+                            <div style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.85rem', marginBottom: '0.15rem' }}>Campus WiFi Recommended</div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                                Ensure you are connected to the <strong style={{ color: 'var(--text-primary)' }}>same WiFi as your educator</strong> for your signal to be counted.
+                                It works best if you connect to the <strong style={{ color: 'var(--text-primary)' }}>same WiFi as your educator</strong>, if possible.
                             </p>
                         </div>
                     </div>
@@ -618,6 +621,34 @@ export default function StudentJoin() {
                             )}
                         </div>
                     </div>
+
+                    {/* Optional Custom Comment TextArea */}
+                    <div style={{ marginBottom: '1.25rem' }}>
+                        <textarea
+                            value={customComment}
+                            onChange={(e) => setCustomComment(e.target.value)}
+                            disabled={submitting !== null}
+                            placeholder="Type a short comment (optional)..."
+                            rows={2}
+                            maxLength={80}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem 1.125rem',
+                                background: 'var(--accent-dim)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 14,
+                                color: 'var(--text-primary)',
+                                fontSize: '0.9rem',
+                                fontFamily: 'inherit',
+                                outline: 'none',
+                                resize: 'none',
+                                transition: 'border-color 0.2s',
+                            }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = 'var(--accent-soft)'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                        />
+                    </div>
+
                     {SIGNAL_TYPES.map(sig => {
                         const isSubmittingThis = submitting === sig.label
                         return (
