@@ -3,27 +3,24 @@
 import { useState, useEffect, useRef } from 'react'
 import { ArrowRight, BarChart3, Zap, TrendingUp, BookOpen, Activity, Sparkles, QrCode, Brain, Bell, Shield, Users, Clock, ChevronRight, CheckCircle, Upload, Mic, Target, Download, ShieldOff, User, Ghost, Globe, CheckSquare, BellRing, Building, MapPin } from 'lucide-react'
 import Link from 'next/link'
-// ─── Scroll Reveal Hook ────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect() } },
-      { threshold }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [threshold])
-  return { ref, visible }
-}
+import { motion, AnimatePresence } from 'framer-motion'
+import { FadeIn, StaggerContainer, StaggerItem, ScaleHover, RevealSection } from '@/components/Animated'
 
 // ─── Counting Number ───────────────────────────────────────────
 function CountingNumber({ target, suffix = '', prefix = '' }: { target: number, suffix?: string, prefix?: string }) {
   const [value, setValue] = useState(0)
-  const { ref, visible } = useScrollReveal(0.2)
+  const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); observer.disconnect() }
+    }, { threshold: 0.2 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
   useEffect(() => {
     if (!visible) return
     let start = 0
@@ -79,13 +76,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const dashPreview = useScrollReveal(0.1)
-  const statsReveal = useScrollReveal(0.2)
-  const howReveal = useScrollReveal(0.1)
-  const featReveal = useScrollReveal(0.1)
-  const personaReveal = useScrollReveal(0.1)
-  const ctaReveal = useScrollReveal(0.1)
-
   return (
     <div style={{ background: 'var(--bg-base)', color: 'var(--text-primary)', minHeight: '100vh', overflowX: 'hidden', fontFamily: 'var(--font-body)' }}>
 
@@ -118,7 +108,7 @@ export default function Home() {
       <div style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ══ SECTION 01 — TENSION STATEMENT HERO ══════════════ */}
-        <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '96px 1.75rem 64px' }}>
+        <RevealSection style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '96px 1.75rem 64px' }}>
 
           {/* Rotated vertical label */}
           <div style={{ position: 'absolute', left: '1.5rem', top: '50%', transform: 'translateY(-50%)' }}>
@@ -129,69 +119,81 @@ export default function Home() {
           <div style={{ textAlign: 'center', maxWidth: 900 }}>
 
             {/* Oversize tension statement */}
-            <h1
-              className="animate-fade-up"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(3.5rem, 9vw, 144px)',
-                fontWeight: 700,
-                letterSpacing: '-0.06em',
-                lineHeight: 0.92,
-                marginBottom: '2.5rem',
-                color: 'var(--text-primary)',
-              }}
-            >
-              Your students<br />
-              are confused<br />
-              <span className="gradient-text" style={{ display: 'inline-block' }}>right now.</span>
-            </h1>
+            <FadeIn>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(3.5rem, 9vw, 144px)',
+                  fontWeight: 700,
+                  letterSpacing: '-0.06em',
+                  lineHeight: 0.92,
+                  marginBottom: '2.5rem',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Your students<br />
+                are confused<br />
+                <span className="gradient-text" style={{ display: 'inline-block' }}>right now.</span>
+              </h1>
+            </FadeIn>
 
             {/* Rule + tagline */}
-            <div style={{ width: 60, height: 1, background: 'var(--border-strong)', margin: '0 auto 1.5rem' }} />
-            <p
-              className="animate-fade-up-delay-1"
-              style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '2.5rem', maxWidth: 520, margin: '0 auto 2.5rem' }}
-            >
-              EduPulse tells you exactly when, and about what —<br />
-              so you can act before confusion hardens into a knowledge gap.
-            </p>
+            <FadeIn delay={0.2}>
+              <div style={{ width: 60, height: 1, background: 'var(--border-strong)', margin: '0 auto 1.5rem' }} />
+              <p
+                style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '2.5rem', maxWidth: 520, margin: '0 auto 2.5rem' }}
+              >
+                EduPulse tells you exactly when, and about what —<br />
+                so you can act before confusion hardens into a knowledge gap.
+              </p>
+            </FadeIn>
 
             {/* CTAs */}
-            <div className="animate-fade-up-delay-2" style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '2.5rem' }}>
-              <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
-                Start Class Session <ArrowRight size={16} />
-              </Link>
-              <Link href="/student" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                <QrCode size={16} /> Join as Student
-              </Link>
-            </div>
+            <FadeIn delay={0.4}>
+              <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', marginBottom: '2.5rem' }}>
+                <ScaleHover>
+                  <Link href="/admin/login" className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
+                    Start Class Session <ArrowRight size={16} />
+                  </Link>
+                </ScaleHover>
+                <ScaleHover>
+                  <Link href="/student" className="btn-ghost" style={{ fontSize: '0.95rem', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <QrCode size={16} /> Join as Student
+                  </Link>
+                </ScaleHover>
+              </div>
+            </FadeIn>
 
             {/* Impact narrative */}
-            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 640, width: '100%', margin: '0 auto' }}>
-              <div style={{
-                padding: '1.25rem 2rem',
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                fontSize: '0.9rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.7,
-                textAlign: 'center',
-                boxShadow: 'var(--shadow-md)',
-              }}>
-                <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 700 }}>250M+ students in India</strong> sit in classrooms where teachers have no real-time feedback loop. EduPulse changes that — with <strong style={{ color: 'var(--accent-soft)' }}>nothing more than the phone already in every student&apos;s pocket.</strong>
+            <FadeIn delay={0.6}>
+              <div style={{ marginBottom: '2.5rem', maxWidth: 640, width: '100%', margin: '0 auto' }}>
+                <div style={{
+                  padding: '1.25rem 2rem',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  fontSize: '0.9rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.7,
+                  textAlign: 'center',
+                  boxShadow: 'var(--shadow-md)',
+                }}>
+                  <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 700 }}>250M+ students in India</strong> sit in classrooms where teachers have no real-time feedback loop. EduPulse changes that — with <strong style={{ color: 'var(--accent-soft)' }}>nothing more than the phone already in every student&apos;s pocket.</strong>
+                </div>
               </div>
-            </div>
+            </FadeIn>
 
             {/* Trust badges */}
-            <div className="animate-fade-up-delay-3" style={{ display: 'flex', alignItems: 'center', gap: '1.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <StaggerContainer staggerDelay={0.1} style={{ display: 'flex', alignItems: 'center', gap: '1.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
               {['No student accounts', 'Anonymous by design', 'SDG-4 Aligned', 'Live at 3 institutions'].map(t => (
-                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
-                  {t}
-                </div>
+                <StaggerItem key={t}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8rem', color: 'var(--text-tertiary)', fontWeight: 500 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', flexShrink: 0 }} />
+                    {t}
+                  </div>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           </div>
 
           {/* Scroll indicator */}
@@ -199,22 +201,18 @@ export default function Home() {
             <span style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>Scroll</span>
             <div style={{ width: 1, height: 24, background: 'var(--text-tertiary)' }} />
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 02 — DASHBOARD PREVIEW ══════════════════ */}
-        <section style={{ padding: '0 2rem 6rem' }}>
+        <RevealSection style={{ padding: '0 2rem 6rem' }}>
           <div style={{ maxWidth: 1000, margin: '0 auto' }}>
             <div className="section-label" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Live Classroom Intelligence</div>
             <div
-              ref={dashPreview.ref}
               className="glass-card"
               style={{
                 padding: '1.5rem',
                 borderColor: 'var(--border-accent)',
                 boxShadow: '0 30px 60px -15px rgba(0,0,0,0.1), 0 0 0 1px rgba(99,102,241,0.05)',
-                transform: dashPreview.visible ? 'translateY(0)' : 'translateY(48px)',
-                opacity: dashPreview.visible ? 1 : 0,
-                transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease',
               }}
             >
               {/* Mock topbar */}
@@ -258,18 +256,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 03 — STATS (3 numbers) ══════════════════ */}
-        <section
-          ref={statsReveal.ref}
-          style={{
-            maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem',
-            opacity: statsReveal.visible ? 1 : 0,
-            transform: statsReveal.visible ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-          }}
-        >
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
           <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {[
               { target: 60, suffix: '%', label: 'of students never raise their hand in a lecture hall', sub: 'Source: Active Learning Research' },
@@ -286,17 +276,10 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 04 — HOW IT WORKS (editorial rows) ══════ */}
-        <section
-          ref={howReveal.ref}
-          style={{
-            maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem',
-            opacity: howReveal.visible ? 1 : 0,
-            transition: 'opacity 0.6s ease 0.1s',
-          }}
-        >
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
           <div className="section-label" style={{ marginBottom: '3rem' }}>How It Works</div>
 
           {[
@@ -340,18 +323,10 @@ export default function Home() {
               {i < 2 && <div style={{ height: 1, background: 'var(--border)' }} />}
             </div>
           ))}
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 05 — THE ULTIMATE FEATURE WALL ════════════════ */}
-        <section
-          ref={featReveal.ref}
-          style={{
-            maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem',
-            opacity: featReveal.visible ? 1 : 0,
-            transform: featReveal.visible ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
-          }}
-        >
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
           <div style={{ marginBottom: '4rem', textAlign: 'center' }}>
             <div className="section-label" style={{ marginBottom: '0.875rem', justifyContent: 'center' }}>Everything You Get</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
@@ -464,18 +439,10 @@ export default function Home() {
             </div>
 
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 06 — WHO IT'S FOR (persona switcher) ════ */}
-        <section
-          ref={personaReveal.ref}
-          style={{
-            maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem',
-            opacity: personaReveal.visible ? 1 : 0,
-            transform: personaReveal.visible ? 'translateY(0)' : 'translateY(24px)',
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
-          }}
-        >
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
           <div style={{ marginBottom: '3rem' }}>
             <div className="section-label" style={{ marginBottom: '0.875rem' }}>Built For</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
@@ -516,25 +483,33 @@ export default function Home() {
 
             {/* Right panel */}
             <div
-              key={activePersona}
-              className="persona-panel"
-              style={{ padding: '2.5rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 16 }}
+              style={{ padding: '2.5rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 16, minHeight: 300, position: 'relative', overflow: 'hidden' }}
             >
-              <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', letterSpacing: '-0.04em', marginBottom: '1rem' }}>
-                {PERSONAS[activePersona].headline}
-              </h3>
-              <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: '2rem' }}>
-                {PERSONAS[activePersona].desc}
-              </p>
-              <Link href={PERSONAS[activePersona].href} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-soft)', textDecoration: 'none', fontFamily: 'var(--font-display)' }}>
-                {PERSONAS[activePersona].cta} <ChevronRight size={14} />
-              </Link>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePersona}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', letterSpacing: '-0.04em', marginBottom: '1rem' }}>
+                    {PERSONAS[activePersona].headline}
+                  </h3>
+                  <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: '2rem' }}>
+                    {PERSONAS[activePersona].desc}
+                  </p>
+                  <Link href={PERSONAS[activePersona].href} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-soft)', textDecoration: 'none', fontFamily: 'var(--font-display)' }}>
+                    {PERSONAS[activePersona].cta} <ChevronRight size={14} />
+                  </Link>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ PITCH TOOLS ══════════════════════════════════════ */}
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
           <div style={{ marginBottom: '3rem' }}>
             <div className="section-label" style={{ marginBottom: '0.875rem' }}>Institutional Pitch Kit</div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
@@ -566,13 +541,10 @@ export default function Home() {
               </Link>
             ))}
           </div>
-        </section>
+        </RevealSection>
 
         {/* ══ SECTION 07 — CTA BANNER ══════════════════════════ */}
-        <section
-          ref={ctaReveal.ref}
-          style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 8rem' }}
-        >
+        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 8rem' }}>
           <div
             className="glass-card"
             style={{
@@ -582,9 +554,7 @@ export default function Home() {
               borderColor: 'var(--border-accent)',
               position: 'relative',
               overflow: 'hidden',
-              transform: ctaReveal.visible ? 'translateY(0)' : 'translateY(32px)',
-              opacity: ctaReveal.visible ? 1 : 0,
-              transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+              boxShadow: 'var(--shadow-xl)',
             }}
           >
             {/* Ambient glow inside card */}
@@ -613,7 +583,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* Footer */}
         <footer style={{ borderTop: '1px solid var(--border)', padding: '2.25rem 1.75rem' }}>

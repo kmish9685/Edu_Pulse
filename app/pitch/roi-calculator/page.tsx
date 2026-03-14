@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Calculator, TrendingUp, AlertTriangle, ShieldCheck, Download, ArrowLeft, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FadeIn, StaggerContainer, StaggerItem, ScaleHover } from '@/components/Animated'
 
 const TIERS = {
     small: { name: 'Small', label: '<5K students', cost: 200000, badge: '₹2 Lakh/yr' },
@@ -55,19 +57,19 @@ export default function ROICalculator() {
             <main style={{ maxWidth: 1060, margin: '0 auto', padding: 'max(2rem, 4vw) max(1rem, 4vw)', position: 'relative', zIndex: 1 }}>
 
                 {/* Hero */}
-                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 700, letterSpacing: '-0.045em', marginBottom: '1rem', color: 'var(--text-primary)' }}>
                         The true cost of the <span style={{ color: 'var(--accent-soft)' }}>invisible gap.</span>
                     </h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 500, margin: '0 auto' }}>
                         Calculate the financial impact of preventing student dropouts through real-time learning intelligence.
                     </p>
-                </div>
+                </FadeIn>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
 
                     {/* Inputs */}
-                    <div className="glass-card" style={{ padding: '2rem' }}>
+                    <FadeIn delay={0.2} className="glass-card" style={{ padding: '2rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)' }}>
                             <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Calculator size={15} color="var(--accent-soft)" />
@@ -81,11 +83,13 @@ export default function ROICalculator() {
                                 <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.625rem' }}>Institution Scale</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
                                     {(Object.keys(TIERS) as Array<keyof typeof TIERS>).map(k => (
-                                        <button key={k} onClick={() => { setSize(k); setStudents(k === 'small' ? 3000 : k === 'medium' ? 10000 : 20000) }}
-                                            style={{ padding: '0.625rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: 'var(--radius)', border: `1px solid ${size === k ? 'var(--accent-soft)' : 'var(--border)'}`, background: size === k ? 'var(--bg-elevated)' : 'var(--bg-surface)', color: size === k ? 'var(--accent-soft)' : 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', textAlign: 'center' }}>
-                                            <div>{TIERS[k].name}</div>
-                                            <div style={{ fontWeight: 400, fontSize: '0.67rem', opacity: 0.7, marginTop: '0.1rem' }}>{TIERS[k].label}</div>
-                                        </button>
+                                        <ScaleHover key={k} scale={1.03}>
+                                            <button onClick={() => { setSize(k); setStudents(k === 'small' ? 3000 : k === 'medium' ? 10000 : 20000) }}
+                                                style={{ width: '100%', padding: '0.625rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: 'var(--radius)', border: `1px solid ${size === k ? 'var(--accent-soft)' : 'var(--border)'}`, background: size === k ? 'var(--bg-elevated)' : 'var(--bg-surface)', color: size === k ? 'var(--accent-soft)' : 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', textAlign: 'center' }}>
+                                                <div>{TIERS[k].name}</div>
+                                                <div style={{ fontWeight: 400, fontSize: '0.67rem', opacity: 0.7, marginTop: '0.1rem' }}>{TIERS[k].label}</div>
+                                            </button>
+                                        </ScaleHover>
                                     ))}
                                 </div>
                             </div>
@@ -112,7 +116,7 @@ export default function ROICalculator() {
                                 <input type="number" value={tuition} onChange={e => setTuition(Number(e.target.value))} className="lx-input" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: 'var(--radius)', padding: '0.625rem 0.875rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box' }} />
                             </div>
                         </div>
-                    </div>
+                    </FadeIn>
 
                     {/* Results */}
                     <div className="print-area" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -140,26 +144,26 @@ export default function ROICalculator() {
                         `}} />
 
                         {/* Loss box */}
-                        <div className="glass-card" style={{ padding: '1.75rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
+                        <FadeIn delay={0.3} layout className="glass-card" style={{ padding: '1.75rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: 'var(--danger)', borderRadius: 0 }} />
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
                                 <AlertTriangle size={15} color="var(--danger)" />
                                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--danger)', letterSpacing: '-0.02em' }}>Current Financial Exposure</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                <div>
+                                <motion.div layout>
                                     <div className="section-label" style={{ marginBottom: '0.375rem' }}>Students Lost / Year</div>
                                     <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums' }}>{lost.toLocaleString()}</div>
-                                </div>
-                                <div>
+                                </motion.div>
+                                <motion.div layout>
                                     <div className="section-label" style={{ marginBottom: '0.375rem' }}>Annual Revenue Lost</div>
                                     <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--danger)', fontVariantNumeric: 'tabular-nums' }}>{fmt(lostRev)}</div>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </FadeIn>
 
                         {/* EduPulse value box */}
-                        <div className="glass-card" style={{ padding: '2rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
+                        <FadeIn delay={0.4} layout className="glass-card" style={{ padding: '2rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: '50%', height: '80%', background: 'radial-gradient(ellipse, rgba(160,160,160,0.02) 0%, transparent 70%)', pointerEvents: 'none' }} />
                             <div style={{ position: 'relative' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
@@ -173,35 +177,39 @@ export default function ROICalculator() {
                                         { l: 'Students Retained', v: `+${retained}`, c: 'var(--text-primary)' },
                                         { l: 'Revenue Protected', v: fmt(protected_), c: 'var(--success)' },
                                     ].map(s => (
-                                        <div key={s.l}>
+                                        <motion.div layout key={s.l}>
                                             <div className="section-label" style={{ marginBottom: '0.375rem' }}>{s.l}</div>
                                             <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', color: s.c, fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
-                                        </div>
+                                        </motion.div>
                                     ))}
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                                    <div>
+                                    <motion.div layout>
                                         <div className="section-label" style={{ marginBottom: '0.375rem' }}>License Cost</div>
                                         <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700 }}>{TIERS[size].badge}</div>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
+                                    </motion.div>
+                                    <motion.div layout style={{ textAlign: 'right' }}>
                                         <div className="section-label" style={{ marginBottom: '0.375rem' }}>First Year ROI</div>
                                         <div style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', fontWeight: 700, letterSpacing: '-0.06em', fontVariantNumeric: 'tabular-nums', color: 'var(--success)' }}>{roi}%</div>
                                         <div style={{ fontSize: '0.78rem', color: 'var(--accent-soft)', marginTop: '0.2rem' }}>Pays back in {payback} months</div>
-                                    </div>
+                                    </motion.div>
                                 </div>
 
                                 <div className="hide-print" style={{ display: 'flex', gap: '0.75rem' }}>
-                                    <button onClick={() => window.print()} className="btn-ghost flex-1 justify-center relative overflow-hidden group" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', borderRadius: 'var(--radius)', padding: '0.625rem 1rem', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s' }}>
-                                        <Download size={13} /> Export Report
-                                    </button>
-                                    <Link href="/admin/loi-generator" className="btn-primary" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                                        <Zap size={13} /> Generate LOI
-                                    </Link>
+                                    <ScaleHover style={{ flex: 1 }}>
+                                        <button onClick={() => window.print()} className="btn-ghost" style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                                            <Download size={13} /> Export Report
+                                        </button>
+                                    </ScaleHover>
+                                    <ScaleHover style={{ flex: 1 }}>
+                                        <Link href="/admin/loi-generator" className="btn-primary" style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                                            <Zap size={13} /> Generate LOI
+                                        </Link>
+                                    </ScaleHover>
                                 </div>
                             </div>
-                        </div>
+                        </FadeIn>
                     </div>
                 </div>
             </main>

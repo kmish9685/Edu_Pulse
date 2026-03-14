@@ -2,6 +2,7 @@
 
 import { Check, X, Shield, ArrowLeft, Info, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { FadeIn, StaggerContainer, StaggerItem, ScaleHover } from '@/components/Animated'
 
 const ROWS = [
     {
@@ -98,7 +99,7 @@ export default function CompetitiveComparison() {
             <main style={{ maxWidth: 1060, margin: '0 auto', padding: '3.5rem 1.75rem', position: 'relative', zIndex: 1 }}>
 
                 {/* Hero */}
-                <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 100, marginBottom: '1.25rem' }}>
                         <Shield size={11} color="var(--accent-soft)" />
                         <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Competitive Positioning</span>
@@ -109,10 +110,10 @@ export default function CompetitiveComparison() {
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 560, margin: '0 auto' }}>
                         Mentimeter and Poll Everywhere are event tools. EduPulse is an institutional learning intelligence platform built to protect revenue and guarantee outcomes.
                     </p>
-                </div>
+                </FadeIn>
 
                 {/* Table */}
-                <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2rem' }}>
+                <FadeIn delay={0.2} className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: '2rem' }}>
                     <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                         <div style={{ minWidth: 600 }}>
                             {/* Column headers */}
@@ -122,9 +123,11 @@ export default function CompetitiveComparison() {
                                 </div>
                                 {/* EduPulse header — highlighted */}
                                 <div style={{ padding: '1.25rem 1rem', borderLeft: '1px solid var(--border)', background: 'var(--bg-elevated)', textAlign: 'center' }}>
-                                    <div style={{ width: 36, height: 36, background: '#0F172A', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem' }}>
-                                        <Zap size={16} color="#fff" fill="#fff" />
-                                    </div>
+                                    <ScaleHover scale={1.05}>
+                                        <div style={{ width: 36, height: 36, background: '#0F172A', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.5rem' }}>
+                                            <Zap size={16} color="#fff" fill="#fff" />
+                                        </div>
+                                    </ScaleHover>
                                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '0.95rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>EduPulse</div>
                                     <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--accent-soft)', marginTop: '0.25rem' }}>INSTITUTIONAL PLATFORM</div>
                                 </div>
@@ -140,30 +143,32 @@ export default function CompetitiveComparison() {
                             </div>
 
                             {/* Rows */}
-                            {ROWS.map((row, i) => (
-                                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: i < ROWS.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
-                                    <div style={{ padding: '1rem 1.5rem' }}>
-                                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', letterSpacing: '-0.02em', marginBottom: '0.2rem' }}>{row.feature}</div>
-                                        <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{row.sub}</div>
-                                    </div>
-                                    {/* EduPulse col — highlighted */}
-                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', background: 'rgba(124,92,246,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Cell data={row.ep} />
-                                    </div>
-                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Cell data={row.polling} />
-                                    </div>
-                                    <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Cell data={row.lms} />
-                                    </div>
-                                </div>
-                            ))}
+                            <StaggerContainer>
+                                {ROWS.map((row, i) => (
+                                    <StaggerItem key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', borderBottom: i < ROWS.length - 1 ? '1px solid var(--glass-border)' : 'none' }}>
+                                        <div style={{ padding: '1rem 1.5rem' }}>
+                                            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem', letterSpacing: '-0.02em', marginBottom: '0.2rem' }}>{row.feature}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{row.sub}</div>
+                                        </div>
+                                        {/* EduPulse col — highlighted */}
+                                        <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', background: 'rgba(124,92,246,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Cell data={row.ep} />
+                                        </div>
+                                        <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Cell data={row.polling} />
+                                        </div>
+                                        <div style={{ padding: '1rem', borderLeft: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Cell data={row.lms} />
+                                        </div>
+                                    </StaggerItem>
+                                ))}
+                            </StaggerContainer>
                         </div>
                     </div>
-                </div>
+                </FadeIn>
 
                 {/* Judge callout */}
-                <div className="glass-card" style={{ padding: '1.75rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+                <FadeIn delay={0.4} className="glass-card" style={{ padding: '1.75rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Info size={16} color="var(--accent-soft)" />
                     </div>
@@ -174,7 +179,7 @@ export default function CompetitiveComparison() {
                             <strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>We don't sell quizzes. We sell institutional retention.</strong>
                         </p>
                     </div>
-                </div>
+                </FadeIn>
             </main>
         </div>
     )
