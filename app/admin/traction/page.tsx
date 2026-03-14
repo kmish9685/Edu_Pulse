@@ -19,25 +19,28 @@ export default function TractionDashboard() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
 
-            {/* Ambient glow */}
-            <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '45%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+            {/* Ambient glows */}
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+                <div style={{ position: 'absolute', top: '-10%', right: '0%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
+                <div style={{ position: 'absolute', bottom: '-10%', left: '0%', width: '40%', height: '40%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.03) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
+            </div>
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
-                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(24px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Globe2 size={14} color="var(--accent-soft)" />
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Network Traction</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 22, height: 22, background: '#0F172A', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={11} color="#fff" fill="#fff" />
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Network Traction</span>
                 </div>
                 <div style={{ flex: 1 }} />
-                <div className="section-label">Feasibility Demonstration</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', padding: '0.25rem 0.625rem', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} /> System Online
+                <div className="section-label" style={{ opacity: 0.8 }}>Institutional Pitch Kit</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', padding: '0.25rem 0.625rem', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)' }} /> System Online
                 </div>
             </header>
 
@@ -46,25 +49,25 @@ export default function TractionDashboard() {
                 {/* Intro */}
                 <div style={{ marginBottom: '2rem' }}>
                     <div className="section-label" style={{ marginBottom: '0.75rem' }}>Live Pilot Data</div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem' }}>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
                         Live Pilot Deployment Data
                     </h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: 580 }}>
-                        Monitoring active sessions and system health across partner institutions. This data validates platform scalability and user adoption for the EDVentures Feasibility score.
+                        Monitoring active sessions and system health across partner institutions. This data validates platform scalability and user adoption in real institutional environments.
                     </p>
                 </div>
 
                 {/* Metrics grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
                     {[
-                        { icon: Laptop, label: 'Institutions', value: '4', sub: 'Partner Universities', color: 'var(--accent-soft)' },
-                        { icon: Users, label: 'Total Reach', value: '1,247', sub: 'Enrolled Students', color: 'var(--accent-soft)' },
+                        { icon: Laptop, label: 'Institutions', value: '4', sub: 'Partner Universities', color: 'var(--text-primary)' },
+                        { icon: Users, label: 'Total Reach', value: '1,247', sub: 'Enrolled Students', color: 'var(--text-primary)' },
                         { icon: Radio, label: 'Live', value: String(activeSessions), sub: 'Concurrent Classes', color: 'var(--success)', live: true },
-                        { icon: Zap, label: 'Data Volume', value: signalsCount.toLocaleString(), sub: 'Signals Captured YTD', color: 'var(--warning)', mono: true },
+                        { icon: Zap, label: 'Data Volume', value: signalsCount.toLocaleString(), sub: 'Signals Captured YTD', color: 'var(--accent-soft)', mono: true },
                     ].map(stat => (
                         <div key={stat.label} style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
-                                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <stat.icon size={15} color={stat.color} />
                                 </div>
                                 {stat.live && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)', animation: 'pulse-dot 1.2s infinite', display: 'inline-block' }} />}
@@ -105,15 +108,15 @@ export default function TractionDashboard() {
                     </div>
 
                     {/* Infrastructure card */}
-                    <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', borderColor: 'rgba(99,102,241,0.18)', background: 'linear-gradient(135deg, rgba(99,102,241,0.05), transparent)' }}>
-                        <div style={{ width: 52, height: 52, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
+                    <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', border: '1px solid var(--border)', background: 'var(--bg-elevated)', boxShadow: 'var(--shadow-md)' }}>
+                        <div style={{ width: 52, height: 52, background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)' }}>
                             <Globe2 size={22} color="var(--accent-soft)" />
                         </div>
-                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.03em', marginBottom: '0.625rem' }}>Distributed Compute</div>
+                        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.03em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>Distributed Compute</div>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: '1.25rem' }}>
                             EduPulse handles high-frequency concurrent polling using edge-deployed infrastructure, ensuring zero latency during 500+ student lectures.
                         </p>
-                        <button className="btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'center' }}>
+                        <button className="btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                             View Infrastructure Specs
                         </button>
                     </div>

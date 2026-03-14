@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, BookOpen, ArrowUpRight, GraduationCap, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, BookOpen, ArrowUpRight, GraduationCap, TrendingUp, CheckCircle2, AlertCircle, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 const MOCK_DATA = [
@@ -30,23 +30,26 @@ export default function OutcomesTracker() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
 
-            {/* Ambient glow */}
-            <div style={{ position: 'fixed', top: '-10%', left: '-5%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.07) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+            {/* Ambient glows */}
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+                <div style={{ position: 'absolute', top: '-10%', right: '0%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
+                <div style={{ position: 'absolute', bottom: '-10%', left: '0%', width: '40%', height: '40%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.03) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
+            </div>
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 52, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.875rem', background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10 }}>
-                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(24px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <TrendingUp size={14} color="var(--success)" />
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>Learning Outcomes</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 22, height: 22, background: '#0F172A', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={11} color="#fff" fill="#fff" />
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Learning Outcomes</span>
                 </div>
                 <div style={{ flex: 1 }} />
-                <div className="section-label">Social Impact Proof</div>
+                <div className="section-label" style={{ opacity: 0.8 }}>Institutional Pitch Kit</div>
             </header>
 
             <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2.5rem 1.75rem', position: 'relative', zIndex: 1 }}>
@@ -55,7 +58,7 @@ export default function OutcomesTracker() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.25rem', gap: '1.5rem', flexWrap: 'wrap' }}>
                     <div>
                         <div className="section-label" style={{ marginBottom: '0.75rem' }}>Empirical Evidence</div>
-                        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem' }}>
+                        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
                             Learning Outcomes Tracker
                         </h1>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, maxWidth: 520 }}>
@@ -74,7 +77,7 @@ export default function OutcomesTracker() {
                 </div>
 
                 {/* Top-level metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden', marginBottom: '2rem', boxShadow: 'var(--shadow-sm)' }}>
                     {[
                         { label: 'Control Group Avg.', icon: GraduationCap, value: `${avgControl}%`, sub: 'Traditional lecture', color: 'var(--text-primary)' },
                         { label: 'EduPulse Group Avg.', icon: CheckCircle2, value: `${avgEduPulse}%`, sub: 'With confusion detection', color: 'var(--success)' },
@@ -85,7 +88,7 @@ export default function OutcomesTracker() {
                             <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.05em', color: stat.color, marginBottom: '0.25rem', fontVariantNumeric: 'tabular-nums' }}>
                                 {stat.value}
                             </div>
-                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{stat.sub}</div>
+                            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)', letterSpacing: '0.02em' }}>{stat.sub}</div>
                         </div>
                     ))}
                 </div>

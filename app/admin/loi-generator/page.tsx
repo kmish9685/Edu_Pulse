@@ -24,33 +24,38 @@ export default function LOIGenerator() {
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
 
-            {/* Ambient orb */}
-            <div style={{ position: 'fixed', top: '-10%', right: '-5%', width: '45%', height: '50%', background: 'radial-gradient(ellipse, rgba(124,92,246,0.09) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+            {/* Ambient glows */}
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+                <div style={{ position: 'absolute', top: '-10%', right: '0%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
+                <div style={{ position: 'absolute', bottom: '-10%', left: '0%', width: '40%', height: '40%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.03) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
+            </div>
 
             {/* Header */}
-            <header style={{ borderBottom: '1px solid var(--glass-border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '1rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
-                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500 }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(24px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
+                <Link href="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.857rem', fontWeight: 500, transition: 'color 0.15s' }}>
                     <ArrowLeft size={14} /> Admin
                 </Link>
-                <span style={{ color: 'var(--border)', fontSize: '1rem' }}>/</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <FileText size={14} color="var(--accent)" />
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '0.9rem' }}>LOI Generator</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>/</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 22, height: 22, background: '#0F172A', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Zap size={11} color="#fff" fill="#fff" />
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>LOI Generator</span>
                 </div>
                 <div style={{ flex: 1 }} />
-                <div className="section-label">Sales Operations</div>
+                <div className="section-label" style={{ opacity: 0.8 }}>Institutional Pitch Kit</div>
             </header>
 
             <main style={{ maxWidth: 1100, margin: '0 auto', padding: '3rem 1.75rem', position: 'relative', zIndex: 1 }}>
 
                 {/* Hero */}
                 <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0.875rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
-                        <Zap size={12} color="var(--accent-soft)" />
-                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Letter of Intent Automation</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 100, marginBottom: '1.25rem' }}>
+                        <FileText size={11} color="var(--accent-soft)" />
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Letter of Intent Automation</span>
                     </div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem' }}>
-                        Generate your <span className="gradient-text">Pilot LOI</span> instantly.
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 2.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                        Generate your <span style={{ color: 'var(--accent-soft)' }}>Pilot LOI</span> instantly.
                     </h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.65, maxWidth: 520, margin: '0 auto' }}>
                         Legally-compliant Letters of Intent to secure pilot commitments and demonstrate B2B traction to EDVentures judges.
@@ -60,13 +65,13 @@ export default function LOIGenerator() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '2rem', alignItems: 'start' }}>
 
                     {/* Form */}
-                    <div className="glass-card" style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--glass-border)' }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="glass-card" style={{ padding: '2rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border)' }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Building2 size={16} color="var(--accent-soft)" />
                             </div>
                             <div>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>Institution Details</div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Institution Details</div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Fill in the signing party info</div>
                             </div>
                         </div>
@@ -81,7 +86,7 @@ export default function LOIGenerator() {
                                         placeholder={f.placeholder}
                                         value={(formData as any)[f.key]}
                                         onChange={e => setFormData(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                        className="lx-input"
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: 'var(--radius)', padding: '0.625rem 0.875rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box' }}
                                     />
                                 </div>
                             ))}
@@ -117,7 +122,7 @@ export default function LOIGenerator() {
                         {isGenerated ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                 {/* Success banner */}
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1.25rem', background: 'var(--success-dim)', border: '1px solid rgba(62,207,142,0.25)', borderRadius: 'var(--radius-lg)', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1.25rem', background: 'var(--success-dim)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 'var(--radius-lg)', flexWrap: 'wrap', gap: '0.75rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.857rem', color: 'var(--success)' }}>
                                         <CheckCircle2 size={16} /> LOI Successfully Generated
                                     </div>
@@ -125,7 +130,7 @@ export default function LOIGenerator() {
                                         <button
                                             onClick={() => window.print()}
                                             className="btn-ghost btn-sm"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', color: 'var(--text-secondary)' }}
                                         >
                                             <Download size={13} /> PDF
                                         </button>
@@ -211,12 +216,12 @@ export default function LOIGenerator() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center', height: '100%', minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-                                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Calculator size={24} color="var(--accent-soft)" />
+                            <div className="glass-card" style={{ padding: '3rem 2rem', textAlign: 'center', height: '100%', minHeight: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', border: '1px dotted var(--border)', background: 'var(--bg-surface)' }}>
+                                <div style={{ width: 64, height: 64, borderRadius: 20, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)' }}>
+                                    <FileText size={24} color="var(--accent-soft)" />
                                 </div>
-                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.025em' }}>Document Preview</div>
-                                <div style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', maxWidth: 280, lineHeight: 1.6 }}>Fill in the institution details on the left. Your LOI will appear here, ready to download or send for e-signature.</div>
+                                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.025em', color: 'var(--text-primary)' }}>Document Preview</div>
+                                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: 300, lineHeight: 1.7 }}>Fill in the institution details on the left. Your LOI will appear here, formatted as a formal memorandum of intent ready for professional review.</div>
                             </div>
                         )}
                     </div>
