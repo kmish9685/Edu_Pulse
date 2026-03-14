@@ -518,20 +518,21 @@ export default function StudentJoin() {
                                 <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', opacity: 0.5, transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
                             </button>
 
-                            {/* Dropdown panel */}
-                            {dropdownOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    left: 0, right: 0,
-                                    top: '100%',
-                                    zIndex: 50,
-                                    background: 'var(--bg-surface)',
-                                    border: '1px solid var(--border)',
-                                    borderTop: 'none',
-                                    borderRadius: '0 0 14px 14px',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                                }}>
+                                    {/* Dropdown panel */}
+                                    {dropdownOpen && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            left: 0, right: 0,
+                                            top: '100%',
+                                            zIndex: 50,
+                                            background: 'var(--bg-surface)',
+                                            border: '1px solid var(--border)',
+                                            borderTop: 'none',
+                                            borderRadius: '0 0 14px 14px',
+                                            overflowY: 'auto',
+                                            maxHeight: '40vh',
+                                            boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+                                        }}>
                                     {/* Session topics */}
                                     {sessionAgenda.length > 0 && (
                                         <>

@@ -57,12 +57,13 @@ export async function submitSignal(data: {
         teacherIp = (session as any).teacher_ip ?? null
     }
 
-    // ── IP Geofencing: Shadow Ban ──────────────────────────────────
-    // If teacher IP is recorded and student is on a different network — silently drop
+    // ── IP Geofencing: Soft Check ──────────────────────────────────
+    let isOffNetwork = false
+    
+    // If teacher IP is recorded and student is on a different network, flag it but do NOT drop the signal.
     if (teacherIp && studentIp && !isSameNetwork(studentIp, teacherIp)) {
-        // Return success=true so student doesn't know they're shadow-banned
-        // But also set offNetwork=true so the student UI can show the WiFi message
-        return { success: true, offNetwork: true }
+        isOffNetwork = true
+        console.log(`[Soft Geofence] Student IP (${studentIp}) does NOT match Teacher IP network (${teacherIp}). Signal accepted but flagged.`)
     }
 
     const { error } = await supabase
@@ -78,7 +79,9 @@ export async function submitSignal(data: {
         })
 
     if (error) return { success: false, error: error.message }
-    return { success: true, offNetwork: false }
+    
+    // Return offNetwork so the client can still show the "Connect to Campus WiFi" warning banner
+    return { success: true, offNetwork: isOffNetwork }
 }
 
 export async function validateSession(code: string): Promise<{ active: boolean, roomId?: string, agenda?: string[] }> {
