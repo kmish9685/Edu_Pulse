@@ -91,19 +91,18 @@ export default function Home() {
 
       {/* ── Ambient Orbs ──────────────────────────────────────── */}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '60%', height: '60%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.11) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: '-15%', right: '-10%', width: '50%', height: '55%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.07) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
-        <div style={{ position: 'absolute', top: '50%', left: '35%', width: '35%', height: '35%', background: 'radial-gradient(ellipse, rgba(129,140,248,0.05) 0%, transparent 70%)', animation: 'orb-drift 34s ease-in-out infinite 10s' }} />
+        <div style={{ position: 'absolute', top: '-10%', left: '0%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '-10%', right: '0%', width: '40%', height: '40%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.03) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
       </div>
 
       {/* ── Nav ───────────────────────────────────────────────── */}
       <header style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: `1px solid ${scrolled ? 'var(--border-strong)' : 'var(--border)'}`, backdropFilter: 'blur(24px)', background: 'var(--glass-bg)', transition: 'border-color 0.3s' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <div style={{ width: 30, height: 30, background: 'linear-gradient(135deg, #6366F1, #4F46E5)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(99,102,241,0.35)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <div style={{ width: 28, height: 28, background: '#0F172A', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={14} color="#fff" fill="#fff" />
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.05em' }}>EduPulse</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse</span>
           </div>
           <nav style={{ display: 'flex', alignItems: 'center', gap: '1.75rem' }}>
             <Link href="/how-it-works" className="nav-link hide-on-mobile">How It Works</Link>
@@ -168,18 +167,19 @@ export default function Home() {
             </div>
 
             {/* Impact narrative */}
-            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 600, width: '100%', margin: '0 auto' }}>
+            <div className="animate-fade-up-delay-3" style={{ marginBottom: '2.5rem', maxWidth: 640, width: '100%', margin: '0 auto' }}>
               <div style={{
-                padding: '1rem 1.5rem',
-                background: 'rgba(99,102,241,0.06)',
-                border: '1px solid rgba(99,102,241,0.18)',
-                borderRadius: 14,
-                fontSize: '0.88rem',
+                padding: '1.25rem 2rem',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                fontSize: '0.9rem',
                 color: 'var(--text-secondary)',
                 lineHeight: 1.7,
                 textAlign: 'center',
+                boxShadow: 'var(--shadow-md)',
               }}>
-                <strong style={{ color: 'var(--accent-soft)', fontFamily: 'var(--font-display)', fontSize: '1rem' }}>250M+ students</strong> in India sit in classrooms where teachers have no real-time feedback loop. EduPulse changes that — with <strong style={{ color: 'var(--text-primary)' }}>nothing more than the phone already in every student&apos;s pocket.</strong>
+                <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', fontSize: '1.05rem', fontWeight: 700 }}>250M+ students in India</strong> sit in classrooms where teachers have no real-time feedback loop. EduPulse changes that — with <strong style={{ color: 'var(--accent-soft)' }}>nothing more than the phone already in every student&apos;s pocket.</strong>
               </div>
             </div>
 
@@ -227,9 +227,9 @@ export default function Home() {
               {/* Mock confusion bar chart */}
               <div style={{ marginBottom: '1.25rem' }}>
                 <div className="section-label" style={{ marginBottom: '0.625rem' }}>Confusion Timeline · Last 30 min</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: 80 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 100 }}>
                   {[12, 8, 6, 14, 22, 18, 10, 8, 6, 10, 42, 38, 30, 16, 10, 8, 6, 8, 12, 10, 8, 14, 26, 18, 12, 8].map((h, i) => (
-                    <div key={i} style={{ flex: 1, height: `${(h / 42) * 100}%`, background: h > 30 ? 'var(--danger)' : h > 18 ? 'var(--warning)' : 'var(--accent)', borderRadius: '3px 3px 0 0', opacity: h > 30 ? 1 : 0.5, minHeight: 2, transition: 'height 0.3s ease' }} />
+                    <div key={i} style={{ flex: 1, height: `${(h / 42) * 100}%`, background: h > 30 ? 'var(--danger)' : h > 18 ? 'var(--warning)' : 'var(--accent)', borderRadius: '2px 2px 0 0', opacity: h > 30 ? 1 : 0.6, minHeight: 2, transition: 'height 0.3s ease' }} />
                   ))}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
@@ -618,11 +618,11 @@ export default function Home() {
         {/* Footer */}
         <footer style={{ borderTop: '1px solid var(--border)', padding: '2.25rem 1.75rem' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Zap size={11} color="#fff" fill="#fff" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+              <div style={{ width: 24, height: 24, background: '#0F172A', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Zap size={12} color="#fff" fill="#fff" />
               </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>EduPulse</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>EduPulse</span>
             </div>
             <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap' }}>
               {[

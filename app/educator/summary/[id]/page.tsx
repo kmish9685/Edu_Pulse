@@ -91,15 +91,15 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
 
             {/* Ambient glow */}
-            <div style={{ position: 'fixed', top: '-20%', left: '-10%', width: '60%', height: '70%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'fixed', top: '-10%', left: '0%', width: '60%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.03) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
             {/* Nav */}
             <header style={{ padding: '1.25rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)', zIndex: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className="logo-pulse">
-                        <Sparkles size={16} color="var(--bg-base)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 26, height: 26, background: '#0F172A', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Sparkles size={14} color="#fff" />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>EduPulse <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>/ AI Summary</span></span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.05rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>/ AI Summary</span></span>
                 </div>
 
                 <button
@@ -124,7 +124,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                                 AI analysis for session <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)' }}>{sessionId}</span>
                             </p>
                         </div>
-                        <div className="lx-badge" style={{ fontSize: '0.85rem', padding: '0.375rem 0.875rem' }}>
+                        <div className="lx-badge" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)' }}>
                             {totalSignals} signals collected
                         </div>
                     </div>
@@ -136,14 +136,14 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>ANALYZING CLASSROOM SIGNALS...</span>
                             </div>
                         ) : error ? (
-                            <div style={{ color: 'var(--danger)', padding: '1rem', background: 'rgba(239,68,68,0.1)', borderRadius: 'var(--radius)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                            <div style={{ color: 'var(--danger)', padding: '1rem', background: 'var(--bg-base)', borderRadius: 'var(--radius)', border: '1px solid var(--danger)', fontSize: '0.85rem' }}>
                                 {error}
                             </div>
                         ) : summary ? (
-                            <div style={{ lineHeight: 1.8, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--accent)' }}>
+                            <div style={{ lineHeight: 1.8, fontSize: '1rem', color: 'var(--text-primary)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', color: 'var(--accent-soft)' }}>
                                     <Sparkles size={18} />
-                                    <span style={{ fontWeight: 600, fontSize: '0.85rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>EduPulse AI Insight</span>
+                                    <span style={{ fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>EduPulse AI Insight</span>
                                 </div>
                                 {summary.split('\n\n').map((paragraph, i) => (
                                     <p key={i} style={{ marginBottom: '1.25rem' }}>{paragraph}</p>
@@ -154,9 +154,9 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
                     {/* AI-Powered "Next Best Action" (Automated Remediation) Feature */}
                     {!loading && summary && (
-                        <div className="glass-card" style={{ padding: '2rem', marginTop: '1.5rem', borderColor: 'rgba(99, 102, 241, 0.2)', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), transparent)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <Send size={16} color="var(--accent-soft)" />
+                        <div className="glass-card" style={{ padding: '2rem', marginTop: '1.5rem', background: 'var(--bg-surface)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1.25rem' }}>
+                                <Send size={15} color="var(--accent-soft)" />
                                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Automated Remediation</span>
                             </div>
 

@@ -150,17 +150,17 @@ export default function EducatorStart() {
 
             {/* Ambient orbs */}
             <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
-                <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '50%', height: '60%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.10) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
-                <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '40%', height: '50%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.07) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
+                <div style={{ position: 'absolute', top: '-10%', left: '0%', width: '50%', height: '50%', background: 'radial-gradient(ellipse, rgba(99,102,241,0.04) 0%, transparent 70%)', animation: 'orb-drift 22s ease-in-out infinite' }} />
+                <div style={{ position: 'absolute', bottom: '-10%', right: '0%', width: '40%', height: '40%', background: 'radial-gradient(ellipse, rgba(79,70,229,0.03) 0%, transparent 70%)', animation: 'orb-drift 28s ease-in-out infinite reverse' }} />
             </div>
 
             {/* Topbar */}
-            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, background: 'rgba(7,7,12,0.85)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <div style={{ width: 22, height: 22, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <header style={{ borderBottom: '1px solid var(--border)', height: 56, display: 'flex', alignItems: 'center', padding: '0 1.75rem', gap: '0.75rem', backdropFilter: 'blur(24px)', position: 'sticky', top: 0, zIndex: 10, background: 'var(--glass-bg)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                    <div style={{ width: 22, height: 22, background: '#0F172A', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Zap size={11} color="#fff" fill="#fff" />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.03em' }}>EduPulse</span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse</span>
                 </div>
                 <span style={{ color: 'var(--text-tertiary)' }}>/</span>
                 <span style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', fontWeight: 500 }}>New Session</span>
@@ -202,12 +202,12 @@ export default function EducatorStart() {
                     <div style={{ position: 'relative', zIndex: 1 }}>
                         {/* Header */}
                         <div style={{ marginBottom: '3rem' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.25rem 0.75rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
-                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Ready to launch</span>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.8rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 100, marginBottom: '1.25rem' }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Ready to launch</span>
                             </div>
                             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.05em', lineHeight: 1.1, marginBottom: '0.75rem' }}>
-                                Start your <span className="gradient-text">class session.</span>
+                                Start your <span style={{ color: 'var(--accent-soft)' }}>class session.</span>
                             </h1>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.7, maxWidth: 380 }}>
                                 Add your lecture topics below. Project the QR code on the classroom screen and begin teaching.
@@ -234,18 +234,13 @@ export default function EducatorStart() {
                                 <button
                                     disabled={generatingAgenda}
                                     onClick={handleGenerateAgenda}
-                                    className="btn-sm"
+                                    className="btn-ghost btn-sm"
                                     style={{
                                         flexShrink: 0,
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '0.375rem',
-                                        background: 'rgba(99,102,241,0.1)',
-                                        color: 'var(--accent)',
-                                        border: '1px solid rgba(99,102,241,0.2)',
-                                        borderRadius: 'var(--radius)',
-                                        fontWeight: 600,
-                                        cursor: generatingAgenda ? 'wait' : 'pointer'
+                                        color: 'var(--accent-soft)',
                                     }}
                                 >
                                     {generatingAgenda ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Sparkles size={13} />}
@@ -253,10 +248,10 @@ export default function EducatorStart() {
                                 </button>
                                 <label style={{
                                     flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.375rem', 
-                                    background: 'var(--accent-dim)', color: 'var(--accent-soft)',
-                                    border: '1px solid var(--border-accent)', borderRadius: 'var(--radius)', 
+                                    background: 'var(--bg-surface)', color: 'var(--text-secondary)',
+                                    border: '1px solid var(--border)', borderRadius: 'var(--radius)', 
                                     padding: '0 0.875rem', fontWeight: 600, fontSize: '0.8rem', cursor: uploadingPdf ? 'wait' : 'pointer',
-                                    transition: 'all 0.2s'
+                                    transition: 'all 0.15s'
                                 }}>
                                     {uploadingPdf ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={13} />}
                                     {uploadingPdf ? 'Scanning PDF...' : 'Upload PDF'}
@@ -323,9 +318,9 @@ export default function EducatorStart() {
                     <div style={{ background: 'var(--bg-surface)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 32px 64px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.06)' }}>
 
                         {/* PIN section */}
-                        <div style={{ padding: '2rem', borderBottom: '1px solid var(--border)', textAlign: 'center', background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(79,70,229,0.04))' }}>
-                            <div className="section-label" style={{ marginBottom: '0.75rem' }}>Session PIN</div>
-                            <div className="gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', fontWeight: 700, letterSpacing: '0.2em', lineHeight: 1 }}>
+                        <div style={{ padding: '2rem', borderBottom: '1px solid var(--border)', textAlign: 'center', background: 'var(--bg-elevated)' }}>
+                            <div className="section-label" style={{ marginBottom: '0.75rem', justifyContent: 'center' }}>Session PIN</div>
+                            <div className="gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', fontWeight: 700, letterSpacing: '0.2em', lineHeight: 1, color: 'var(--text-primary)' }}>
                                 {sessionId || '——'}
                             </div>
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: '0.5rem' }}>
