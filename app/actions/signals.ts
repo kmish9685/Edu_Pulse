@@ -88,15 +88,31 @@ export async function validateSession(code: string): Promise<{ active: boolean, 
     if (!code) return { active: false }
     const supabase = await createClient()
     
-    // Primary query — only select guaranteed columns. This must NEVER fail due to missing columns.
-    const { data } = await supabase
+    // Primary query - use limit(1) instead of single() to avoid throwing errors if there are duplicates
+    let { data, error: primaryError } = await supabase
         .from('active_sessions')
         .select('id')
         .eq('join_code', code)
         .eq('is_active', true)
-        .single()
+        .limit(1)
 
-    if (!data) return { active: false }
+    // Secondary fallback: if join_code didn't match, they might've entered the original static PIN (the ID itself)
+    if (!data || data.length === 0) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+            .from('active_sessions')
+            .select('id')
+            .eq('id', code)
+            .eq('is_active', true)
+            .limit(1)
+            
+        if (!fallbackData || fallbackData.length === 0) {
+            console.log(`[Validation Failed] PIN ${code} not found as join_code or active id.`)
+            return { active: false }
+        }
+        data = fallbackData
+    }
+
+    const roomId = data[0].id
 
     // Secondary query — try to get agenda separately. If column doesn't exist, fail silently.
     let agenda: string[] = []
@@ -104,7 +120,7 @@ export async function validateSession(code: string): Promise<{ active: boolean, 
         const { data: sessionData } = await supabase
             .from('active_sessions')
             .select('agenda')
-            .eq('id', data.id)
+            .eq('id', roomId)
             .single()
         if (sessionData?.agenda && Array.isArray(sessionData.agenda)) {
             agenda = sessionData.agenda
@@ -113,7 +129,7 @@ export async function validateSession(code: string): Promise<{ active: boolean, 
         // agenda column may not exist yet — that's fine, topics just won't show in dropdown
     }
 
-    return { active: true, roomId: data.id, agenda }
+    return { active: true, roomId, agenda }
 }
 
 export async function startSession(pin: string, initialTopic?: string, agenda?: string[]) {
