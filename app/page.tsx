@@ -533,6 +533,7 @@ export default function Home() {
                   body: 'Fully compliant with India’s NEP 2020 Clause 4.34 for formative assessment and UGC 2024 guidelines for student engagement.',
                   Icon: Shield,
                   color: 'var(--success)',
+                  bgColor: 'rgba(16,185,129,0.15)',
                   href: '/legal/compliance'
                 },
                 { 
@@ -540,6 +541,7 @@ export default function Home() {
                   body: 'Zero-PII architecture ensures 100% compliance with FERPA, COPPA, and GDPR. We never collect names, emails, or biometric data.',
                   Icon: Lock,
                   color: 'var(--accent-soft)',
+                  bgColor: 'rgba(99,102,241,0.15)',
                   href: '/legal/privacy'
                 },
                 { 
@@ -547,19 +549,44 @@ export default function Home() {
                   body: 'Compliant with the EU AI Act (2024). No facial recognition or emotion tracking—only pedagogical cognitive signals.',
                   Icon: Brain,
                   color: 'var(--warning)',
+                  bgColor: 'rgba(245,158,11,0.15)',
+                  href: '/legal/ethics'
+                },
+                { 
+                  title: 'SDG-4: Quality Education', 
+                  body: 'Directly contributes to Sustainable Development Goal 4.4 by ensuring equitable learning access through anonymity.',
+                  Icon: Globe,
+                  color: 'var(--accent-soft)',
+                  bgColor: 'rgba(20,184,166,0.15)',
+                  href: '/legal/compliance'
+                },
+                { 
+                  title: 'Zero-Surveillance', 
+                  body: 'Unlike proctoring tools, EduPulse is built on a "Privacy-First" protocol. No keystroke logging, no camera access, no student PII.',
+                  Icon: ShieldOff,
+                  color: 'var(--danger)',
+                  bgColor: 'rgba(239,68,68,0.15)',
+                  href: '/legal/privacy'
+                },
+                { 
+                  title: 'Inclusive Participation', 
+                  body: 'Designed for neurodiverse and underserved student populations by removing the social friction of participation.',
+                  Icon: Users,
+                  color: 'var(--accent)',
+                  bgColor: 'rgba(139,92,246,0.15)',
                   href: '/legal/ethics'
                 }
-              ].map(({ title, body, Icon, color, href }, i) => (
+              ].map(({ title, body, Icon, color, bgColor, href }, i) => (
                 <FadeIn key={i} delay={i * 0.1}>
                   <Link href={href} style={{ textDecoration: 'none' }}>
-                    <div className="glass-card" style={{ padding: '2.5rem', height: '100%', border: '1px solid var(--border)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden', background: 'var(--bg-base)' }}>
-                      <div style={{ marginBottom: '1.5rem', width: 48, height: 48, borderRadius: 14, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Icon size={24} color={color} />
+                    <div className="glass-card trust-card" style={{ padding: '2.5rem', height: '100%', border: '1px solid var(--border)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden', background: 'var(--bg-base)' }}>
+                      <div style={{ marginBottom: '1.5rem', width: 56, height: 56, borderRadius: 16, background: bgColor, border: `1px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px -5px ${color}` }}>
+                        <Icon size={26} color={color} />
                       </div>
                       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>{title}</h3>
                       <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', marginBottom: '1.5rem' }}>{body}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: color, fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                        VIEW VERIFICATION <ArrowUpRight size={14} />
+                        VERIFICATION HUB <ArrowUpRight size={14} />
                       </div>
                     </div>
                   </Link>
@@ -574,41 +601,6 @@ export default function Home() {
             </FadeIn>
           </div>
         </section>
-
-        {/* ══ PITCH TOOLS ══════════════════════════════════════ */}
-        <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
-          <div style={{ marginBottom: '3rem' }}>
-            <div className="section-label" style={{ marginBottom: '0.875rem' }}>Institutional Pitch Kit</div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em' }}>
-              Everything your Dean needs to say yes.
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
-            {[
-              { href: '/pitch/roi-calculator', Icon: BarChart3, title: 'ROI Calculator', desc: 'Show exact revenue protected, cost of EduPulse, and net return per semester. Built for institutional budget conversations.' },
-              { href: '/pitch/comparison', Icon: TrendingUp, title: 'Competitive Analysis', desc: 'Feature-by-feature comparison against Mentimeter, Poll Everywhere, and Blackboard. We win on every axis.' },
-              { href: '/admin/outcomes', Icon: BookOpen, title: 'Learning Outcomes', desc: 'Student performance improvement data from real pilot sessions. Real signals from real classrooms.' },
-              { href: '/admin/traction', Icon: Activity, title: 'Traction Dashboard', desc: 'Live-updating pilot metrics: session volume, signal count, institutions onboarded.' },
-            ].map(({ href, Icon, title, desc }) => (
-              <Link
-                key={title}
-                href={href}
-                className="feature-card-link"
-                style={{ display: 'flex', gap: '1.25rem', padding: '1.875rem', background: 'var(--glass-bg)', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s' }}
-              >
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={16} color="var(--accent-soft)" />
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.025em', marginBottom: '0.4rem' }}>
-                    {title} <ChevronRight size={13} color="var(--text-tertiary)" />
-                  </div>
-                  <div style={{ fontSize: '0.857rem', color: 'var(--text-secondary)', lineHeight: 1.65 }}>{desc}</div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </RevealSection>
 
         {/* ══ SECTION 07 — CTA BANNER ══════════════════════════ */}
         <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 8rem' }}>
