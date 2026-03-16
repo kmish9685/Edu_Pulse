@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut } from 'lucide-react'
+import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
@@ -13,6 +13,7 @@ interface SessionRow {
     ended_at: string | null
     is_active: boolean
     signalCount: number
+    doubtCount: number
     topConfusedTopic: string | null
     agendaTopics: string[]
 }
@@ -58,10 +59,11 @@ export default function SessionHistory() {
                     .eq('block_room', s.id)
 
                 const signalCount = signals?.length ?? 0
+                const doubtCount = signals?.filter(sig => sig.type === 'Deep Doubt').length ?? 0
 
-                // Find most common signal type
+                // Find most common signal type (excluding deep doubts which are text-based)
                 const typeCounts: Record<string, number> = {}
-                signals?.forEach(sig => {
+                signals?.filter(sig => sig.type !== 'Deep Doubt').forEach(sig => {
                     typeCounts[sig.type] = (typeCounts[sig.type] || 0) + 1
                 })
                 const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -70,6 +72,7 @@ export default function SessionHistory() {
                 return {
                     ...s,
                     signalCount,
+                    doubtCount,
                     topConfusedTopic,
                     agendaTopics: [], // agenda not stored in DB currently
                 }
@@ -258,6 +261,14 @@ export default function SessionHistory() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 99, flexShrink: 0 }}>
                                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--danger)', flexShrink: 0 }} />
                                             <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: 600 }}>{s.topConfusedTopic}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Doubt count badge */}
+                                    {s.doubtCount > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.75rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 99, flexShrink: 0 }}>
+                                            <MessageSquare size={12} color="var(--accent-soft)" />
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--accent-soft)', fontWeight: 600 }}>{s.doubtCount} Doubts</span>
                                         </div>
                                     )}
 

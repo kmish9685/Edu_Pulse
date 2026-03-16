@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { submitSignal, validateSession } from '@/app/actions/signals'
-import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe } from 'lucide-react'
+import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles } from 'lucide-react'
+import Link from 'next/link'
 
 const translations = {
     en: {
@@ -403,10 +404,82 @@ export default function StudentJoin() {
                         </p>
                     )}
 
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600 }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600, marginBottom: '2rem' }}>
                         <Clock size={14} />
                         {t.signalAgain.replace('{s}', cooldownSecs.toString())}
                     </div>
+
+                    {/* Deep Doubt Form */}
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', textAlign: 'left', animation: 'enter-fade 0.5s ease-out' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
+                            <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Sparkles size={16} color="var(--accent-soft)" />
+                            </div>
+                            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Still Confused?</h3>
+                        </div>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                            Your teacher values your clarity. If the last explanation didn&apos;t clear your doubt, tell them exactly what&apos;s blocking you.
+                        </p>
+                        
+                        <div style={{ position: 'relative' }}>
+                            <textarea 
+                                value={customComment}
+                                onChange={(e) => setCustomComment(e.target.value)}
+                                placeholder="Describe your doubt here (e.g., 'How did we get that formula?')..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.875rem',
+                                    background: 'var(--bg-base)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: 12,
+                                    fontSize: '0.85rem',
+                                    fontFamily: 'inherit',
+                                    resize: 'none',
+                                    outline: 'none',
+                                    minHeight: 80,
+                                    marginBottom: '0.75rem',
+                                    transition: 'border-color 0.2s',
+                                    boxSizing: 'border-box'
+                                }}
+                                onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                                onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                            />
+                            <button 
+                                onClick={() => handleSignal('Deep Doubt', 'Deep Doubt')}
+                                disabled={!customComment.trim() || submitting !== null}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    background: 'var(--accent)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: 10,
+                                    fontSize: '0.85rem',
+                                    fontWeight: 700,
+                                    cursor: (!customComment.trim() || submitting !== null) ? 'default' : 'pointer',
+                                    opacity: (!customComment.trim() || submitting !== null) ? 0.5 : 1,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {submitting === 'Deep Doubt' ? 'Submitting...' : 'Submit Specific Doubt'}
+                            </button>
+                        </div>
+                        <Link 
+                            href={`/join/${sessionId}/remedy`}
+                            style={{ 
+                                display: 'block', 
+                                textAlign: 'center', 
+                                marginTop: '1rem', 
+                                fontSize: '0.75rem', 
+                                color: 'var(--accent-soft)', 
+                                fontWeight: 600, 
+                                textDecoration: 'none' 
+                            }}
+                        >
+                            View Post-Session Remedy Hub →
+                        </Link>
+                    </div>
+
                     <div style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                         {t.anonFooter}
                     </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Sparkles, Loader2, ArrowLeft, LogOut, Send } from 'lucide-react'
 import { generateSummary, generateRemediation } from '@/app/actions/ai'
+import { saveRemediation } from '@/app/actions/signals'
 import Link from 'next/link'
 
 export default function EducatorSummary({ params }: { params: Promise<{ id: string }> }) {
@@ -78,9 +79,12 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
         const res = await generateRemediation(agenda, signalsData || [], teacherResources)
 
+
         if (res.success && res.data) {
             setRemediationText(res.data)
             setFollowUpMode('done')
+            // PERSIST to database for students to see asynchronously
+            await saveRemediation(sessionId, res.data)
         } else {
             setRemediationError(res.error || 'Failed to generate review material.')
             setFollowUpMode('idle')

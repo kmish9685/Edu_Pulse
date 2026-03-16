@@ -220,3 +220,29 @@ export async function addSignalType(label: string) {
     revalidatePath('/admin')
     return { success: true }
 }
+export async function saveRemediation(pin: string, content: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Not authenticated' }
+
+    const { error } = await supabase
+        .from('active_sessions')
+        .update({ remediation_material: content })
+        .eq('id', pin)
+        .eq('educator_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function getSessionRemediation(pin: string) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('active_sessions')
+        .select('remediation_material, current_topic, started_at')
+        .eq('id', pin)
+        .single()
+    
+    if (error) return { success: false, error: error.message }
+    return { success: true, data }
+}

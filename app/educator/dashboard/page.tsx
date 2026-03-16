@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
-import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles, Loader2, Clock } from 'lucide-react'
+import { LogOut, Activity, Zap, Tag, ChevronRight, Download, Bell, Sparkles, Loader2, Clock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -43,6 +43,7 @@ function DashboardContent() {
     const [aiInsight, setAiInsight] = useState('Gathering live data...')
     const [pulseValue, setPulseValue] = useState(0)
     const [totalSignals, setTotalSignals] = useState(0)
+    const [totalPendingDoubts, setTotalPendingDoubts] = useState(0)
     const [chartRevealed, setChartRevealed] = useState(false)
     const [ending, setEnding] = useState(false)
     const [muted, setMuted] = useState(false)
@@ -117,7 +118,27 @@ function DashboardContent() {
     useEffect(() => {
         if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
         
-        // Initial Fetch
+        async function fetchInitial() {
+            // Fetch total pending doubts (Deep Doubts across all educator classes)
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                // Get session IDs for this educator
+                const { data: educatorSessions } = await supabase.from('active_sessions').select('id').eq('educator_id', user.id)
+                if (educatorSessions && educatorSessions.length > 0) {
+                    const sessionIds = educatorSessions.map(os => os.id)
+                    const { count } = await supabase
+                        .from('signals')
+                        .select('*', { count: 'exact', head: true })
+                        .in('block_room', sessionIds)
+                        .eq('type', 'Deep Doubt')
+                    
+                    setTotalPendingDoubts(count || 0)
+                }
+            }
+        }
+        fetchInitial()
+
+        // Initial Fetch for signals
         async function fetchSignals() {
             const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
             const { data } = await supabase
@@ -230,6 +251,13 @@ function DashboardContent() {
 
     function generateInsight(data: any[], recentCount: number, typeCounts: Record<string, number>) {
         if (data.length === 0) { setAiInsight('No signals yet. Class appears to be following well.'); return }
+        
+        // Persistent confusion logic
+        if (lastRemediatedAt && (Date.now() - lastRemediatedAt) > 120000 && pulseValue >= 30) {
+            setAiInsight('⚠️ Persistent high confusion detected after last recap. Standard remediation may be insufficient. Flagging for deep-dive resources.')
+            return
+        }
+
         if (recentCount === 1) { setAiInsight('Isolated signal — not a class-wide concern. Continue your pace.'); return }
         if (recentCount >= 5) { setAiInsight('⚠ 5+ signals in the last minute. Consider pausing to recap the last point.'); return }
         const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -238,6 +266,17 @@ function DashboardContent() {
         } else {
             setAiInsight('Multiple confusion signals detected. Check the timeline for the exact minute it started.')
         }
+    }
+
+    const [remediating, setRemediating] = useState(false)
+    const [lastRemediatedAt, setLastRemediatedAt] = useState<number | null>(null)
+
+    const handleMarkRemediated = () => {
+        setRemediating(true)
+        setLastRemediatedAt(Date.now())
+        // Reset the alert so if it climbs back up it fires again
+        alertFired.current = false
+        setTimeout(() => setRemediating(false), 2000)
     }
 
     const isHighLoad = pulseValue >= 30
@@ -417,7 +456,27 @@ function DashboardContent() {
             </header>
 
             {/* Contextual State Banner */}
-            <StateBanner pulseValue={pulseValue} />
+                <StateBanner pulseValue={pulseValue} />
+                
+                {/* Doubt Tracker - Asynchronous Feedback Alert */}
+                {totalPendingDoubts > 0 && (
+                    <div style={{ margin: '0.75rem 1.75rem 0', padding: '0.75rem 1.25rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', gap: '0.75rem', animation: 'enter-fade 0.5s ease-out' }}>
+                        <div style={{ width: 28, height: 28, background: 'var(--accent)', borderRadius: 99, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Bell size={14} color="#fff" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                                {totalPendingDoubts} Unresolved Student Doubts
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                                Students have submitted follow-up questions in the Remedy Hub. Check your session history to address them.
+                            </div>
+                        </div>
+                        <Link href="/educator/history" className="btn-ghost btn-sm" style={{ fontSize: '0.75rem', padding: '0.25rem 0.75rem' }}>
+                            View History
+                        </Link>
+                    </div>
+                )}
 
             {/* Main dashboard grid */}
             <main className="educator-layout">
@@ -495,9 +554,32 @@ function DashboardContent() {
                             {pulseValue}%
                         </div>
                         <div style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-tertiary)', marginBottom: '1.25rem' }}>recent participants signaling</div>
-                        <div style={{ height: 6, background: 'var(--bg-base)', borderRadius: 99, overflow: 'hidden' }}>
+                        <div style={{ height: 6, background: 'var(--bg-base)', borderRadius: 99, overflow: 'hidden', marginBottom: '1rem' }}>
                             <div style={{ height: '100%', width: `${pulseValue}%`, background: pulseColor, borderRadius: 99, transition: 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)' }} />
                         </div>
+                        
+                        <button 
+                            onClick={handleMarkRemediated}
+                            disabled={remediating || pulseValue < 15}
+                            style={{
+                                width: '100%',
+                                padding: '0.625rem',
+                                background: remediating ? 'var(--success)' : 'transparent',
+                                border: `1px solid ${remediating ? 'var(--success)' : 'var(--border)'}`,
+                                borderRadius: 'var(--radius)',
+                                color: remediating ? '#fff' : 'var(--text-secondary)',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: (remediating || pulseValue < 15) ? 'default' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {remediating ? <><CheckCircle size={14} /> Resetting Monitor...</> : <><Sparkles size={14} /> Mark as Remediated</>}
+                        </button>
                     </div>
 
                     {/* AI Insight */}
