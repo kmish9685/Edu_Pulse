@@ -594,19 +594,35 @@ export default function Home() {
               </div>
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>EduPulse</span>
             </div>
-            <div style={{ display: 'flex', gap: '1.75rem', flexWrap: 'wrap' }}>
-              {[
-                ['/how-it-works', 'How It Works'],
-                ['/admin', 'Admin Panel'],
-                ['/admin/login', 'Login'],
-                ['/pitch/roi-calculator', 'ROI Calculator'],
-                ['/pitch/comparison', 'Compare'],
-              ].map(([href, label]) => (
-                <Link key={href} href={href} style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
-                >{label}</Link>
-              ))}
+            <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Product</div>
+                {[
+                  ['/how-it-works', 'How It Works'],
+                  ['/admin', 'Admin Panel'],
+                  ['/pitch/roi-calculator', 'ROI Projector'],
+                  ['/pitch/roadmap', 'Strategic Roadmap'],
+                ].map(([href, label]) => (
+                  <Link key={href} href={href} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-soft)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  >{label}</Link>
+                ))}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Trust Center</div>
+                {[
+                  ['/legal/privacy', 'Privacy Manifesto'],
+                  ['/legal/mou', 'Draft MOU'],
+                  ['/legal/ethics', 'AI Ethics & Bias'],
+                  ['/legal/compliance', 'UGC Compliance'],
+                ].map(([href, label]) => (
+                  <Link key={href} href={href} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 500, transition: 'color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-soft)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  >{label}</Link>
+                ))}
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
