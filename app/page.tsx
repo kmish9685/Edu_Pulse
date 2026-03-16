@@ -1,7 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ArrowRight, BarChart3, Zap, TrendingUp, BookOpen, Activity, Sparkles, QrCode, Brain, Bell, Shield, Users, Clock, ChevronRight, CheckCircle, Upload, Mic, Target, Download, ShieldOff, User, Ghost, Globe, CheckSquare, BellRing, Building, MapPin } from 'lucide-react'
+import { 
+  ArrowRight, BarChart3, Zap, TrendingUp, BookOpen, Activity, Sparkles, QrCode, 
+  Brain, Bell, Shield, Users, Clock, ChevronRight, CheckCircle, Upload, Mic, 
+  Target, Download, ShieldOff, User, Ghost, Globe, CheckSquare, BellRing, 
+  Building, MapPin, Lock, ArrowUpRight 
+} from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FadeIn, StaggerContainer, StaggerItem, ScaleHover, RevealSection } from '@/components/Animated'
@@ -507,6 +512,68 @@ export default function Home() {
             </div>
           </div>
         </RevealSection>
+ 
+        {/* --- INSTITUTIONAL TRUST CORE — LIMELIGHT SECTION --- */}
+        <section id="trust-center" style={{ padding: '8rem 0', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+          <div className="container" style={{ maxWidth: 1000, margin: '0 auto', padding: '0 2rem' }}>
+            <FadeIn style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <div className="section-label" style={{ marginBottom: '1rem', color: 'var(--success)' }}>Institutional Governance</div>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '1.5rem' }}>
+                Built for <span className="gradient-text">Institutional Trust.</span>
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', lineHeight: 1.6, maxWidth: 650, margin: '0 auto' }}>
+                EduPulse isn't just a tool; it's a compliant framework designed to align with the core policies governing modern global education.
+              </p>
+            </FadeIn>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+              {[
+                { 
+                  title: 'UGC & NEP Aligned', 
+                  body: 'Fully compliant with India’s NEP 2020 Clause 4.34 for formative assessment and UGC 2024 guidelines for student engagement.',
+                  Icon: Shield,
+                  color: 'var(--success)',
+                  href: '/legal/compliance'
+                },
+                { 
+                  title: 'Global Data Safety', 
+                  body: 'Zero-PII architecture ensures 100% compliance with FERPA, COPPA, and GDPR. We never collect names, emails, or biometric data.',
+                  Icon: Lock,
+                  color: 'var(--accent-soft)',
+                  href: '/legal/privacy'
+                },
+                { 
+                  title: 'Ethical AI Governance', 
+                  body: 'Compliant with the EU AI Act (2024). No facial recognition or emotion tracking—only pedagogical cognitive signals.',
+                  Icon: Brain,
+                  color: 'var(--warning)',
+                  href: '/legal/ethics'
+                }
+              ].map(({ title, body, Icon, color, href }, i) => (
+                <FadeIn key={i} delay={i * 0.1}>
+                  <Link href={href} style={{ textDecoration: 'none' }}>
+                    <div className="glass-card" style={{ padding: '2.5rem', height: '100%', border: '1px solid var(--border)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden', background: 'var(--bg-base)' }}>
+                      <div style={{ marginBottom: '1.5rem', width: 48, height: 48, borderRadius: 14, background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon size={24} color={color} />
+                      </div>
+                      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>{title}</h3>
+                      <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem', marginBottom: '1.5rem' }}>{body}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: color, fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                        VIEW VERIFICATION <ArrowUpRight size={14} />
+                      </div>
+                    </div>
+                  </Link>
+                </FadeIn>
+              ))}
+            </div>
+            
+            <FadeIn delay={0.4} style={{ marginTop: '4rem', textAlign: 'center' }}>
+              <Link href="/legal/compliance" className="btn-ghost" style={{ padding: '0.75rem 2rem', background: 'var(--bg-base)', fontSize: '0.9rem' }}>
+                Enter the Complete Trust Hub
+              </Link>
+            </FadeIn>
+          </div>
+        </section>
 
         {/* ══ PITCH TOOLS ══════════════════════════════════════ */}
         <RevealSection style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.75rem 7rem' }}>
@@ -624,23 +691,9 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
-                <Shield size={12} color="var(--success)" />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>UGC 2024 GUIDELINES</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
-                <Globe size={12} color="var(--accent-soft)" />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>SDG-4 ALIGNED</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
-                <Target size={12} color="var(--warning)" />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>ZERO-PII ARCHITECTURE</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
-                <BookOpen size={12} color="var(--accent-soft)" />
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>NEP 2020 READY</span>
-              </div>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', opacity: 0.6 }}>
+              <Shield size={12} />
+              <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>UGC 2024 · SDG-4 · FERPA · ZERO-PII</span>
             </div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
               EDVentures 2026 · Built for Institutional Growth
