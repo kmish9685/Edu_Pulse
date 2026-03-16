@@ -31,6 +31,11 @@
   --accent-dim: rgba(71, 85, 105, 0.06);
   --accent-2: #2563EB;
 
+  /* Semantic Colors */
+  --success: #10B981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
   /* Gradients - Much more subtle */
   --grad-a: #334155;
   --grad-b: #475569;
