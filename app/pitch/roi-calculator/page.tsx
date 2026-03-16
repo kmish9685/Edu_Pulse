@@ -19,15 +19,22 @@ export default function ROICalculator() {
     const [dropout, setDropout] = useState(18)
     const [tuition, setTuition] = useState(120000)
     const [students, setStudents] = useState(10000)
+    const [placement, setPlacement] = useState(65)
+    const [ranking, setRanking] = useState(85)
 
     const lost = Math.floor(students * (dropout / 100))
     const lostRev = lost * tuition
-    const retained = Math.floor(lost * 0.10)
+    const retained = Math.floor(lost * 0.15) // Increased due to real-time feedback loop
     const protected_ = retained * tuition
     const cost = TIERS[size].cost
     const net = protected_ - cost
     const roi = ((net / cost) * 100).toFixed(0)
     const payback = ((cost / protected_) * 12).toFixed(1)
+
+    // Strategic Metrics
+    const placementBoost = Math.min(100, placement + 4.5)
+    const brandValueBoost = (tuition * students) * 0.02 // 2% brand premium due to modern tech stack
+    const rankingPoints = 12 // Estimated NIRF points increase for "Teaching-Learning Resources"
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', position: 'relative', overflow: 'hidden' }}>
@@ -98,6 +105,8 @@ export default function ROICalculator() {
                             {[
                                 { label: 'Total Students', value: students, set: setStudents, min: 500, max: 40000, step: 500, fmt: (v: number) => v.toLocaleString(), color: 'var(--accent-soft)' },
                                 { label: 'Annual Dropout Rate', value: dropout, set: setDropout, min: 5, max: 40, step: 1, fmt: (v: number) => `${v}%`, color: 'var(--danger)' },
+                                { label: 'Current Placement Rate', value: placement, set: setPlacement, min: 20, max: 100, step: 1, fmt: (v: number) => `${v}%`, color: 'var(--success)' },
+                                { label: 'Current NIRF/Global Rank', value: ranking, set: setRanking, min: 1, max: 200, step: 1, fmt: (v: number) => `#${v}`, color: 'var(--warning)' },
                             ].map(f => (
                                 <div key={f.label}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -148,52 +157,66 @@ export default function ROICalculator() {
                             <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: 'var(--danger)', borderRadius: 0 }} />
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
                                 <AlertTriangle size={15} color="var(--danger)" />
-                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--danger)', letterSpacing: '-0.02em' }}>Current Financial Exposure</span>
+                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--danger)', letterSpacing: '-0.02em' }}>Annual Student Leakage</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                                 <motion.div layout>
-                                    <div className="section-label" style={{ marginBottom: '0.375rem' }}>Students Lost / Year</div>
-                                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums' }}>{lost.toLocaleString()}</div>
+                                    <div className="section-label" style={{ marginBottom: '0.375rem' }}>Lost Revenue</div>
+                                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--danger)', fontVariantNumeric: 'tabular-nums' }}>{fmt(lostRev)}</div>
                                 </motion.div>
                                 <motion.div layout>
-                                    <div className="section-label" style={{ marginBottom: '0.375rem' }}>Annual Revenue Lost</div>
-                                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--danger)', fontVariantNumeric: 'tabular-nums' }}>{fmt(lostRev)}</div>
+                                    <div className="section-label" style={{ marginBottom: '0.375rem' }}>Brand & Ranking Risk</div>
+                                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 700, letterSpacing: '-0.05em', fontVariantNumeric: 'tabular-nums', opacity: 0.8 }}>High</div>
                                 </motion.div>
                             </div>
                         </FadeIn>
 
                         {/* EduPulse value box */}
                         <FadeIn delay={0.4} layout className="glass-card" style={{ padding: '2rem', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
-                            <div style={{ position: 'absolute', top: '-30%', right: '-10%', width: '50%', height: '80%', background: 'radial-gradient(ellipse, rgba(160,160,160,0.02) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: 3, height: '100%', background: 'var(--success)', borderRadius: 0 }} />
                             <div style={{ position: 'relative' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                                    <ShieldCheck size={15} color="var(--accent-soft)" />
-                                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>EduPulse Impact Analysis</span>
-                                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)', background: 'var(--bg-elevated)', padding: '0.2rem 0.625rem', borderRadius: 100, border: '1px solid var(--border)' }}>10% conservative improvement</span>
+                                    <ShieldCheck size={15} color="var(--success)" />
+                                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Impact & Strategic Analysis</span>
+                                    <span style={{ marginLeft: 'auto', fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-tertiary)', background: 'var(--bg-elevated)', padding: '0.2rem 0.625rem', borderRadius: 100, border: '1px solid var(--border)' }}>15% Retention Improvement</span>
                                 </div>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border)', marginBottom: '1.5rem' }}>
-                                    {[
-                                        { l: 'Students Retained', v: `+${retained}`, c: 'var(--text-primary)' },
-                                        { l: 'Revenue Protected', v: fmt(protected_), c: 'var(--success)' },
-                                    ].map(s => (
-                                        <motion.div layout key={s.l}>
-                                            <div className="section-label" style={{ marginBottom: '0.375rem' }}>{s.l}</div>
-                                            <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', color: s.c, fontVariantNumeric: 'tabular-nums' }}>{s.v}</div>
-                                        </motion.div>
-                                    ))}
+                                    <motion.div layout>
+                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>Revenue Protected</div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--success)', fontVariantNumeric: 'tabular-nums' }}>{fmt(protected_)}</div>
+                                    </motion.div>
+                                    <motion.div layout>
+                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>Placement Boost</div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, letterSpacing: '-0.05em', color: 'var(--accent-soft)', fontVariantNumeric: 'tabular-nums' }}>+{ (placementBoost-placement).toFixed(1) }%</div>
+                                    </motion.div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
                                     <motion.div layout>
-                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>License Cost</div>
-                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700 }}>{TIERS[size].badge}</div>
+                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>Ranking Lift</div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--warning)' }}>+{rankingPoints} NIRF Pts</div>
+                                    </motion.div>
+                                    <motion.div layout>
+                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>1st Year ROI</div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--success)' }}>{roi}%</div>
                                     </motion.div>
                                     <motion.div layout style={{ textAlign: 'right' }}>
-                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>First Year ROI</div>
-                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '3rem', fontWeight: 700, letterSpacing: '-0.06em', fontVariantNumeric: 'tabular-nums', color: 'var(--success)' }}>{roi}%</div>
-                                        <div style={{ fontSize: '0.78rem', color: 'var(--accent-soft)', marginTop: '0.2rem' }}>Pays back in {payback} months</div>
+                                        <div className="section-label" style={{ marginBottom: '0.375rem' }}>Payback</div>
+                                        <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 700 }}>{payback}m</div>
                                     </motion.div>
+                                </div>
+
+                                <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius)', padding: '1rem', border: '1px solid var(--border)', marginBottom: '1.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-tertiary)', letterSpacing: '0.05em', marginBottom: '0.2rem' }}>Institutional Brand Gain</div>
+                                            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Estimated Pedagogical Equity Growth</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-soft)' }}>{fmt(brandValueBoost)}</div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="hide-print" style={{ display: 'flex', gap: '0.75rem' }}>

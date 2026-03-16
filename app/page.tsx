@@ -283,9 +283,9 @@ export default function Home() {
           <div className="section-label" style={{ marginBottom: '3rem' }}>How It Works</div>
 
           {[
-            { n: '01', Icon: QrCode, title: 'Open your launchpad', body: 'One click generates a session QR code and a 4-digit PIN. Set your lecture agenda in advance — no mid-class typing.' },
-            { n: '02', Icon: Bell, title: 'Students signal anonymously', body: '"I\'m Confused" or "Too Fast" — one tap. No app download. No account. Phone camera + browser is all they need.' },
-            { n: '03', Icon: Brain, title: 'Act on live intelligence', body: 'Your confusion graph updates every 3 seconds. Topic annotations let you correlate every spike to your exact slide.' },
+            { n: '01', Icon: QrCode, title: 'Launch (The Handshake)', body: 'Educators open a session in 15 seconds. A temporary PIN and QR code are generated. No student accounts or app downloads required — just parity between devices.' },
+            { n: '02', Icon: Bell, title: 'Pulse (Live Signaling)', body: 'Students tap "I\'m Confused" or "Too Fast" anonymously. Signals are aggregated into a live dashboard, identifying pedagogical "blind spots" as they happen.' },
+            { n: '03', Icon: Brain, title: 'Remediate (Closure)', body: 'The loop is closed. AI automatically drafts review materials and quizzes based on the confusion spikes, ensuring no student leaves the room lost.' },
           ].map(({ n, Icon, title, body }, i) => (
             <div key={n}>
               <div className="how-grid" style={{ display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 1fr' : '1fr 1fr', gap: '4rem', alignItems: 'center', padding: '3rem 0' }}>
@@ -608,7 +608,27 @@ export default function Home() {
                 >{label}</Link>
               ))}
             </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>SDG-4 Aligned · EDVentures 2026</div>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
+                <Shield size={12} color="var(--success)" />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>UGC 2024 GUIDELINES</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
+                <Globe size={12} color="var(--accent-soft)" />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>SDG-4 ALIGNED</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
+                <Target size={12} color="var(--warning)" />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>ZERO-PII ARCHITECTURE</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '0.35rem 0.75rem', borderRadius: 100 }}>
+                <BookOpen size={12} color="var(--accent-soft)" />
+                <span style={{ fontSize: '0.65rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>NEP 2020 READY</span>
+              </div>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-tertiary)', textAlign: 'right' }}>
+              EDVentures 2026 · Built for Institutional Growth
+            </div>
           </div>
         </footer>
 

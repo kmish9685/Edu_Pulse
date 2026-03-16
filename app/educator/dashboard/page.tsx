@@ -55,6 +55,7 @@ function DashboardContent() {
     const [joinCode, setJoinCode] = useState(sessionId || '')
     const [mutedDevices, setMutedDevices] = useState<string[]>([])
     const [showFloatQR, setShowFloatQR] = useState(false)
+    const pipWindowRef = useRef<any>(null)
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -164,6 +165,18 @@ function DashboardContent() {
             const newCode = Array.from(Array(4), () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')
             setJoinCode(newCode)
             updateJoinCode(sessionId, newCode)
+            
+            // Sync with PiP if active
+            if (pipWindowRef.current) {
+                const qrContainer = pipWindowRef.current.document.getElementById('qr-container')
+                const codeBanner = pipWindowRef.current.document.getElementById('code-banner')
+                if (qrContainer) {
+                    qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin + '/join/' + newCode)}" alt="QR Code" style="width: 160px; height: 160px; display: block;" />`
+                }
+                if (codeBanner) {
+                    codeBanner.innerText = newCode
+                }
+            }
         }, 60000)
         return () => clearInterval(rotInt)
     }, [sessionId])
@@ -299,6 +312,12 @@ function DashboardContent() {
                                         width: 250,
                                         height: 300,
                                     });
+                                    pipWindowRef.current = pipWindow;
+                                    
+                                    pipWindow.addEventListener('pagehide', () => {
+                                        pipWindowRef.current = null;
+                                    });
+
                                     // Copy styles
                                     Array.from(document.styleSheets).forEach((sheet) => {
                                         try {
@@ -322,7 +341,7 @@ function DashboardContent() {
                                             <div id="qr-container" style="background: white; padding: 10px; border-radius: 8px;">
                                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin + '/join/' + joinCode)}" alt="QR Code" style="width: 160px; height: 160px; display: block;" />
                                             </div>
-                                            <div style="margin-top: 15px; font-size: 1.5rem; font-family: monospace; font-weight: bold; letter-spacing: 2px;">${joinCode}</div>
+                                            <div id="code-banner" style="margin-top: 15px; font-size: 1.5rem; font-family: monospace; font-weight: bold; letter-spacing: 2px;">${joinCode}</div>
                                         </div>
                                     `;
                                     
@@ -565,6 +584,9 @@ function DashboardContent() {
                                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
                                         {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                     </span>
+                                    {signal.device_id && mutedDevices.includes(signal.device_id) && (
+                                        <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-surface)', padding: '0.1rem 0.4rem', borderRadius: 4, letterSpacing: '0.05em', border: '1px solid var(--border-dim)' }}>MUTED</div>
+                                    )}
                                     {signal.device_id && (
                                         <button 
                                             onClick={() => setMutedDevices(d => [...d, signal.device_id])}
@@ -586,6 +608,7 @@ function DashboardContent() {
             {/* Floating QR Overlay */}
             {showFloatQR && (
                 <div 
+                    key={joinCode}
                     style={{ 
                         position: 'fixed', top: 70, right: 24, zIndex: 100, 
                         background: 'var(--bg-elevated)', border: '1px solid var(--border-accent)', 
