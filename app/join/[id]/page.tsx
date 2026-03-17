@@ -216,7 +216,8 @@ export default function StudentJoin() {
     const [roomId, setRoomId] = useState<string | null>(null)
     const [signaled, setSignaled] = useState(false)
     const [optionalText, setOptionalText] = useState('')
-    const [customComment, setCustomComment] = useState('')
+    const [quickComment, setQuickComment] = useState('')
+    const [deepDoubt, setDeepDoubt] = useState('')
     const [cooldown, setCooldown] = useState(false)
     const [cooldownSecs, setCooldownSecs] = useState(0)
     const [submitting, setSubmitting] = useState<string | null>(null)
@@ -225,6 +226,8 @@ export default function StudentJoin() {
     const [sessionAgenda, setSessionAgenda] = useState<string[]>([])
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const [offNetwork, setOffNetwork] = useState(false)
+    const [doubtCooldown, setDoubtCooldown] = useState(false)
+    const [doubtCooldownSecs, setDoubtCooldownSecs] = useState(0)
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -286,14 +289,14 @@ export default function StudentJoin() {
         setError(null)
         setDropdownOpen(false)
         const deviceId = getOrCreateDeviceId()
-        const combinedText = [optionalText, customComment].filter(Boolean).join(' | ')
+        const combinedText = [optionalText, quickComment].filter(Boolean).join(' | ')
         const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: combinedText, device_id: deviceId })
         if (res.success) {
             setSignaled(true)
             setCooldown(true)
             setCooldownSecs(60)
             setOptionalText('')
-            setCustomComment('')
+            setQuickComment('')
             // Check if student is off the campus network
             setOffNetwork(!!(res as any).offNetwork)
             localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
@@ -305,6 +308,33 @@ export default function StudentJoin() {
             }, 1000)
         } else {
             setError(res.error || 'Failed to send signal')
+        }
+        setSubmitting(null)
+    }
+
+    const handleDoubt = async () => {
+        if (!deepDoubt.trim() || (submitting && submitting !== 'Deep Doubt') || doubtCooldown) return
+        setSubmitting('Deep Doubt')
+        setError(null)
+        const deviceId = getOrCreateDeviceId()
+        const res = await submitSignal({ 
+            type: 'Deep Doubt', 
+            block_room: roomId || sessionId, 
+            additional_text: deepDoubt, 
+            device_id: deviceId 
+        })
+        if (res.success) {
+            setDeepDoubt('')
+            setDoubtCooldown(true)
+            setDoubtCooldownSecs(10) // Short 10s cooldown for text doubts
+            const doubtTimer = setInterval(() => {
+                setDoubtCooldownSecs(s => {
+                    if (s <= 1) { clearInterval(doubtTimer); setDoubtCooldown(false); return 0 }
+                    return s - 1
+                })
+            }, 1000)
+        } else {
+            setError(res.error || 'Failed to send doubt')
         }
         setSubmitting(null)
     }
@@ -423,8 +453,8 @@ export default function StudentJoin() {
                         
                         <div style={{ position: 'relative' }}>
                             <textarea 
-                                value={customComment}
-                                onChange={(e) => setCustomComment(e.target.value)}
+                                value={deepDoubt}
+                                onChange={(e) => setDeepDoubt(e.target.value)}
                                 placeholder="Describe your doubt here (e.g., 'How did we get that formula?')..."
                                 style={{
                                     width: '100%',
@@ -445,8 +475,8 @@ export default function StudentJoin() {
                                 onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
                             />
                             <button 
-                                onClick={() => handleSignal('Deep Doubt', 'Deep Doubt')}
-                                disabled={!customComment.trim() || submitting !== null}
+                                onClick={handleDoubt}
+                                disabled={!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown}
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
@@ -456,12 +486,13 @@ export default function StudentJoin() {
                                     borderRadius: 10,
                                     fontSize: '0.85rem',
                                     fontWeight: 700,
-                                    cursor: (!customComment.trim() || submitting !== null) ? 'default' : 'pointer',
-                                    opacity: (!customComment.trim() || submitting !== null) ? 0.5 : 1,
+                                    cursor: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 'default' : 'pointer',
+                                    opacity: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 0.5 : 1,
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                {submitting === 'Deep Doubt' ? 'Submitting...' : 'Submit Specific Doubt'}
+                                {submitting === 'Deep Doubt' ? 'Submitting...' : 
+                                 doubtCooldown ? `Wait ${doubtCooldownSecs}s...` : 'Submit Specific Doubt'}
                             </button>
                         </div>
                         <Link 
@@ -694,11 +725,10 @@ export default function StudentJoin() {
                         </div>
                     </div>
 
-                    {/* Optional Custom Comment TextArea */}
                     <div style={{ marginBottom: '1.5rem' }}>
                         <textarea
-                            value={customComment}
-                            onChange={(e) => setCustomComment(e.target.value)}
+                            value={quickComment}
+                            onChange={(e) => setQuickComment(e.target.value)}
                             disabled={submitting !== null}
                             placeholder="Type a short comment (optional)..."
                             rows={2}
@@ -727,7 +757,7 @@ export default function StudentJoin() {
                         return (
                             <button
                                 key={sig.id}
-                                disabled={submitting !== null}
+                                disabled={submitting !== null || cooldown}
                                 onClick={() => handleSignal(sig.label, sig.realType)}
                                 style={{
                                     display: 'flex',
@@ -761,6 +791,63 @@ export default function StudentJoin() {
                             </button>
                         )
                     })}
+                </div>
+
+                {/* Always-on Deep Doubt Area */}
+                <div style={{ width: '100%', maxWidth: 420, marginTop: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
+                        <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Sparkles size={16} color="var(--accent-soft)" />
+                        </div>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Ask a Specific Doubt</h3>
+                    </div>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                        Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown.
+                    </p>
+                    <div style={{ position: 'relative' }}>
+                        <textarea 
+                            value={deepDoubt}
+                            onChange={(e) => setDeepDoubt(e.target.value)}
+                            placeholder="e.g., 'What does the X axis represent in this chart?'"
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem',
+                                background: 'var(--bg-base)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 12,
+                                fontSize: '0.85rem',
+                                fontFamily: 'inherit',
+                                resize: 'none',
+                                outline: 'none',
+                                minHeight: 80,
+                                marginBottom: '0.75rem',
+                                transition: 'border-color 0.2s',
+                                boxSizing: 'border-box'
+                            }}
+                            onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                        />
+                        <button 
+                            onClick={handleDoubt}
+                            disabled={!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                background: 'var(--accent)',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: 10,
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                cursor: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 'default' : 'pointer',
+                                opacity: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 0.5 : 1,
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {submitting === 'Deep Doubt' ? 'Submitting...' : 
+                             doubtCooldown ? `Wait ${doubtCooldownSecs}s...` : 'Submit Question'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Cooldown state */}
