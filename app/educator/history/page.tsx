@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut, MessageSquare } from 'lucide-react'
+import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut, MessageSquare, Share2, Check } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
@@ -23,6 +23,16 @@ export default function SessionHistory() {
     const [sessions, setSessions] = useState<SessionRow[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [copiedId, setCopiedId] = useState<string | null>(null)
+
+    const handleShare = (sessionId: string) => {
+        const link = `${window.location.origin}/join/${sessionId}/remedy`
+        const msg = `📚 Study Pack from today's class is ready!\n\nIt includes a session recap, concept analogies, practice questions with answers, and more — AI-generated just for this session.\n\nOpen here (no login needed): ${link}`
+        navigator.clipboard.writeText(msg).then(() => {
+            setCopiedId(sessionId)
+            setTimeout(() => setCopiedId(null), 2500)
+        })
+    }
 
     useEffect(() => {
         loadHistory()
@@ -279,6 +289,17 @@ export default function SessionHistory() {
                                         </div>
                                         <div style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>signals</div>
                                     </div>
+
+                                    {/* Share Study Pack */}
+                                    {!s.is_active && (
+                                        <button
+                                            onClick={() => handleShare(s.id)}
+                                            title="Copy study pack link for WhatsApp/email"
+                                            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.375rem 0.875rem', background: copiedId === s.id ? 'rgba(34,197,94,0.12)' : 'rgba(16,185,129,0.08)', border: `1px solid ${copiedId === s.id ? 'rgba(34,197,94,0.4)' : 'rgba(16,185,129,0.25)'}`, borderRadius: 'var(--radius)', color: copiedId === s.id ? 'var(--success)' : '#10B981', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.2s' }}
+                                        >
+                                            {copiedId === s.id ? <><Check size={12} /> Copied!</> : <><Share2 size={12} /> Share Pack</>}
+                                        </button>
+                                    )}
 
                                     {/* View summary link */}
                                     <Link
