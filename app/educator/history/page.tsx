@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut, MessageSquare, Share2, Check } from 'lucide-react'
+import { Zap, Sparkles, TrendingDown, TrendingUp, Minus, ArrowRight, Clock, AlertTriangle, BarChart2, LogOut, MessageSquare, Share2, Check, Download } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 
@@ -290,15 +290,25 @@ export default function SessionHistory() {
                                         <div style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>signals</div>
                                     </div>
 
-                                    {/* Share Study Pack */}
+                                    {/* Share and Download */}
                                     {!s.is_active && (
-                                        <button
-                                            onClick={() => handleShare(s.id)}
-                                            title="Copy study pack link for WhatsApp/email"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.375rem 0.875rem', background: copiedId === s.id ? 'rgba(34,197,94,0.12)' : 'rgba(16,185,129,0.08)', border: `1px solid ${copiedId === s.id ? 'rgba(34,197,94,0.4)' : 'rgba(16,185,129,0.25)'}`, borderRadius: 'var(--radius)', color: copiedId === s.id ? 'var(--success)' : '#10B981', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.2s' }}
-                                        >
-                                            {copiedId === s.id ? <><Check size={12} /> Copied!</> : <><Share2 size={12} /> Share Pack</>}
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <Link
+                                                href={`/join/${s.id}/pdf`}
+                                                target="_blank"
+                                                title="Download PDF Study Pack"
+                                                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.375rem 0.875rem', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s' }}
+                                            >
+                                                <Download size={12} /> PDF
+                                            </Link>
+                                            <button
+                                                onClick={() => handleShare(s.id)}
+                                                title="Copy study pack link for WhatsApp/email"
+                                                style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.375rem 0.875rem', background: copiedId === s.id ? 'rgba(34,197,94,0.12)' : 'rgba(16,185,129,0.08)', border: `1px solid ${copiedId === s.id ? 'rgba(34,197,94,0.4)' : 'rgba(16,185,129,0.25)'}`, borderRadius: 'var(--radius)', color: copiedId === s.id ? 'var(--success)' : '#10B981', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.2s' }}
+                                            >
+                                                {copiedId === s.id ? <><Check size={12} /> Copied!</> : <><Share2 size={12} /> Share</>}
+                                            </button>
+                                        </div>
                                     )}
 
                                     {/* View summary link */}

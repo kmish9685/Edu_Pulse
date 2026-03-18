@@ -19,10 +19,11 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [totalSignals, setTotalSignals] = useState(0)
-    const [followUpMode, setFollowUpMode] = useState<'idle' | 'generating' | 'done'>('idle')
+    const [followUpMode, setFollowUpMode] = useState<'idle' | 'generating' | 'draft' | 'publishing' | 'published'>('idle')
     const [remediationText, setRemediationText] = useState<string | null>(null)
     const [remediationError, setRemediationError] = useState<string | null>(null)
     const [teacherResources, setTeacherResources] = useState('')
+    const [copied, setCopied] = useState(false)
 
     const agendaParam = searchParams.get('agenda')
     const agenda: string[] = agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : []
@@ -54,6 +55,18 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                 setError(res.error || 'AI failed to generate a summary.')
             }
 
+            // 3. Check if remediation is already published
+            const { data: sessionData } = await supabase
+                .from('active_sessions')
+                .select('remediation_material')
+                .eq('id', sessionId)
+                .single()
+            
+            if (sessionData && sessionData.remediation_material) {
+                setRemediationText(sessionData.remediation_material)
+                setFollowUpMode('published')
+            }
+
             setLoading(false)
         }
 
@@ -82,13 +95,35 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
 
         if (res.success && res.data) {
             setRemediationText(res.data)
-            setFollowUpMode('done')
-            // PERSIST to database for students to see asynchronously
-            await saveRemediation(sessionId, res.data)
+            setFollowUpMode('draft') // DO NOT auto-save. Let the teacher approve it.
         } else {
             setRemediationError(res.error || 'Failed to generate review material.')
             setFollowUpMode('idle')
         }
+    }
+
+    const handleApproveAndPublish = async () => {
+        if (!remediationText) return
+        setFollowUpMode('publishing')
+        
+        // PERSIST to database for students to see
+        const res = await saveRemediation(sessionId, remediationText)
+        
+        if (res.success) {
+            setFollowUpMode('published')
+        } else {
+            setRemediationError(res.error || 'Failed to publish.')
+            setFollowUpMode('draft')
+        }
+    }
+
+    const handleShareLink = () => {
+        const link = `${window.location.origin}/join/${sessionId}/remedy`
+        const msg = `📚 Study Pack from today's class is ready!\n\nIt includes a session recap, concept analogies, practice questions with answers, and more.\n\nOpen here (no login needed): ${link}`
+        navigator.clipboard.writeText(msg).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2500)
+        })
     }
 
     return (
@@ -218,29 +253,89 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
                             )}
 
                             {followUpMode === 'generating' && (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2.5rem 0', color: 'var(--text-secondary)' }}>
-                                    <Loader2 size={24} style={{ animation: 'spin 1.5s linear infinite', color: '#A78BFA', marginBottom: '1rem' }} />
-                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.05em' }}>DRAFTING REMEDIATION MATERIALS...</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', color: 'var(--text-secondary)' }}>
+                                    <div style={{ width: 40, height: 40, background: 'linear-gradient(135deg,rgba(167,139,250,0.1),rgba(139,92,246,0.2))', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', animation: 'pulse-dot 2s infinite' }}>
+                                        <Sparkles size={20} color="#A78BFA" />
+                                    </div>
+                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', letterSpacing: '0.05em' }}>DRAFTING REMEDIATION MATERIALS...</span>
                                 </div>
                             )}
 
-                            {followUpMode === 'done' && remediationText && (
-                                <div>
-                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                                        Generated draft for students:
-                                    </p>
-                                    <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 10, padding: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                            {followUpMode === 'draft' && remediationText && (
+                                <div style={{ animation: 'enter-fade 0.4s ease-out' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--warning)' }} />
+                                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Review draft before publishing to students</p>
+                                    </div>
+                                    <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12, padding: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, maxHeight: 400, overflowY: 'auto', marginBottom: '1.5rem' }}>
                                         {remediationText.split('\n').map((paragraph: string, i: number) => {
                                             if (!paragraph.trim()) return <br key={i} />
                                             return <p key={i} style={{ marginBottom: '0.5rem' }}>{paragraph}</p>
                                         })}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
-                                        <button className="btn-primary" style={{ flex: 1 }} onClick={() => {
-                                            navigator.clipboard.writeText(remediationText || '');
-                                            alert('Text copied to clipboard!');
-                                        }}>Copy Text</button>
-                                        <button className="btn-ghost" onClick={() => setFollowUpMode('idle')}>Regenerate</button>
+                                    <div style={{ display: 'flex', gap: '1rem' }}>
+                                        <button 
+                                            className="btn-primary" 
+                                            style={{ flex: 1, padding: '1rem', fontSize: '0.95rem', background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none' }} 
+                                            onClick={handleApproveAndPublish}
+                                        >
+                                            ✅ Approve & Publish Study Pack
+                                        </button>
+                                        <button 
+                                            className="btn-ghost" 
+                                            onClick={() => setFollowUpMode('idle')}
+                                        >
+                                            Discard & Edit Resources
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {followUpMode === 'publishing' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 0', color: 'var(--text-secondary)' }}>
+                                    <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', color: '#10B981', marginBottom: '1rem' }} />
+                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', letterSpacing: '0.05em', color: '#10B981' }}>PUBLISHING TO REMEDY HUB...</span>
+                                </div>
+                            )}
+
+                            {followUpMode === 'published' && (
+                                <div style={{ textAlign: 'center', padding: '1rem 0', animation: 'enter-fade 0.5s ease-out' }}>
+                                    <div style={{ width: 64, height: 64, background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.05))', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                                        <Sparkles size={28} color="#10B981" />
+                                    </div>
+                                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                                        Study Pack Published!
+                                    </h3>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '2rem', maxWidth: 400, margin: '0 auto 2rem' }}>
+                                        The AI-generated study pack is now live for all students at the session Remedy Hub link.
+                                    </p>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                        <Link 
+                                            href={`/join/${sessionId}/pdf`}
+                                            target="_blank"
+                                            className="btn-primary" 
+                                            style={{ padding: '0.875rem', background: 'var(--bg-elevated)', border: '1px solid var(--border-accent)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: 'none' }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                            Download Premium PDF
+                                        </Link>
+                                        <button 
+                                            className="btn-primary" 
+                                            onClick={handleShareLink}
+                                            style={{ padding: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: copied ? 'var(--success)' : 'var(--accent)' }}
+                                        >
+                                            {copied ? (
+                                                <>✅ Link Copied!</>
+                                            ) : (
+                                                <><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg> Copy Study Pack Link</>
+                                            )}
+                                        </button>
+                                    </div>
+                                    <div style={{ marginTop: '1rem' }}>
+                                        <button className="btn-ghost" onClick={() => setFollowUpMode('idle')} style={{ fontSize: '0.8rem' }}>
+                                            Regenerate Material
+                                        </button>
                                     </div>
                                 </div>
                             )}
