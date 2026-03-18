@@ -189,20 +189,34 @@ Draft a post-session review for students based strictly on the provided objectiv
 
 You MUST use EXACTLY the following format. Do not use markdown bolding (**) or hashtags (#). Use the exact emojis shown.
 
-📚 Session Summary — [Insert Overall Class Topic/Name] ([Insert Today's Date as: March 13, 2026])
+📚 Session Summary — [Insert Overall Class Topic/Name] ([Insert Today's Date as: March 18, 2026])
 🔴 Most confused topics:
 • [Insert Topic 1 with the highest signals]: [Insert Number] signals
 • [Insert Topic 2]: [Insert Number] signals
+
 📖 Key points to review:
-[A clear, plain-language explanation of each confused topic — write as if explaining to a student who is struggling. Be specific, not generic.]
+[For EACH confused topic, write a clear plain-language explanation as if speaking to a student who is genuinely struggling. Be specific and concrete, not generic. Avoid textbook definitions — use real language.]
+
+💡 Concept Analogies (Real-World Examples):
+[For EACH confused topic, write one everyday real-world analogy that makes the concept click intuitively. The analogy must be culturally accessible and require zero background knowledge. Format as:
+• [Topic Name]: [Analogy — start with "Think of it like..." or "Imagine..."]
+The goal is an "aha!" moment — the student should say "oh THAT'S what it means" after reading it.]
+
 🎥 Helpful resources:
-[Use the teacher-provided resources if any were given above. List each on its own line starting with •. If no resources provided, suggest descriptive search titles only.]
-❓ Practice questions (3 questions):
+[Use the teacher-provided resources if any were given above. List each on its own line starting with •. If no resources provided, suggest descriptive resource titles only (e.g., "YouTube: Recursion Explained Simply — search on YouTube"). Do NOT fabricate URLs.]
+
+❓ Practice questions:
 Q1. [Write a multiple-choice question targeting the FIRST most confused topic. Include 4 options labeled A, B, C, D]
+Answer: [State correct answer letter and explain in one sentence WHY it is correct and why the others are wrong]
 
 Q2. [Write a multiple-choice question targeting the SECOND most confused topic OR a different aspect of the first. Include 4 options labeled A, B, C, D]
+Answer: [State correct answer letter and explain in one sentence WHY it is correct]
 
-Q3. [Write a short-answer or true/false question testing deeper understanding. Make it slightly harder than Q1 and Q2.]
+Q3. [Write a harder short-answer or true/false question that requires the student to APPLY the concept, not just recall it. Make it slightly harder than Q1 and Q2.]
+Answer: [Provide a model answer in 2-3 sentences that a student can compare their response against]
+
+🧠 Try to explain it:
+Before you move on, close this and try to explain the most confused topic to an imaginary friend in your own words. If you can teach it, you've learned it. If you can't, re-read the key points above.
 —Sent via EduPulse | edupulse.app`;
 
         const result = await model.generateContent(prompt)
