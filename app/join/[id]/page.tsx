@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { submitSignal, validateSession } from '@/app/actions/signals'
-import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles } from 'lucide-react'
+import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 const translations = {
@@ -365,40 +365,64 @@ export default function StudentJoin() {
         )
     }
 
-    // ── No active session ──────────────────────────────────────────
+    // ── No active session → Study Pack Entry Point ─────────────────
     if (!sessionValid) {
         return (
             <div style={pageShell}>
-                <div style={{ textAlign: 'center', width: '100%', maxWidth: 380 }}>
-                    <div style={{ width: 72, height: 72, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 32px rgba(239,68,68,0.1)' }}>
-                        <WifiOff size={30} color="#EF4444" />
-                    </div>
-                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.4rem, 5vw, 1.75rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                        {t.noSession}
-                    </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.65, marginBottom: '2rem', padding: '0 0.5rem' }}>
-                        {t.noSessionDesc.replace('{pin}', sessionId)}
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
-                        <button onClick={async (e) => {
-                            const btn = e.currentTarget;
-                            btn.textContent = t.checking;
-                            btn.style.opacity = '0.7';
-                            const r = await validateSession(sessionId);
-                            setSessionValid(r.active);
-                            if (r.active && r.roomId) setRoomId(r.roomId);
-                            setTimeout(() => {
-                                if (btn) { btn.innerHTML = `<span><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><circle cx="12" cy="12" r="2"></circle><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path></svg>${t.checkAgain}</span>`; btn.style.opacity = '1'; }
-                            }, 500);
-                        }}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.875rem 1.5rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 14, color: 'var(--accent-soft)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', transition: 'opacity 0.2s', width: '100%' }}>
-                            <Radio size={15} /> {t.checkAgain}
-                        </button>
-                        <button onClick={() => router.push('/student')}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.875rem 1.5rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 14, color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
-                            {t.tryDiff}
+                <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                    {/* Study Pack CTA — primary */}
+                    <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(79,70,229,0.06))', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 24, padding: '2rem', textAlign: 'center' }}>
+                        <div style={{ width: 72, height: 72, background: 'linear-gradient(135deg, #6366F1, #4F46E5)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 40px rgba(99,102,241,0.3)' }}>
+                            <BookOpen size={30} color="#fff" />
+                        </div>
+                        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem' }}>
+                            Class is over 🎓
+                        </h1>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.65, marginBottom: '1.75rem' }}>
+                            Your AI-generated Study Pack is ready — concept analogies, examples, practice questions with answers, and more.
+                        </p>
+                        <button
+                            onClick={() => router.push(`/join/${sessionId}/remedy`)}
+                            style={{ width: '100%', padding: '1rem', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 14, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 8px 24px rgba(99,102,241,0.3)', transition: 'all 0.2s' }}
+                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(99,102,241,0.4)' }}
+                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(99,102,241,0.3)' }}
+                        >
+                            <Sparkles size={18} />
+                            Open Study Pack
                         </button>
                     </div>
+
+                    {/* Secondary: check if session restarted */}
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ width: 40, height: 40, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <WifiOff size={18} color="#EF4444" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.2rem' }}>{t.noSession}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>PIN: {sessionId}</div>
+                        </div>
+                        <button
+                            onClick={async (e) => {
+                                const btn = e.currentTarget
+                                btn.textContent = t.checking
+                                btn.style.opacity = '0.7'
+                                const r = await validateSession(sessionId)
+                                setSessionValid(r.active)
+                                if (r.active && r.roomId) setRoomId(r.roomId)
+                                btn.textContent = t.checkAgain
+                                btn.style.opacity = '1'
+                            }}
+                            style={{ padding: '0.5rem 1rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 10, color: 'var(--accent-soft)', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                        >
+                            {t.checkAgain}
+                        </button>
+                    </div>
+
+                    <button onClick={() => router.push('/student')}
+                        style={{ padding: '0.875rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 14, color: 'var(--text-tertiary)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        {t.tryDiff}
+                    </button>
                 </div>
             </div>
         )
