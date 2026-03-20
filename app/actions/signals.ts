@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { checkDeepDoubtSpam } from './ai'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
@@ -57,6 +58,22 @@ export async function submitSignal(data: {
         teacherIp = (session as any).teacher_ip ?? null
     }
 
+    // ── Shadowbanning Check (Persistent) ──────────────────────────
+    let isShadowBanned = false
+    if (data.block_room && data.device_id) {
+        const { data: sessionData } = await supabase
+            .from('active_sessions')
+            .select('metadata')
+            .eq('id', data.block_room)
+            .single()
+        
+        const mutes = sessionData?.metadata?.muted_devices || []
+        if (mutes.includes(data.device_id)) {
+            isShadowBanned = true
+            console.log(`[Shadowban] Blocked signal from device: ${data.device_id}`)
+        }
+    }
+
     // ── IP Geofencing: Soft Check ──────────────────────────────────
     let isOffNetwork = false
     
@@ -65,6 +82,23 @@ export async function submitSignal(data: {
         isOffNetwork = true
         console.log(`[Soft Geofence] Student IP (${studentIp}) does NOT match Teacher IP network (${teacherIp}). Signal accepted but flagged.`)
     }
+
+    // ── AI Spam Guard: Gatekeeper ──────────────────────────────────
+    let isSpamCategory = isShadowBanned // If already shadowbanned, it's spam by default
+    let signalCategory: 'academic' | 'noise' | 'spam' = isShadowBanned ? 'spam' : 'academic'
+    
+    if (data.type === 'deep_doubt' && data.additional_text) {
+        const spamCheck = await checkDeepDoubtSpam(data.additional_text)
+        if (spamCheck.success) {
+            isSpamCategory = spamCheck.isSpam
+            signalCategory = spamCheck.category
+        }
+    }
+
+    // ── Shadowbanning Check ────────────────────────────────────────
+    // If the device is shadowbanned, we still return "success" but we mark it as spam
+    // to hide it from the main dashboard.
+    // (In a full implementation, we would check a 'muted_devices' table here)
 
     const { error } = await supabase
         .from('signals')
@@ -76,6 +110,8 @@ export async function submitSignal(data: {
             additional_text: data.additional_text?.substring(0, 120),
             device_id: data.device_id ?? null,
             active_topic: activeTopic,
+            is_spam: isSpamCategory, // Flag it so teacher can filter
+            metadata: { category: signalCategory } // Store AI classification
         })
 
     if (error) return { success: false, error: error.message }
@@ -239,10 +275,52 @@ export async function getSessionRemediation(pin: string) {
     const supabase = await createClient()
     const { data, error } = await supabase
         .from('active_sessions')
-        .select('remediation_material, current_topic, started_at')
+        .select('remediation_material, current_topic, started_at, metadata')
         .eq('id', pin)
         .single()
     
     if (error) return { success: false, error: error.message }
     return { success: true, data }
+}
+
+export async function muteDevice(roomId: string, deviceId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Not authenticated' }
+
+    // Fetch current metadata to update muted_devices array
+    const { data: session } = await supabase
+        .from('active_sessions')
+        .select('metadata')
+        .eq('id', roomId)
+        .eq('educator_id', user.id)
+        .single()
+
+    const currentMetadata = session?.metadata || {}
+    const mutedDevices = Array.isArray(currentMetadata.muted_devices) ? currentMetadata.muted_devices : []
+    
+    if (!mutedDevices.includes(deviceId)) {
+        mutedDevices.push(deviceId)
+    }
+
+    const { error } = await supabase
+        .from('active_sessions')
+        .update({ metadata: { ...currentMetadata, muted_devices: mutedDevices } })
+        .eq('id', roomId)
+        .eq('educator_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function getMutedDevices(roomId: string) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('active_sessions')
+        .select('metadata')
+        .eq('id', roomId)
+        .single()
+
+    if (error || !data?.metadata?.muted_devices) return []
+    return data.metadata.muted_devices as string[]
 }

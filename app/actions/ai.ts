@@ -229,3 +229,54 @@ Before you move on, close this and try to explain the most confused topic to an 
         return { success: false, error: e.message || 'Failed to generate remediation via AI.' };
     }
 }
+export async function checkDeepDoubtSpam(text: string): Promise<{ success: boolean; isSpam: boolean; category: 'academic' | 'noise' | 'spam'; error?: string }> {
+    if (!process.env.GEMINI_API_KEY) {
+        return { success: false, isSpam: false, category: 'academic', error: 'AI API key not configured.' };
+    }
+
+    if (!text || text.trim().length === 0) {
+        return { success: false, isSpam: true, category: 'spam', error: 'Empty text.' };
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            generationConfig: {
+                temperature: 0.1, // Low temp for classification
+                responseMimeType: 'application/json',
+            },
+        });
+
+        const prompt = `You are an automated classroom moderator. Categorize the following student doubt into one of three categories:
+1. "academic": A genuine question or comment related to learning, subjects, or the class.
+2. "noise": Casual chatter, greetings (hi, hello), or non-disruptive off-topic comments.
+3. "spam": Disruptive behavior, repeated gibberish, offensive language, or deliberate trolling to ruin the class.
+
+Student Text: "${text}"
+
+Return ONLY a valid JSON object with two fields:
+{
+  "isSpam": boolean (true if category is "spam", false otherwise),
+  "category": "academic" | "noise" | "spam"
+}
+Do not include any other text or formatting.`;
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+
+        try {
+            const parsed = JSON.parse(responseText);
+            return {
+                success: true,
+                isSpam: parsed.isSpam === true,
+                category: parsed.category || 'academic'
+            };
+        } catch (e) {
+            console.error('Failed to parse spam check response:', responseText);
+            return { success: true, isSpam: false, category: 'academic' }; // Default to safe if AI fails
+        }
+    } catch (e: any) {
+        console.error('AI Spam Check Error:', e);
+        return { success: false, isSpam: false, category: 'academic', error: e.message };
+    }
+}

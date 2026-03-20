@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { endSession, updateJoinCode } from '@/app/actions/signals'
+import { endSession, updateJoinCode, muteDevice, getMutedDevices } from '@/app/actions/signals'
 import { QRCodeSVG } from 'qrcode.react'
 
 // ─── State Banner ──────────────────────────────────────────────
@@ -119,6 +119,10 @@ function DashboardContent() {
         if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
         
         async function fetchInitial() {
+            // Fetch muted devices from DB
+            const mutes = await getMutedDevices(sessionId!)
+            setMutedDevices(mutes)
+
             // Fetch total pending doubts (Deep Doubts across all educator classes)
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
@@ -663,21 +667,33 @@ function DashboardContent() {
                                             </span>
                                         )}
                                     </div>
-                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
+                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
                                         {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                        {signal.is_spam && (
+                                            <span style={{ color: 'var(--danger)', fontSize: '0.6rem', fontWeight: 800, background: 'rgba(239,68,68,0.1)', padding: '0 0.3rem', borderRadius: 3 }}>AI: SPAM</span>
+                                        )}
+                                        {signal.metadata?.category && signal.metadata.category !== 'academic' && !signal.is_spam && (
+                                            <span style={{ color: 'var(--warning)', fontSize: '0.6rem', fontWeight: 800, background: 'rgba(245,158,11,0.1)', padding: '0 0.3rem', borderRadius: 3 }}>AI: {signal.metadata.category.toUpperCase()}</span>
+                                        )}
                                     </span>
                                     {signal.device_id && mutedDevices.includes(signal.device_id) && (
                                         <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-surface)', padding: '0.1rem 0.4rem', borderRadius: 4, letterSpacing: '0.05em', border: '1px solid var(--border-dim)' }}>MUTED</div>
                                     )}
                                     {signal.device_id && (
                                         <button 
-                                            onClick={() => setMutedDevices(d => [...d, signal.device_id])}
+                                            onClick={async () => {
+                                                const confirmed = window.confirm('Shadowban this device? They will stay in the session but their signals will be muted for you.')
+                                                if (confirmed) {
+                                                    setMutedDevices(d => [...d, signal.device_id])
+                                                    await muteDevice(sessionId!, signal.device_id)
+                                                }
+                                            }}
                                             style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.65rem', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: 4, fontFamily: 'var(--font-mono)' }}
                                             onMouseOver={e => e.currentTarget.style.color = 'var(--danger)'}
                                             onMouseOut={e => e.currentTarget.style.color = 'var(--text-tertiary)'}
-                                            title={`Mute this student\'s device`}
+                                            title={`Shadowban this student\'s device`}
                                         >
-                                            Mute
+                                            {mutedDevices.includes(signal.device_id) ? 'Shadowbanned' : 'Mute'}
                                         </button>
                                     )}
                                 </div>
