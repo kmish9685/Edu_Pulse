@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { endSession, updateJoinCode, muteDevice, getMutedDevices } from '@/app/actions/signals'
+import { endSession, updateJoinCode, muteDevice, getMutedDevices, getPendingDoubts, reviewPendingDoubt } from '@/app/actions/signals'
 import { QRCodeSVG } from 'qrcode.react'
 
 // ─── State Banner ──────────────────────────────────────────────
@@ -57,6 +57,10 @@ function DashboardContent() {
     const [mutedDevices, setMutedDevices] = useState<string[]>([])
     const [showFloatQR, setShowFloatQR] = useState(false)
     const pipWindowRef = useRef<any>(null)
+
+    // Pending Doubts state
+    const [pendingDoubts, setPendingDoubts] = useState<any[]>([])
+    const [reviewingDoubt, setReviewingDoubt] = useState<string | null>(null)
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -142,6 +146,14 @@ function DashboardContent() {
         }
         fetchInitial()
 
+        // Poll pending doubts every 10s
+        const doubtPoller = setInterval(async () => {
+            const doubts = await getPendingDoubts(sessionId!)
+            setPendingDoubts(doubts)
+        }, 10000)
+        // Initial fetch
+        getPendingDoubts(sessionId!).then(setPendingDoubts)
+
         // Initial Fetch for signals
         async function fetchSignals() {
             const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
@@ -179,6 +191,7 @@ function DashboardContent() {
 
         return () => {
             clearInterval(pollInterval)
+            clearInterval(doubtPoller)
             supabase.removeChannel(channel)
         }
     }, [sessionId])
@@ -702,6 +715,107 @@ function DashboardContent() {
                     </div>
                 </div>
             </main>
+
+            {/* ── Pending Doubts Review Panel ──────────────────────────── */}
+            {pendingDoubts.length > 0 && (
+                <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 1.5rem 2rem' }}>
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
+                        {/* Header */}
+                        <div style={{ padding: '1.125rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(245,158,11,0.04)' }}>
+                            <div style={{ width: 32, height: 32, background: 'rgba(245,158,11,0.12)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '1rem' }}>📬</span>
+                            </div>
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>Pending Doubts — Post-Session Review</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Students who were rate-limited wrote these. AI pre-screened them — only genuine academic doubts appear here.</div>
+                            </div>
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+                                <div style={{ padding: '0.25rem 0.75rem', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 100, fontSize: '0.75rem', fontWeight: 700, color: '#D97706' }}>
+                                    {pendingDoubts.filter(d => d.status === 'pending').length} pending
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Doubt list */}
+                        <div style={{ padding: '1rem' }}>
+                            {pendingDoubts.map((doubt: any) => (
+                                <div key={doubt.id} style={{
+                                    padding: '1rem 1.25rem',
+                                    borderRadius: 12,
+                                    border: `1px solid ${doubt.status === 'approved' ? 'rgba(34,197,94,0.25)' : doubt.status === 'dismissed' ? 'var(--border-dim)' : 'var(--border)'}`,
+                                    background: doubt.status === 'dismissed' ? 'rgba(0,0,0,0.02)' : 'var(--bg-base)',
+                                    marginBottom: '0.75rem',
+                                    opacity: doubt.status === 'dismissed' ? 0.55 : 1,
+                                    transition: 'all 0.2s'
+                                }}>
+                                    {/* Meta row */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', background: 'var(--accent-dim)', color: 'var(--accent-soft)', borderRadius: 100, border: '1px solid var(--border-accent)' }}>
+                                            📚 {doubt.topic}
+                                        </span>
+                                        {/* AI Confidence Badge */}
+                                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 100,
+                                            background: doubt.confidence >= 80 ? 'rgba(34,197,94,0.1)' : doubt.confidence >= 50 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+                                            color: doubt.confidence >= 80 ? '#16A34A' : doubt.confidence >= 50 ? '#D97706' : '#DC2626',
+                                            border: `1px solid ${doubt.confidence >= 80 ? 'rgba(34,197,94,0.25)' : doubt.confidence >= 50 ? 'rgba(245,158,11,0.25)' : 'rgba(239,68,68,0.25)'}`
+                                        }}>
+                                            🤖 AI: {doubt.confidence}% genuine
+                                        </span>
+                                        {doubt.status !== 'pending' && (
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 100,
+                                                background: doubt.status === 'approved' ? 'rgba(34,197,94,0.1)' : 'rgba(0,0,0,0.05)',
+                                                color: doubt.status === 'approved' ? '#16A34A' : 'var(--text-tertiary)'
+                                            }}>
+                                                {doubt.status === 'approved' ? '✅ Approved' : '✕ Dismissed'}
+                                            </span>
+                                        )}
+                                        <span style={{ marginLeft: 'auto', fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
+                                            {new Date(doubt.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                    </div>
+
+                                    {/* Doubt text */}
+                                    <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.6, margin: '0 0 0.875rem', fontStyle: doubt.status === 'dismissed' ? 'italic' : 'normal' }}>
+                                        &ldquo;{doubt.text}&rdquo;
+                                    </p>
+
+                                    {/* Action buttons — only show when pending */}
+                                    {doubt.status === 'pending' && (
+                                        <div style={{ display: 'flex', gap: '0.625rem' }}>
+                                            <button
+                                                disabled={reviewingDoubt === doubt.id}
+                                                onClick={async () => {
+                                                    setReviewingDoubt(doubt.id)
+                                                    await reviewPendingDoubt(sessionId!, doubt.id, 'approved')
+                                                    const updated = await getPendingDoubts(sessionId!)
+                                                    setPendingDoubts(updated)
+                                                    setReviewingDoubt(null)
+                                                }}
+                                                style={{ padding: '0.5rem 1.125rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, fontSize: '0.8rem', fontWeight: 700, color: '#16A34A', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                                            >
+                                                {reviewingDoubt === doubt.id ? '...' : '✅ Acknowledge'}
+                                            </button>
+                                            <button
+                                                disabled={reviewingDoubt === doubt.id}
+                                                onClick={async () => {
+                                                    setReviewingDoubt(doubt.id)
+                                                    await reviewPendingDoubt(sessionId!, doubt.id, 'dismissed')
+                                                    const updated = await getPendingDoubts(sessionId!)
+                                                    setPendingDoubts(updated)
+                                                    setReviewingDoubt(null)
+                                                }}
+                                                style={{ padding: '0.5rem 1.125rem', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                                            >
+                                                ✕ Dismiss
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* Floating QR Overlay */}
             {showFloatQR && (

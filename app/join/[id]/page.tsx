@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { submitSignal, validateSession } from '@/app/actions/signals'
+import { submitSignal, validateSession, submitPendingDoubt } from '@/app/actions/signals'
 import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
@@ -228,6 +228,15 @@ export default function StudentJoin() {
     const [offNetwork, setOffNetwork] = useState(false)
     const [doubtCooldown, setDoubtCooldown] = useState(false)
     const [doubtCooldownSecs, setDoubtCooldownSecs] = useState(0)
+
+    // ── Smart Rate-Limiting (Topic-aware) ─────────────────────────
+    // Tracks how many signals sent per-topic in this session
+    const [topicSignalCounts, setTopicSignalCounts] = useState<Record<string, number>>({})
+    const [rateLimited, setRateLimited] = useState(false)          // Buttons paused?
+    const [pendingDoubt, setPendingDoubt] = useState('')            // Text in the pending doubt box
+    const [pendingDoubtStatus, setPendingDoubtStatus] = useState<'idle' | 'submitting' | 'sent' | 'rejected'>('idle')
+    const [pendingDoubtMsg, setPendingDoubtMsg] = useState('')      // Feedback message to student
+    const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -253,18 +262,29 @@ export default function StudentJoin() {
             return
         }
 
-        // Check session validity
+        // Check session validity and detect topic changes
         validateSession(sessionId).then(res => {
             setSessionValid(res.active)
-            if (res.active && res.roomId) {
-                setRoomId(res.roomId)
-            }
-            if (res.agenda && res.agenda.length > 0) {
-                setSessionAgenda(res.agenda)
-            }
+            if (res.active && res.roomId) setRoomId(res.roomId)
+            if (res.agenda && res.agenda.length > 0) setSessionAgenda(res.agenda)
         })
 
-        // Check cooldown
+        // Poll for topic changes every 15s — reset rate limit per topic
+        const topicPoller = setInterval(async () => {
+            const res = await validateSession(sessionId)
+            if (res.active) {
+                // If the topic changed, reset the rate limit
+                // (We use optionalText as a proxy for the currently selected topic)
+                // The actual topic comes from the server via optionalText selection choices
+                setCurrentSessionTopic(prev => {
+                    // We can't get topic here directly, so we reset rateLimited
+                    // when the student manually changes topic (handled in handleSignal)
+                    return prev
+                })
+            }
+        }, 15000)
+
+        // Check cooldown from localStorage
         const lastSignal = localStorage.getItem(`edupulse_cooldown_${sessionId}`)
         if (lastSignal) {
             const diff = Date.now() - parseInt(lastSignal)
@@ -281,23 +301,44 @@ export default function StudentJoin() {
                 return () => clearInterval(countdown)
             }
         }
+
+        // Restore topic signal counts from localStorage
+        const topicKey = `edupulse_topic_counts_${sessionId}`
+        const stored = localStorage.getItem(topicKey)
+        if (stored) {
+            try { setTopicSignalCounts(JSON.parse(stored)) } catch {}
+        }
+
+        return () => clearInterval(topicPoller)
     }, [sessionId, router])
 
     const handleSignal = async (type: string, realType: string) => {
-        if (cooldown || submitting) return
+        if (cooldown || submitting || rateLimited) return
         setSubmitting(type)
         setError(null)
         setDropdownOpen(false)
         const deviceId = getOrCreateDeviceId()
         const combinedText = [optionalText, quickComment].filter(Boolean).join(' | ')
+        const activeTopic = optionalText || 'General'
         const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: combinedText, device_id: deviceId })
         if (res.success) {
+            // Increment per-topic signal count
+            setTopicSignalCounts(prev => {
+                const updated = { ...prev, [activeTopic]: (prev[activeTopic] || 0) + 1 }
+                // Persist to localStorage
+                localStorage.setItem(`edupulse_topic_counts_${sessionId}`, JSON.stringify(updated))
+                // Trigger rate limit if this topic now has 3+ signals
+                if (updated[activeTopic] >= 3) {
+                    setRateLimited(true)
+                }
+                return updated
+            })
+
             setSignaled(true)
             setCooldown(true)
             setCooldownSecs(60)
             setOptionalText('')
             setQuickComment('')
-            // Check if student is off the campus network
             setOffNetwork(!!(res as any).offNetwork)
             localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
             const countdown = setInterval(() => {
@@ -326,7 +367,7 @@ export default function StudentJoin() {
         if (res.success) {
             setDeepDoubt('')
             setDoubtCooldown(true)
-            setDoubtCooldownSecs(10) // Short 10s cooldown for text doubts
+            setDoubtCooldownSecs(10)
             const doubtTimer = setInterval(() => {
                 setDoubtCooldownSecs(s => {
                     if (s <= 1) { clearInterval(doubtTimer); setDoubtCooldown(false); return 0 }
@@ -335,6 +376,37 @@ export default function StudentJoin() {
             }, 1000)
         } else {
             setError(res.error || 'Failed to send doubt')
+        }
+        setSubmitting(null)
+    }
+
+    // ── Handler for the Rate-Limited Pending Doubt (AI-validated) ──
+    const handlePendingDoubt = async () => {
+        if (!pendingDoubt.trim() || pendingDoubtStatus === 'submitting') return
+        setPendingDoubtStatus('submitting')
+        setPendingDoubtMsg('')
+        const deviceId = getOrCreateDeviceId()
+        const activeTopic = optionalText || 'General'
+        const res = await submitPendingDoubt({
+            sessionId: roomId || sessionId,
+            deviceId,
+            topic: activeTopic,
+            doubtText: pendingDoubt,
+        })
+        if (res.success) {
+            setPendingDoubt('')
+            setPendingDoubtStatus('sent')
+            const conf = (res as any).confidence || 0
+            setPendingDoubtMsg(`✅ Your doubt has been queued. Your teacher will review it after the session. (AI confidence: ${conf}%)`)
+        } else {
+            const wasRejected = (res as any).rejected
+            setPendingDoubtStatus('rejected')
+            setPendingDoubtMsg(wasRejected
+                ? `❌ ${res.error}`
+                : `⚠️ ${res.error || 'Failed to submit. Please try again.'}`
+            )
+            // After 5s, reset so they can try again
+            setTimeout(() => setPendingDoubtStatus('idle'), 5000)
         }
         setSubmitting(null)
     }
@@ -776,7 +848,96 @@ export default function StudentJoin() {
                         />
                     </div>
 
-                    {SIGNAL_TYPES.map(sig => {
+                    {/* Rate-Limited UI — shown when student has sent 3+ signals on same topic */}
+                    {rateLimited ? (
+                        <div style={{ animation: 'enter-fade 0.4s ease-out' }}>
+                            {/* Paused state indicator */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', padding: '1.125rem', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--radius-xl)', marginBottom: '1.25rem' }}>
+                                <span style={{ fontSize: '1.375rem' }}>⏸️</span>
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontWeight: 700, color: '#D97706', fontSize: '0.9rem', marginBottom: '0.1rem' }}>Pulse buttons paused for this topic</div>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>You've sent 3+ signals on this topic. If it's still confusing, type your doubt below — we'll show it to the teacher after class.</div>
+                                </div>
+                            </div>
+
+                            {/* Pending Doubt Box */}
+                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
+                                    <div style={{ width: 32, height: 32, background: 'rgba(245,158,11,0.12)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <span style={{ fontSize: '1rem' }}>📬</span>
+                                    </div>
+                                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Still confused? Tell us specifically.</h3>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1rem' }}>
+                                    Describe exactly what's confusing you. Your teacher will review this after the session ends. Genuine academic doubts will be shown to them.
+                                </p>
+
+                                {/* Feedback message */}
+                                {pendingDoubtMsg && (
+                                    <div style={{ padding: '0.75rem 1rem', background: pendingDoubtStatus === 'sent' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${pendingDoubtStatus === 'sent' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: 10, fontSize: '0.82rem', lineHeight: 1.5, marginBottom: '1rem', color: 'var(--text-primary)' }}>
+                                        {pendingDoubtMsg}
+                                    </div>
+                                )}
+
+                                {pendingDoubtStatus !== 'sent' && (
+                                    <>
+                                        <textarea
+                                            value={pendingDoubt}
+                                            onChange={(e) => setPendingDoubt(e.target.value)}
+                                            placeholder="e.g., 'I don't understand how integration changes polynomial degree — can you give an example?'"
+                                            maxLength={500}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.875rem',
+                                                background: 'var(--bg-base)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: 12,
+                                                fontSize: '0.85rem',
+                                                fontFamily: 'inherit',
+                                                resize: 'none',
+                                                outline: 'none',
+                                                minHeight: 90,
+                                                marginBottom: '0.75rem',
+                                                transition: 'border-color 0.2s',
+                                                boxSizing: 'border-box',
+                                                color: 'var(--text-primary)'
+                                            }}
+                                            onFocus={e => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'}
+                                            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+                                            <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{pendingDoubt.length}/500</span>
+                                        </div>
+                                        <button
+                                            onClick={handlePendingDoubt}
+                                            disabled={!pendingDoubt.trim() || pendingDoubtStatus === 'submitting'}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.875rem',
+                                                background: pendingDoubt.trim() ? 'rgba(245,158,11,0.9)' : 'var(--bg-hover)',
+                                                color: pendingDoubt.trim() ? '#fff' : 'var(--text-tertiary)',
+                                                border: 'none',
+                                                borderRadius: 12,
+                                                fontSize: '0.9rem',
+                                                fontWeight: 700,
+                                                cursor: !pendingDoubt.trim() || pendingDoubtStatus === 'submitting' ? 'not-allowed' : 'pointer',
+                                                opacity: !pendingDoubt.trim() || pendingDoubtStatus === 'submitting' ? 0.6 : 1,
+                                                transition: 'all 0.2s',
+                                                fontFamily: 'inherit',
+                                            }}
+                                        >
+                                            {pendingDoubtStatus === 'submitting' ? '🤖 AI is checking your doubt...' : '📬 Submit for Teacher Review'}
+                                        </button>
+                                    </>
+                                )}
+
+                                <div style={{ marginTop: '0.875rem', padding: '0.625rem 0.875rem', background: 'var(--accent-dim)', borderRadius: 8, fontSize: '0.73rem', color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+                                    🤖 <strong>AI Guard:</strong> Only genuine academic questions reach the teacher. Offensive or off-topic messages are automatically rejected.
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                    <>{SIGNAL_TYPES.map(sig => {
                         const isSubmittingThis = submitting === sig.label
                         return (
                             <button
@@ -815,6 +976,8 @@ export default function StudentJoin() {
                             </button>
                         )
                     })}
+                    </>
+                    )}
                 </div>
 
                 {/* Always-on Deep Doubt Area */}

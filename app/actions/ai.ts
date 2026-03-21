@@ -280,3 +280,67 @@ Do not include any other text or formatting.`;
         return { success: false, isSpam: false, category: 'academic', error: e.message };
     }
 }
+
+/**
+ * validateDeepDoubt — Used for the "Pending Doubt" system.
+ * More detailed than checkDeepDoubtSpam. Returns a confidence score and reason.
+ * This runs BEFORE saving a doubt to the pending queue.
+ */
+export async function validateDeepDoubt(text: string): Promise<{
+    success: boolean;
+    isValid: boolean;
+    confidence: number; // 0-100, how genuine the academic doubt is
+    reason?: string; // Why it was rejected (if invalid)
+    error?: string;
+}> {
+    if (!process.env.GEMINI_API_KEY) {
+        // Fail open — let it through if AI is unavailable
+        return { success: true, isValid: true, confidence: 70 };
+    }
+
+    if (!text || text.trim().length < 5) {
+        return { success: true, isValid: false, confidence: 0, reason: 'Message too short to be a genuine doubt.' };
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            generationConfig: {
+                temperature: 0.1,
+                responseMimeType: 'application/json',
+            },
+        });
+
+        const prompt = `You are an academic content moderator for a university classroom tool. A student was rate-limited (clicked confused too many times on one topic) and was offered a text box to write a serious doubt. Evaluate if the message below is:
+- A VALID doubt: a genuine question or confusion about academic content, a subject, a formula, a concept, or the class material.
+- INVALID: offensive language, profanity, gibberish, spam, non-academic off-topic comment, social chat, or empty.
+
+Student Message: "${text}"
+
+Return ONLY valid JSON with these fields:
+{
+  "isValid": boolean,
+  "confidence": number (0-100, score of how genuinely academic this doubt is),
+  "reason": string (if isValid is false, the short reason for rejection, e.g., "Offensive language detected" or "Not related to academic content"; if isValid is true, leave as "")
+}
+Do not include any other text.`;
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+
+        try {
+            const parsed = JSON.parse(responseText);
+            return {
+                success: true,
+                isValid: parsed.isValid === true,
+                confidence: Math.min(100, Math.max(0, parseInt(parsed.confidence) || 0)),
+                reason: parsed.reason || undefined,
+            };
+        } catch {
+            return { success: true, isValid: true, confidence: 60 }; // Default safe
+        }
+    } catch (e: any) {
+        console.error('AI Doubt Validation Error:', e);
+        return { success: true, isValid: true, confidence: 60, error: e.message }; // Fail open
+    }
+}

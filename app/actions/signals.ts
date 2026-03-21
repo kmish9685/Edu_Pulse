@@ -324,3 +324,116 @@ export async function getMutedDevices(roomId: string) {
     if (error || !data?.metadata?.muted_devices) return []
     return data.metadata.muted_devices as string[]
 }
+
+// --- Pending Doubt System -------------------------------------
+
+/**
+ * submitPendingDoubt — Called when a student is rate-limited and submits a text doubt.
+ * Runs AI validation first. If invalid, returns an error with the reason.
+ * If valid, stores the doubt in the session metadata's pending_doubts array.
+ */
+export async function submitPendingDoubt(data: {
+    sessionId: string;
+    deviceId: string;
+    topic?: string;
+    doubtText: string;
+}) {
+    if (!data.doubtText || data.doubtText.trim().length < 5) {
+        return { success: false, error: 'Please describe your doubt in more detail.' }
+    }
+
+    const { validateDeepDoubt } = await import('./ai')
+    const validation = await validateDeepDoubt(data.doubtText)
+
+    if (!validation.isValid) {
+        const reason = validation.reason || 'This message does not appear to be a genuine academic doubt.'
+        return { success: false, rejected: true, error: `Not saved: ${reason}` }
+    }
+
+    const supabase = await createClient()
+    const { data: session, error: fetchError } = await supabase
+        .from('active_sessions')
+        .select('metadata')
+        .eq('id', data.sessionId)
+        .single()
+
+    if (fetchError) return { success: false, error: 'Session not found.' }
+
+    const currentMetadata = session?.metadata || {}
+    const pendingDoubts = Array.isArray(currentMetadata.pending_doubts)
+        ? currentMetadata.pending_doubts : []
+
+    const newDoubt = {
+        id: `doubt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        deviceId: data.deviceId,
+        topic: data.topic || 'General',
+        text: data.doubtText.substring(0, 500),
+        confidence: validation.confidence,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+    }
+    pendingDoubts.push(newDoubt)
+
+    const { error: updateError } = await supabase
+        .from('active_sessions')
+        .update({ metadata: { ...currentMetadata, pending_doubts: pendingDoubts } })
+        .eq('id', data.sessionId)
+
+    if (updateError) return { success: false, error: updateError.message }
+    return { success: true, confidence: validation.confidence }
+}
+
+/**
+ * getPendingDoubts — Fetches all pending doubts for a session.
+ * Returns sorted: pending first, then by confidence descending.
+ */
+export async function getPendingDoubts(sessionId: string) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+        .from('active_sessions')
+        .select('metadata')
+        .eq('id', sessionId)
+        .single()
+
+    if (error || !data?.metadata?.pending_doubts) return []
+    const doubts = data.metadata.pending_doubts as any[]
+    return doubts.sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1
+        if (a.status !== 'pending' && b.status === 'pending') return 1
+        return (b.confidence || 0) - (a.confidence || 0)
+    })
+}
+
+/**
+ * reviewPendingDoubt — Educator approves or dismisses a pending doubt.
+ */
+export async function reviewPendingDoubt(sessionId: string, doubtId: string, status: 'approved' | 'dismissed') {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Not authenticated' }
+
+    const { data: session, error: fetchError } = await supabase
+        .from('active_sessions')
+        .select('metadata')
+        .eq('id', sessionId)
+        .eq('educator_id', user.id)
+        .single()
+
+    if (fetchError || !session) return { success: false, error: 'Session not found.' }
+
+    const currentMetadata = session?.metadata || {}
+    const pendingDoubts = Array.isArray(currentMetadata.pending_doubts)
+        ? currentMetadata.pending_doubts : []
+
+    const updated = pendingDoubts.map((d: any) =>
+        d.id === doubtId ? { ...d, status, reviewedAt: new Date().toISOString() } : d
+    )
+
+    const { error: updateError } = await supabase
+        .from('active_sessions')
+        .update({ metadata: { ...currentMetadata, pending_doubts: updated } })
+        .eq('id', sessionId)
+
+    if (updateError) return { success: false, error: updateError.message }
+    return { success: true }
+}
