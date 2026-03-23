@@ -127,19 +127,27 @@ function DashboardContent() {
 
         async function initializeDashboard() {
             // 1. Resolve PIN to internal ID (if needed)
-            if (sessionId!.length === 4) {
+            let resolvedId = sessionId!
+            if (sessionId!.length <= 6) {
                 const { data: session } = await supabase
                     .from('active_sessions')
                     .select('id')
-                    .eq('join_code', sessionId!.toUpperCase())
+                    .or(`join_code.eq.${sessionId!.toUpperCase()},id.eq.${sessionId!.toUpperCase()}`)
+                    .eq('is_active', true)
                     .limit(1)
                     .single()
                 if (session) resolvedId = session.id
             }
 
+            console.log('[DASHBOARD] Initializing with Resolved ID:', resolvedId);
+
             // 2. Initial Data Fetching
-            const mutes = await getMutedDevices(resolvedId)
+            const [mutes, initialDoubts] = await Promise.all([
+                getMutedDevices(resolvedId),
+                getPendingDoubts(resolvedId)
+            ])
             setMutedDevices(mutes)
+            setPendingDoubts(initialDoubts)
 
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
@@ -151,47 +159,55 @@ function DashboardContent() {
                 setTotalPendingDoubts(count || 0)
             }
 
-            // Initial fetch of all signals
+            // 3. Setup Fetching / Polling
+            const fetchSignalsInternal = async () => {
+                const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
+                const { data } = await supabase
+                    .from('signals').select('*')
+                    .eq('block_room', resolvedId)
+                    .gte('created_at', oneHourAgo)
+                    .order('created_at', { ascending: false })
+                if (data) setAllSignals(data)
+            }
+
             fetchSignalsInternal()
+
+            const doubtPoller = setInterval(async () => {
+                const doubts = await getPendingDoubts(resolvedId)
+                setPendingDoubts(doubts)
+            }, 10000)
+
+            const pollInterval = setInterval(fetchSignalsInternal, 3000)
+
+            const channel = supabase
+                .channel(`room_${resolvedId}`)
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${resolvedId}` },
+                    (payload) => {
+                        console.log('[REALTIME] Signal received:', payload.new);
+                        setAllSignals(prev => {
+                            if (prev.some(s => s.id === payload.new.id)) return prev
+                            return [payload.new, ...prev]
+                        })
+                    }
+                )
+                .subscribe()
+
+            return { doubtPoller, pollInterval, channel }
         }
 
-        async function fetchSignalsInternal() {
-            const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
-            const { data } = await supabase
-                .from('signals').select('*')
-                .eq('block_room', resolvedId)
-                .gte('created_at', oneHourAgo)
-                .order('created_at', { ascending: false })
-            if (data) setAllSignals(data)
-        }
-
-        initializeDashboard()
-
-        const doubtPoller = setInterval(async () => {
-            const doubts = await getPendingDoubts(resolvedId)
-            setPendingDoubts(doubts)
-        }, 10000)
-
-        const pollInterval = setInterval(fetchSignalsInternal, 3000)
-
-        const channel = supabase
-            .channel(`room_${resolvedId}`)
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${resolvedId}` },
-                (payload) => {
-                    setAllSignals(prev => {
-                        if (prev.some(s => s.id === payload.new.id)) return prev
-                        return [payload.new, ...prev]
-                    })
-                }
-            )
-            .subscribe()
+        let cleanup: any = null
+        initializeDashboard().then(res => {
+            cleanup = res
+        })
 
         return () => {
-            clearInterval(pollInterval)
-            clearInterval(doubtPoller)
-            supabase.removeChannel(channel)
+            if (cleanup) {
+                clearInterval(cleanup.doubtPoller)
+                clearInterval(cleanup.pollInterval)
+                supabase.removeChannel(cleanup.channel)
+            }
         }
     }, [sessionId])
 
