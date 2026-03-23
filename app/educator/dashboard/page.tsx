@@ -15,7 +15,7 @@ function StateBanner({ pulseValue }: { pulseValue: number }) {
     const cfg = {
         calm: { cls: 'state-banner state-banner-calm', icon: null, text: `Session active · ${pulseValue < 15 ? 'Class following well' : ''}` },
         watch: { cls: 'state-banner state-banner-watch', icon: <Zap size={13} />, text: 'Signals picking up · Consider a quick check-in' },
-        alert: { cls: 'state-banner state-banner-alert', icon: <Bell size={13} />, text: 'High confusion load · Pause now and recap the last concept.' },
+        alert: { cls: 'state-banner state-banner-alert', icon: <Bell size={13} />, text: 'High clarification load · Pause now and recap the last concept.' },
     }[level]
 
     return (
@@ -120,74 +120,73 @@ function DashboardContent() {
     }, [])
 
     useEffect(() => {
-        if (!sessionId || sessionId.length !== 4) { router.push('/educator/start'); return }
+        if (!sessionId) { router.push('/educator/start'); return }
         
-        async function fetchInitial() {
-            // Fetch muted devices from DB
-            const mutes = await getMutedDevices(sessionId!)
+        // Use a ref-like variable to store the resolved internal ID
+        let resolvedId = sessionId
+
+        async function initializeDashboard() {
+            // 1. Resolve PIN to internal ID (if needed)
+            if (sessionId!.length === 4) {
+                const { data: session } = await supabase
+                    .from('active_sessions')
+                    .select('id')
+                    .eq('join_code', sessionId!.toUpperCase())
+                    .limit(1)
+                    .single()
+                if (session) resolvedId = session.id
+            }
+
+            // 2. Initial Data Fetching
+            const mutes = await getMutedDevices(resolvedId)
             setMutedDevices(mutes)
 
-            // Fetch total pending doubts (Deep Doubts across all educator classes)
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
-                // Get session IDs for this educator
-                const { data: educatorSessions } = await supabase.from('active_sessions').select('id').eq('educator_id', user.id)
-                if (educatorSessions && educatorSessions.length > 0) {
-                    const sessionIds = educatorSessions.map(os => os.id)
-                    const { count } = await supabase
-                        .from('signals')
-                        .select('*', { count: 'exact', head: true })
-                        .in('block_room', sessionIds)
-                        .eq('type', 'Deep Doubt')
-                    
-                    setTotalPendingDoubts(count || 0)
-                }
+                const { count } = await supabase
+                    .from('signals')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('block_room', resolvedId)
+                    .eq('type', 'Deep Doubt')
+                setTotalPendingDoubts(count || 0)
             }
+
+            // Initial fetch of all signals
+            fetchSignalsInternal()
         }
-        fetchInitial()
 
-        // Poll pending doubts every 10s
-        const doubtPoller = setInterval(async () => {
-            const doubts = await getPendingDoubts(sessionId!)
-            setPendingDoubts(doubts)
-        }, 10000)
-        // Initial fetch
-        getPendingDoubts(sessionId!).then(setPendingDoubts)
-
-        // Initial Fetch for signals
-        async function fetchSignals() {
+        async function fetchSignalsInternal() {
             const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
             const { data } = await supabase
                 .from('signals').select('*')
-                .eq('block_room', sessionId)
+                .eq('block_room', resolvedId)
                 .gte('created_at', oneHourAgo)
                 .order('created_at', { ascending: false })
             if (data) setAllSignals(data)
         }
-        fetchSignals()
-        
-        // ── Polling fallback (3s) — works even if Realtime is not enabled ──
-        // This guarantees signals always appear. Realtime is a performance bonus on top.
-        const pollInterval = setInterval(fetchSignals, 3000)
 
-        // ── Supabase Realtime subscription (instant delivery when available) ──
+        initializeDashboard()
+
+        const doubtPoller = setInterval(async () => {
+            const doubts = await getPendingDoubts(resolvedId)
+            setPendingDoubts(doubts)
+        }, 10000)
+
+        const pollInterval = setInterval(fetchSignalsInternal, 3000)
+
         const channel = supabase
-            .channel(`room_${sessionId}`)
+            .channel(`room_${resolvedId}`)
             .on(
                 'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${sessionId}` },
+                { event: 'INSERT', schema: 'public', table: 'signals', filter: `block_room=eq.${resolvedId}` },
                 (payload) => {
-                    // Instantly inject the new signal into state
                     setAllSignals(prev => {
-                        // Deduplicate — don't add if polling already picked it up
                         if (prev.some(s => s.id === payload.new.id)) return prev
                         return [payload.new, ...prev]
                     })
                 }
             )
-            .subscribe((status) => {
-                console.log('[EduPulse Realtime] Channel status:', status)
-            })
+            .subscribe()
 
         return () => {
             clearInterval(pollInterval)
@@ -504,7 +503,7 @@ function DashboardContent() {
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                                 <Activity size={15} color="var(--accent)" />
-                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.025em' }}>Confusion Timeline</span>
+                                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.025em' }}>Clarification Timeline</span>
                             </div>
                             <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Signals per minute · last 30 mins</div>
                         </div>
@@ -557,7 +556,7 @@ function DashboardContent() {
                     >
                         {isHighLoad && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--danger)', animation: 'pulse-wide 2s infinite' }} />}
                         <div className="section-label" style={{ marginBottom: '1rem' }}>
-                            Confusion Load
+                            Clarification Load
                         </div>
                         <div style={{
                             fontFamily: 'var(--font-display)',

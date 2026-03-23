@@ -31,7 +31,7 @@ const translations = {
         opt4: 'The slide changed too fast',
         opt5: 'I need an example to understand',
         opt6: 'Other / Not listed',
-        sigConfused: "I'm Confused",
+        sigConfused: 'Need Clarification',
         sigFast: 'Too Fast',
         sending: 'Sending...',
         waitCooldown: 'Wait {s}s before signaling again',
@@ -54,15 +54,15 @@ const translations = {
         howKeepingUp: 'आपको कैसा समझ आ रहा है?',
         howKeepingUpBr: '',
         feedbackDesc: 'नीचे बटन टैप करें। फ़ीडबैक 100% गुमनाम है — शिक्षक को नहीं पता चलेगा कि यह आप हैं।',
-        optional: 'वैकल्पिक: विशेष रूप से क्या भ्रमित करने वाला है?',
+        optional: 'वैकल्पिक: विशेष रूप से क्या स्पष्ट नहीं है?',
         selectReason: 'एक कारण चुनें...',
         opt1: 'मैं पिछला स्पष्टीकरण चूक गया',
         opt2: 'मुझे मुख्य अवधारणा समझ नहीं आ रही है',
-        opt3: 'गणित/सूत्र भ्रमित करने वाला है',
+        opt3: 'गणित/सूत्र स्पष्ट नहीं है',
         opt4: 'स्लाइड बहुत तेज़ी से बदल गई',
         opt5: 'समझने के लिए मुझे एक उदाहरण चाहिए',
         opt6: 'अन्य / सूची में नहीं',
-        sigConfused: 'मैं भ्रमित हूँ',
+        sigConfused: 'स्पष्टीकरण चाहिए',
         sigFast: 'बहुत तेज़',
         sending: 'भेजा जा रहा है...',
         waitCooldown: 'फिर से सिग्नल देने से पहले {s}s प्रतीक्षा करें',
@@ -85,15 +85,15 @@ const translations = {
         howKeepingUp: '¿Cómo vas',
         howKeepingUpBr: 'entendiendo?',
         feedbackDesc: 'Toca un botón. Tu feedback es 100% anónimo — tu profesor no sabrá que fuiste tú.',
-        optional: 'Opcional: ¿Qué es exactamente lo que te confunde?',
+        optional: 'Opcional: ¿Qué es exactamente lo que no está claro?',
         selectReason: 'Selecciona una razón...',
         opt1: 'Me perdí la última explicación',
         opt2: 'No entiendo el concepto principal',
-        opt3: 'La fórmula me confunde',
+        opt3: 'La fórmula no está clara',
         opt4: 'Lá diapositiva cambió muy rápido',
         opt5: 'Necesito un ejemplo para entender',
         opt6: 'Otro / No en la lista',
-        sigConfused: 'Estoy confundido',
+        sigConfused: 'Necesito claridad',
         sigFast: 'Muy rápido',
         sending: 'Enviando...',
         waitCooldown: 'Espera {s}s antes de enviar otra vez',
@@ -116,15 +116,15 @@ const translations = {
         howKeepingUp: 'Comment',
         howKeepingUpBr: 'suivez-vous ?',
         feedbackDesc: "Appuyez sur un bouton. Vos retours sont 100% anonymes — le professeur ne saura pas que c'est vous.",
-        optional: 'Optionnel : Qu\'est-ce qui est confus ?',
+        optional: 'Optionnel : Qu\'est-ce qui n\'est pas clair ?',
         selectReason: 'Sélectionnez une raison...',
         opt1: 'J\'ai raté la dernière explication',
         opt2: 'Je ne comprends pas le concept principal',
-        opt3: 'La formule est confuse',
+        opt3: 'Le concept n\'est pas clair',
         opt4: 'La diapositive a changé trop vite',
         opt5: 'J\'ai besoin d\'un exemple pour comprendre',
         opt6: 'Autre / Non listé',
-        sigConfused: 'Je suis perdu(e)',
+        sigConfused: 'Besoin de clarté',
         sigFast: 'Trop rapide',
         sending: 'Envoi...',
         waitCooldown: 'Attendez {s}s avant de renvoyer',
@@ -147,15 +147,15 @@ const translations = {
         howKeepingUp: '您跟得上吗？',
         howKeepingUpBr: '',
         feedbackDesc: '点击下方按钮。您的反馈是100%匿名的 — 老师不会知道是您。',
-        optional: '可选：具体哪里难懂？',
+        optional: '可选：具体哪里需要解释？',
         selectReason: '选择一个原因...',
         opt1: '我错过了最后的解释',
         opt2: '我不明白核心概念',
-        opt3: '公式部分让人困惑',
+        opt3: '概念不够清晰',
         opt4: 'PPT切换太快了',
         opt5: '我需要一个例子来理解',
         opt6: '其他 / 未列出',
-        sigConfused: '我没听懂',
+        sigConfused: '需要解释',
         sigFast: '太快了',
         sending: '发送中...',
         waitCooldown: '请等待 {s} 秒再次发送',
@@ -178,15 +178,15 @@ const translations = {
         howKeepingUp: 'كيف تتابع الشرح؟',
         howKeepingUpBr: '',
         feedbackDesc: 'اضغط زراً. ملاحظاتك مجهولة 100٪ - لن يعرف المعلم أنك أنت.',
-        optional: 'اختياري: ما الذي يربكك تحديدًا؟',
+        optional: 'اختياري: ما الذي يحتاج توضيحًا؟',
         selectReason: 'اختر سببًا...',
         opt1: 'فاتني الشرح الأخير',
         opt2: 'لا أفهم المفهوم الأساسي',
-        opt3: 'المعادلة مربكة',
+        opt3: 'المفهوم غير واضح',
         opt4: 'تغيرت الشريحة بسرعة كبيرة',
         opt5: 'أحتاج إلى مثال للفهم',
         opt6: 'غير ذلك / غير مدرج',
-        sigConfused: 'أنا مرتبك',
+        sigConfused: 'أحتاج توضيح',
         sigFast: 'سريع جداً',
         sending: 'جاري الإرسال...',
         waitCooldown: 'انتظر {s}ث قبل الإرسال',
@@ -251,7 +251,7 @@ export default function StudentJoin() {
     const t = translations[lang]
 
     const SIGNAL_TYPES = [
-        { id: 'confused', label: t.sigConfused, realType: "I'm Confused", emoji: '🤔', color: '#334155', border: '#E2E8F0', bg: '#F8FAFC' },
+        { id: 'confused', label: t.sigConfused, realType: "Need Clarification", emoji: '🤔', color: '#334155', border: '#E2E8F0', bg: '#F8FAFC' },
         { id: 'too_fast', label: t.sigFast, realType: 'Too Fast', emoji: '⚡', color: '#334155', border: '#E2E8F0', bg: '#F8FAFC' },
     ]
 
@@ -320,37 +320,47 @@ export default function StudentJoin() {
         const deviceId = getOrCreateDeviceId()
         const combinedText = [optionalText, quickComment].filter(Boolean).join(' | ')
         const activeTopic = optionalText || 'General'
-        const res = await submitSignal({ type: realType, block_room: roomId || sessionId, additional_text: combinedText, device_id: deviceId })
-        if (res.success) {
-            // Increment per-topic signal count
-            setTopicSignalCounts(prev => {
-                const updated = { ...prev, [activeTopic]: (prev[activeTopic] || 0) + 1 }
-                // Persist to localStorage
-                localStorage.setItem(`edupulse_topic_counts_${sessionId}`, JSON.stringify(updated))
-                // Trigger rate limit if this topic now has 3+ signals
-                if (updated[activeTopic] >= 3) {
-                    setRateLimited(true)
-                }
-                return updated
-            })
 
-            setSignaled(true)
-            setCooldown(true)
-            setCooldownSecs(60)
-            setOptionalText('')
-            setQuickComment('')
-            setOffNetwork(!!(res as any).offNetwork)
-            localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
-            const countdown = setInterval(() => {
-                setCooldownSecs(s => {
-                    if (s <= 1) { clearInterval(countdown); setCooldown(false); return 0 }
-                    return s - 1
+        try {
+            const res = await submitSignal({ 
+                type: realType, 
+                block_room: roomId || sessionId, 
+                additional_text: combinedText, 
+                device_id: deviceId 
+            })
+            
+            if (res.success) {
+                // Increment per-topic signal count
+                setTopicSignalCounts(prev => {
+                    const updated = { ...prev, [activeTopic]: (prev[activeTopic] || 0) + 1 }
+                    localStorage.setItem(`edupulse_topic_counts_${sessionId}`, JSON.stringify(updated))
+                    if (updated[activeTopic] >= 3) setRateLimited(true)
+                    return updated
                 })
-            }, 1000)
-        } else {
-            setError(res.error || 'Failed to send signal')
+
+                setSignaled(true)
+                setCooldown(true)
+                setCooldownSecs(60)
+                setOptionalText('')
+                setQuickComment('')
+                setOffNetwork(!!(res as any).offNetwork)
+                localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
+                
+                const countdown = setInterval(() => {
+                    setCooldownSecs(s => {
+                        if (s <= 1) { clearInterval(countdown); setCooldown(false); return 0 }
+                        return s - 1
+                    })
+                }, 1000)
+            } else {
+                setError(res.error || 'Failed to send signal')
+            }
+        } catch (err) {
+            console.error('[Submit Signal Error]', err)
+            setError('Connection error. Please try again.')
+        } finally {
+            setSubmitting(null)
         }
-        setSubmitting(null)
     }
 
     const handleDoubt = async () => {
@@ -358,26 +368,34 @@ export default function StudentJoin() {
         setSubmitting('Deep Doubt')
         setError(null)
         const deviceId = getOrCreateDeviceId()
-        const res = await submitSignal({ 
-            type: 'Deep Doubt', 
-            block_room: roomId || sessionId, 
-            additional_text: deepDoubt, 
-            device_id: deviceId 
-        })
-        if (res.success) {
-            setDeepDoubt('')
-            setDoubtCooldown(true)
-            setDoubtCooldownSecs(10)
-            const doubtTimer = setInterval(() => {
-                setDoubtCooldownSecs(s => {
-                    if (s <= 1) { clearInterval(doubtTimer); setDoubtCooldown(false); return 0 }
-                    return s - 1
-                })
-            }, 1000)
-        } else {
-            setError(res.error || 'Failed to send doubt')
+
+        try {
+            const res = await submitSignal({ 
+                type: 'Deep Doubt', 
+                block_room: roomId || sessionId, 
+                additional_text: deepDoubt, 
+                device_id: deviceId 
+            })
+            
+            if (res.success) {
+                setDeepDoubt('')
+                setDoubtCooldown(true)
+                setDoubtCooldownSecs(10)
+                const doubtTimer = setInterval(() => {
+                    setDoubtCooldownSecs(s => {
+                        if (s <= 1) { clearInterval(doubtTimer); setDoubtCooldown(false); return 0 }
+                        return s - 1
+                    })
+                }, 1000)
+            } else {
+                setError(res.error || 'Failed to send doubt')
+            }
+        } catch (err) {
+            console.error('[Submit Doubt Error]', err)
+            setError('Connection error. Please try again.')
+        } finally {
+            setSubmitting(null)
         }
-        setSubmitting(null)
     }
 
     // ── Handler for the Rate-Limited Pending Doubt (AI-validated) ──
