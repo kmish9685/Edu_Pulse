@@ -30,12 +30,50 @@ export async function submitSignal(data: { type: string, block_room: string, add
         }
     }
 
+    let isSpam = false
+
+    // 1. Rate-Limiting Check (Max 3 signals per 60s per device)
+    if (data.device_id) {
+        const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
+        const { count } = await supabase
+            .from('signals')
+            .select('*', { count: 'exact', head: true })
+            .eq('device_id', data.device_id)
+            .eq('block_room', roomId)
+            .gte('created_at', sixtySecondsAgo)
+        
+        if ((count || 0) >= 3) {
+            console.log('[DEBUG] Device rate-limited:', data.device_id);
+            isSpam = true
+        }
+    }
+
+    // 2. Fetch session details for manual shadowban (Muted Devices)
+    try {
+        const { data: sessionData } = await supabase
+            .from('active_sessions')
+            .select('metadata, current_topic')
+            .eq('id', roomId)
+            .single()
+
+        if (sessionData) {
+            const mutes = sessionData.metadata?.muted_devices || []
+            if (data.device_id && mutes.includes(data.device_id)) {
+                console.error('[DEBUG] Device is manually muted:', data.device_id);
+                isSpam = true
+            }
+        }
+    } catch (e) {
+        console.error('[DEBUG] Session data fetch error:', e)
+    }
+
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
         additional_text: data.additional_text,
         device_id: data.device_id,
-        active_topic: data.additional_text?.split(' | ')[0] || 'General'
+        active_topic: data.additional_text?.split(' | ')[0] || 'General',
+        is_spam: isSpam
     })
     
     if (error) {
