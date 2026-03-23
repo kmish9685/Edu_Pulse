@@ -790,9 +790,14 @@ function DashboardContent() {
                                     </div>
 
                                     {/* Doubt text */}
-                                    <p style={{ fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.6, margin: '0 0 0.875rem', fontStyle: doubt.status === 'dismissed' ? 'italic' : 'normal' }}>
-                                        &ldquo;{doubt.text}&rdquo;
-                                    </p>
+                                    <div style={{ fontSize: '0.88rem', color: 'var(--text-primary)', lineHeight: 1.6, margin: '0 0 0.875rem', fontStyle: doubt.status === 'dismissed' ? 'italic' : 'normal' }}>
+                                        <span style={{ display: 'block', marginBottom: '0.25rem' }}>&ldquo;{doubt.text}&rdquo;</span>
+                                        {doubt.originalText && doubt.originalText !== doubt.text && (
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic', display: 'block' }}>
+                                                Original: &ldquo;{doubt.originalText}&rdquo;
+                                            </span>
+                                        )}
+                                    </div>
 
                                     {/* Action buttons — only show when pending */}
                                     {doubt.status === 'pending' && (

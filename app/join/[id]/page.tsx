@@ -414,10 +414,10 @@ export default function StudentJoin() {
         if (res.success) {
             setPendingDoubt('')
             setPendingDoubtStatus('sent')
-            const conf = (res as any).confidence || 0
+            const conf = res.data?.confidence || 0
             setPendingDoubtMsg(`✅ Your doubt has been queued. Your teacher will review it after the session. (AI confidence: ${conf}%)`)
         } else {
-            const wasRejected = (res as any).rejected
+            const wasRejected = res.data?.rejected
             setPendingDoubtStatus('rejected')
             setPendingDoubtMsg(wasRejected
                 ? `❌ ${res.error}`

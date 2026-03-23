@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { validateDeepDoubt, enhanceDoubt } from './ai'
 
 export type ActionResponse<T = any> = {
     success: boolean
@@ -67,10 +68,18 @@ export async function submitSignal(data: { type: string, block_room: string, add
         console.error('[DEBUG] Session data fetch error:', e)
     }
 
+    let finalAdditionalText = data.additional_text
+    if (data.type === 'Deep Doubt' && data.additional_text && !isSpam) {
+        const enhanced = await enhanceDoubt(data.additional_text)
+        if (enhanced.success && enhanced.data) {
+            finalAdditionalText = `${enhanced.data} (Original: ${data.additional_text})`
+        }
+    }
+
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
-        additional_text: data.additional_text,
+        additional_text: finalAdditionalText,
         device_id: data.device_id,
         active_topic: data.additional_text?.split(' | ')[0] || 'General',
         is_spam: isSpam
@@ -185,14 +194,48 @@ export async function getPendingDoubts(sessionId: string): Promise<any[]> {
 
 export async function submitPendingDoubt(data: any): Promise<ActionResponse> {
     const supabase = await createClient()
+
+    // 1. Run AI Validation
+    const validation = await validateDeepDoubt(data.doubtText)
+    if (!validation.success || !validation.isValid) {
+        return { 
+            success: false, 
+            error: validation.reason || 'AI rejected this message as not being a genuine academic doubt.',
+            data: { rejected: true }
+        }
+    }
+
+    // 2. Save if Valid
     try {
         const { data: session } = await supabase.from('active_sessions').select('metadata').eq('id', data.sessionId).single()
         if (!session) return { success: false, error: 'Session not found' }
         const currentMetadata = session.metadata || {}
         const doubts = Array.isArray(currentMetadata.pending_doubts) ? currentMetadata.pending_doubts : []
-        doubts.push({ id: 'd' + Date.now(), text: data.doubtText, topic: data.topic, deviceId: data.deviceId, submittedAt: new Date().toISOString(), status: 'pending' })
+        
+        let enhancedText = data.doubtText
+        const enhancement = await enhanceDoubt(data.doubtText)
+        if (enhancement.success && enhancement.data) {
+            enhancedText = enhancement.data
+        }
+
+        doubts.push({ 
+            id: 'd' + Date.now(), 
+            text: enhancedText,
+            originalText: data.doubtText,
+            topic: data.topic, 
+            deviceId: data.deviceId, 
+            submittedAt: new Date().toISOString(), 
+            status: 'pending',
+            confidence: validation.confidence 
+        })
+        
         const { error } = await supabase.from('active_sessions').update({ metadata: { ...currentMetadata, pending_doubts: doubts } }).eq('id', data.sessionId)
-        return { success: !error, error: error?.message }
+        
+        return { 
+            success: !error, 
+            error: error?.message, 
+            data: { confidence: validation.confidence } 
+        }
     } catch (e: any) {
         return { success: false, error: e.message }
     }

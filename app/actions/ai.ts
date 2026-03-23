@@ -344,3 +344,45 @@ Do not include any other text.`;
         return { success: true, isValid: true, confidence: 60, error: e.message }; // Fail open
     }
 }
+
+/**
+ * enhanceDoubt — Transforms a rough student question into a clear, professional academic question.
+ * Used to help teachers understand student struggles better.
+ */
+export async function enhanceDoubt(text: string): Promise<{ success: boolean; data?: string; error?: string }> {
+    if (!process.env.GEMINI_API_KEY) {
+        return { success: false, error: 'AI API key not configured.' };
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            generationConfig: {
+                temperature: 0.3,
+            },
+        });
+
+        const prompt = `You are an academic TA helping explain student doubts clearly to a teacher.
+The student has provided a rough, potentially unclear doubt about a class concept.
+Your task is to rewrite it as a professional, specific, and academically phrased question that a teacher can easily address.
+
+Student Text: "${text}"
+
+Rules:
+1. Maintain the original intent of the student's question.
+2. Make it clear and grammatically correct.
+3. Use academic terminology if appropriate.
+4. Keep it concise (max 2 sentences).
+5. If the student text is already clear, just refine it slightly.
+
+Return ONLY the enhanced question text. Do not include quotes or any intro/outro.`;
+
+        const result = await model.generateContent(prompt);
+        const textResponse = result.response.text().trim();
+
+        return { success: true, data: textResponse };
+    } catch (e: any) {
+        console.error('AI Enhancement Error:', e);
+        return { success: false, error: e.message || 'Failed to enhance doubt.' };
+    }
+}
