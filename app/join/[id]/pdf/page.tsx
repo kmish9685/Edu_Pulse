@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, use } from 'react'
-import { getSessionRemediation } from '@/app/actions/signals'
+import { getSessionRemediation } from '@/app/actions/signals_fix'
 import { Sparkles, Loader2, BookOpen, Lightbulb, HelpCircle, FileText, Brain } from 'lucide-react'
 
 function parseRemediationSections(text: string) {

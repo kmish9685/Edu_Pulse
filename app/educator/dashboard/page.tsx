@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { endSession, updateJoinCode, muteDevice, getMutedDevices, getPendingDoubts, reviewPendingDoubt } from '@/app/actions/signals'
+import { endSession, updateJoinCode, muteDevice, getMutedDevices, getPendingDoubts, reviewPendingDoubt } from '@/app/actions/signals_fix'
 import { QRCodeSVG } from 'qrcode.react'
 
 // ─── State Banner ──────────────────────────────────────────────

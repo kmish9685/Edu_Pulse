@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Sparkles, Loader2, ArrowLeft, LogOut, Send } from 'lucide-react'
 import { generateSummary, generateRemediation } from '@/app/actions/ai'
-import { saveRemediation } from '@/app/actions/signals'
+import { saveRemediation } from '@/app/actions/signals_fix'
 import Link from 'next/link'
 
 export default function EducatorSummary({ params }: { params: Promise<{ id: string }> }) {

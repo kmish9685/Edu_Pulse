@@ -5,7 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { ArrowRight, Plus, X, Link as LinkIcon, Zap, GripVertical, Loader2, Sparkles, BarChart2, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { startSession } from '@/app/actions/signals'
+import { startSession } from '@/app/actions/signals_fix'
 import { generateAgenda, generateAgendaFromFile } from '@/app/actions/ai'
 
 export default function EducatorStart() {
@@ -111,7 +111,7 @@ export default function EducatorStart() {
         if (!sessionId) return
         setStarting(true)
         setStartError(null)
-        const res = await startSession(sessionId, agenda.length > 0 ? agenda[0] : undefined, agenda)
+        const res = await startSession(sessionId, agenda.length > 0 ? agenda[0] : 'General', agenda)
         if (!res.success) {
             setStartError(res.error || 'Failed to register session. Check your connection.')
             setStarting(false)

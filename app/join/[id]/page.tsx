@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { submitSignal, validateSession, submitPendingDoubt } from '@/app/actions/signals'
+import { submitSignal, validateSession, submitPendingDoubt } from '@/app/actions/signals_fix'
 import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 

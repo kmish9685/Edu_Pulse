@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
-import { getSessionRemediation, submitSignal } from '@/app/actions/signals'
+import { getSessionRemediation, submitSignal } from '@/app/actions/signals_fix'
 import { Sparkles, Loader2, BookOpen, AlertCircle, MessageSquare, Send, CheckCircle, Brain, Lightbulb, HelpCircle, ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 
