@@ -799,6 +799,19 @@ export default function StudentJoin() {
                         </div>
                     </div>
 
+                    {/* Student Benefits Banner (Trojan Horse) */}
+                    <div className="glass-card" style={{ background: 'linear-gradient(to right, rgba(99,102,241,0.08), rgba(168,85,247,0.08))', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 'var(--radius-lg)', padding: '1rem', marginBottom: '2rem', textAlign: 'left', display: 'flex', gap: '0.875rem', alignItems: 'flex-start', boxShadow: '0 4px 12px rgba(139,92,246,0.08)' }}>
+                        <div style={{ background: 'rgba(139,92,246,0.15)', padding: '0.5rem', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ fontSize: '1.25rem' }}>🎁</span>
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 800, color: 'var(--accent)', fontSize: '0.85rem', marginBottom: '0.2rem', letterSpacing: '-0.01em' }}>Attendance Logged & Reward Pending</div>
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                                By keeping this screen open, your attendance is actively tied to this session. After class, you will exclusively unlock the <strong style={{ color: 'var(--accent-soft)' }}>AI-generated Study Guide</strong>!
+                            </p>
+                        </div>
+                    </div>
+
                     <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 7vw, 2.5rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.875rem', color: 'var(--text-primary)', lineHeight: 1.1 }}>
                         {t.howKeepingUp}{t.howKeepingUpBr && <><br/>{t.howKeepingUpBr}</>}
                     </h1>
