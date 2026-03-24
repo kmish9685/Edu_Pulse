@@ -858,7 +858,7 @@ export default function StudentJoin() {
                                 </div>
                             )}
                         </div>
-                    ) : (
+                    :
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                     {/* Optional Context Field (Dropdown) - Hidden when rate-limited to reduce clutter */}
@@ -1064,9 +1064,11 @@ export default function StudentJoin() {
                                 {renderDoubtInterface()}
                             </div>
                         </>
-                    </div>
+                    )
                 }
             </div>
+        }
+    </div>
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
