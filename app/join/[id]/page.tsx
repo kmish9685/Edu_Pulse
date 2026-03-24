@@ -746,8 +746,10 @@ export default function StudentJoin() {
                     </div>
                 )}
 
-                {/* Signals */}
-                <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Signals or Success Message */}
+                {/* Signals or Success Message */}
+                <div style={{ width: '100%', maxWidth: 420 }}>
+                    {signaled && cooldown ? signalSentContent : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                     {/* Optional Context Field (Dropdown) */}
                     {/* Topic / Reason Picker — Premium Custom Dropdown */}
@@ -1066,10 +1068,12 @@ export default function StudentJoin() {
                                 {isSubmittingThis ? t.sending : sig.label}
                             </button>
                         )
-                    })}
+                        })}
                     </>
-                    )}
-                </div>
+                )}
+            </div>
+        }
+    </div>
 
                 {/* Always-on Deep Doubt Area */}
                 <div style={{ width: '100%', maxWidth: 420, marginTop: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
