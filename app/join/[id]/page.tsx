@@ -492,6 +492,69 @@ export default function StudentJoin() {
         setSubmitting(null)
     }
 
+    // ── Unified Doubt Interface (Normal or Spam) ──
+    const renderDoubtInterface = () => (
+        <div style={{ width: '100%', background: 'var(--bg-surface)', border: `1px solid ${rateLimited ? 'rgba(99,102,241,0.3)' : 'var(--border)'}`, borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
+                <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Sparkles size={16} color="var(--accent-soft)" />
+                </div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: rateLimited ? 'var(--accent-soft)' : 'var(--text-primary)' }}>
+                    {rateLimited ? "🎯 Priority Academic Doubt" : "Ask a Specific Doubt"}
+                </h3>
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                {rateLimited 
+                    ? "Since pulse buttons are paused for spamming, please describe your doubt below. These are prioritized for the teacher." 
+                    : "Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown."}
+            </p>
+            
+            <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>{rateLimited ? "Describe your doubt:" : "My question:"}</label>
+                    {!rateLimited && (
+                         <button 
+                            onClick={handleEnhanceDeep}
+                            disabled={!deepDoubt.trim() || enhancingDeepDoubt}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8 }}
+                        >
+                            {enhancingDeepDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                            {enhancingDeepDoubt ? 'Polish with AI' : '✨ Polish with AI'}
+                        </button>
+                    )}
+                </div>
+                
+                {(deepDoubtMsg || pendingDoubtMsg) && (
+                    <div style={{ padding: '0.625rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 10, fontSize: '0.82rem', color: 'var(--success)', fontWeight: 600, marginBottom: '1rem' }}>
+                        {deepDoubtMsg || pendingDoubtMsg}
+                    </div>
+                )}
+
+                <textarea 
+                    value={rateLimited ? pendingDoubt : deepDoubt}
+                    onChange={(e) => rateLimited ? setPendingDoubt(e.target.value) : setDeepDoubt(e.target.value)}
+                    placeholder={rateLimited ? "e.g., 'I don't understand how X relates to Y...'" : "e.g., 'What does the X axis represent?'"}
+                    style={{
+                        width: '100%', padding: '0.875rem', background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 12,
+                        fontSize: '0.85rem', fontFamily: 'inherit', resize: 'none', outline: 'none', minHeight: 80, marginBottom: '0.75rem', boxSizing: 'border-box'
+                    }}
+                />
+                <button 
+                    onClick={rateLimited ? handlePendingDoubt : handleDoubt}
+                    disabled={rateLimited ? (pendingDoubtStatus === 'submitting' || !pendingDoubt.trim()) : (!deepDoubt.trim() || submitting === 'Deep Doubt' || doubtCooldown)}
+                    style={{
+                        width: '100%', padding: '0.75rem', background: rateLimited ? 'var(--accent-soft)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                        opacity: (rateLimited ? (pendingDoubtStatus === 'submitting' || !pendingDoubt.trim()) : (!deepDoubt.trim() || submitting === 'Deep Doubt' || doubtCooldown)) ? 0.5 : 1
+                    }}
+                >
+                    {rateLimited 
+                        ? (pendingDoubtStatus === 'submitting' ? 'Submitting...' : 'Submit Priority Doubt')
+                        : (submitting === 'Deep Doubt' ? 'Submitting...' : doubtCooldown ? `Wait ${doubtCooldownSecs}s...` : 'Submit Question')}
+                </button>
+            </div>
+        </div>
+    )
+
     const [enhancingQuickComment, setEnhancingQuickComment] = useState(false)
 
     const handleEnhanceQuick = async () => {
@@ -784,9 +847,19 @@ export default function StudentJoin() {
                 )}
 
                 {/* Signals or Success Message */}
-                {/* Signals or Success Message */}
                 <div style={{ width: '100%', maxWidth: 420 }}>
-                    {signaled && cooldown ? signalSentContent : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    {signaled && cooldown ?
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            {signalSentContent}
+                            {rateLimited && (
+                                <div style={{ animation: 'enter-fade 0.5s ease-out' }}>
+                                    <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-soft)', marginBottom: '1rem', textAlign: 'center' }}>🎯 Priority Academic Doubt Box</h3>
+                                    {renderDoubtInterface()}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                     {/* Optional Context Field (Dropdown) - Hidden when rate-limited to reduce clutter */}
                     {!rateLimited && (
@@ -953,159 +1026,47 @@ export default function StudentJoin() {
                         </>
                     )}
 
-                    {/* Rate-Limited UI — shown when student has sent 4+ signals on same topic */}
+                    {/* Rate-Limited UI or Normal Buttons */}
                     {rateLimited ? (
                         <div style={{ animation: 'enter-fade 0.4s ease-out' }}>
-                            {/* Paused state indicator — Explicit and Helpful */}
-                            <div style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: '0.875rem', 
-                                padding: '1.25rem', 
-                                background: 'rgba(99,102,241,0.06)', 
-                                border: '1px solid rgba(99,102,241,0.2)', 
-                                borderRadius: 'var(--radius-xl)', 
-                                marginBottom: '1.25rem' 
-                            }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '1.25rem', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 'var(--radius-xl)', marginBottom: '1.25rem' }}>
                                 <div style={{ fontSize: '1.75rem' }}>🎯</div>
                                 <div style={{ textAlign: 'left' }}>
                                     <div style={{ fontWeight: 800, color: 'var(--accent)', fontSize: '0.95rem', marginBottom: '0.2rem' }}>You're clearly engaged!</div>
                                     <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                                        To help the teacher focus on your needs, pulse buttons are paused for "General". 
-                                        <strong> Please use the "Specific Doubt" box below</strong> — these are prioritized for the teacher.
+                                        Pulse buttons are paused for "General" due to spamming. <strong>Please type your specific doubt below</strong> — these go directly to your teacher.
                                     </div>
                                 </div>
                             </div>
+                            {renderDoubtInterface()}
                         </div>
                     ) : (
-                    <>{SIGNAL_TYPES.map(sig => {
-                        const isSubmittingThis = submitting === sig.label
-                        return (
-                            <button
-                                key={sig.id}
-                                disabled={submitting !== null || cooldown}
-                                onClick={() => handleSignal(sig.label, sig.realType)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '1rem',
-                                    padding: '1.25rem',
-                                    background: cooldown
-                                        ? 'var(--bg-base)'
-                                        : isSubmittingThis
-                                            ? 'var(--bg-hover)'
-                                            : sig.bg,
-                                    border: `1px solid ${cooldown ? 'var(--border)' : 'var(--border)'}`,
-                                    borderRadius: 'var(--radius-xl)',
-                                    color: cooldown ? 'var(--text-tertiary)' : sig.color,
-                                    fontSize: '1.125rem',
-                                    fontWeight: 600,
-                                    cursor: cooldown ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                    boxShadow: !cooldown && !isSubmittingThis ? 'var(--shadow-md)' : 'none',
-                                    transform: isSubmittingThis ? 'translateY(1px)' : 'scale(1)',
-                                    opacity: cooldown ? 0.6 : 1,
-                                }}
-                                onMouseEnter={e => { if (!cooldown && !isSubmittingThis) { e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.transform = 'translateY(-1px)'; } }}
-                                onMouseLeave={e => { if (!cooldown && !isSubmittingThis) { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(0)'; } }}
-                            >
-                                <span style={{ fontSize: '1.5rem', filter: cooldown ? 'grayscale(100%)' : 'none', opacity: cooldown ? 0.5 : 1 }}>
-                                    {isSubmittingThis ? <Loader2 size={24} style={{ animation: 'spin 1.5s linear infinite' }} /> : sig.emoji}
-                                </span>
-                                {isSubmittingThis ? t.sending : sig.label}
-                            </button>
-                        )
-                        })}
-                    </>
-                )}
-            </div>
-        }
-    </div>
-
-                {/* Always-on Deep Doubt Area - Hidden when rate-limited to reduce clutter */}
-                {!rateLimited && (
-                    <div style={{ width: '100%', maxWidth: 420, marginTop: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
-                        <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Sparkles size={16} color="var(--accent-soft)" />
-                        </div>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
-                            {rateLimited ? "🎯 Priority Academic Doubt" : "Ask a Specific Doubt"}
-                        </h3>
-                    </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-                        {rateLimited 
-                            ? "Since pulses are paused, please describe your doubt specifically. The teacher will see this in their priority queue." 
-                            : "Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown."}
-                    </p>
-                    <div style={{ position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>My question:</label>
-                            <button 
-                                onClick={handleEnhanceDeep}
-                                disabled={!deepDoubt.trim() || enhancingDeepDoubt}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !deepDoubt.trim() ? 'not-allowed' : 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !deepDoubt.trim() ? 0.6 : 1 }}
-                                onMouseEnter={e => { if(deepDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
-                                onMouseLeave={e => { if(deepDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
-                            >
-                                {enhancingDeepDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                                {enhancingDeepDoubt ? 'Clarifying...' : '✨ Let AI phrase it'}
-                            </button>
-                        </div>
-                        
-                        {/* Success/Error Message for Deep Doubt */}
-                        {deepDoubtMsg && (
-                            <div style={{ padding: '0.625rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 10, fontSize: '0.82rem', color: 'var(--success)', fontWeight: 600, marginBottom: '1rem', animation: 'enter-fade 0.3s ease-out' }}>
-                                {deepDoubtMsg}
+                        <>
+                            {SIGNAL_TYPES.map(sig => (
+                                <button
+                                    key={sig.id}
+                                    disabled={submitting !== null || cooldown}
+                                    onClick={() => handleSignal(sig.label, sig.realType)}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '1.25rem',
+                                        background: cooldown ? 'var(--bg-base)' : sig.bg,
+                                        border: `1px solid var(--border)`, borderRadius: 'var(--radius-xl)',
+                                        color: cooldown ? 'var(--text-tertiary)' : sig.color,
+                                        fontSize: '1.125rem', fontWeight: 600, cursor: cooldown ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                                        opacity: cooldown ? 0.6 : 1
+                                    }}
+                                >
+                                    <span style={{ fontSize: '1.5rem', filter: cooldown ? 'grayscale(100%)' : 'none' }}>{submitting === sig.label ? <Loader2 size={24} className="animate-spin" /> : sig.emoji}</span>
+                                    {submitting === sig.label ? t.sending : sig.label}
+                                </button>
+                            ))}
+                            <div style={{ marginTop: '1.5rem' }}>
+                                {renderDoubtInterface()}
                             </div>
-                        )}
-
-                        <textarea 
-                            value={deepDoubt}
-                            onChange={(e) => setDeepDoubt(e.target.value)}
-                            placeholder="e.g., 'What does the X axis represent in this chart?'"
-                            style={{
-                                width: '100%',
-                                padding: '0.875rem',
-                                background: 'var(--bg-base)',
-                                border: '1px solid var(--border)',
-                                borderRadius: 12,
-                                fontSize: '0.85rem',
-                                fontFamily: 'inherit',
-                                resize: 'none',
-                                outline: 'none',
-                                minHeight: 80,
-                                marginBottom: '0.75rem',
-                                transition: 'border-color 0.2s',
-                                boxSizing: 'border-box'
-                            }}
-                            onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                        />
-                        <button 
-                            onClick={handleDoubt}
-                            disabled={!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem',
-                                background: 'var(--accent)',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: 10,
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                                cursor: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 'default' : 'pointer',
-                                opacity: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 0.5 : 1,
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {submitting === 'Deep Doubt' ? 'Submitting...' : 
-                             doubtCooldown ? `Wait ${doubtCooldownSecs}s...` : 'Submit Question'}
-                        </button>
+                        </>
                     </div>
-                </div>
-            )}
+                }
+            </div>
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
