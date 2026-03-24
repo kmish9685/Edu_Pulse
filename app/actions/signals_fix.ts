@@ -69,7 +69,14 @@ export async function submitSignal(data: { type: string, block_room: string, add
     }
 
     let finalAdditionalText = data.additional_text
-    if (data.type === 'Deep Doubt' && data.additional_text && !isSpam) {
+    if (data.additional_text && !isSpam) {
+        // 1. Validate - don't send if it's spam/inappropriate
+        const valRes = await validateDeepDoubt(data.additional_text)
+        if (valRes.success && !valRes.isValid) {
+            return { success: false, error: valRes.reason || 'AI rejected this message as not being genuine.' } 
+        }
+
+        // 2. Enhance - phrase perfectly
         const enhanced = await enhanceDoubt(data.additional_text)
         if (enhanced.success && enhanced.data) {
             finalAdditionalText = `${enhanced.data} (Original: ${data.additional_text})`

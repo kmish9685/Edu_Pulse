@@ -937,11 +937,11 @@ export default function StudentJoin() {
                                             <button 
                                                 onClick={handleEnhancePending}
                                                 disabled={!pendingDoubt.trim() || enhancingPendingDoubt}
-                                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'transparent', border: 'none', color: 'var(--accent-soft)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: 6, transition: 'all 0.2s' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,70,229,0.08)'}
-                                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !pendingDoubt.trim() ? 'not-allowed' : 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !pendingDoubt.trim() ? 0.6 : 1 }}
+                                                onMouseEnter={e => { if(pendingDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
+                                                onMouseLeave={e => { if(pendingDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
                                             >
-                                                {enhancingPendingDoubt ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                                {enhancingPendingDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                                                 {enhancingPendingDoubt ? 'Polishing...' : '✨ Help me phrase this'}
                                             </button>
                                         </div>
@@ -1061,12 +1061,12 @@ export default function StudentJoin() {
                             <button 
                                 onClick={handleEnhanceDeep}
                                 disabled={!deepDoubt.trim() || enhancingDeepDoubt}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'transparent', border: 'none', color: 'var(--accent-soft)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: 6, transition: 'all 0.2s' }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,70,229,0.08)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !deepDoubt.trim() ? 'not-allowed' : 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !deepDoubt.trim() ? 0.6 : 1 }}
+                                onMouseEnter={e => { if(deepDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
+                                onMouseLeave={e => { if(deepDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
                             >
-                                {enhancingDeepDoubt ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                                {enhancingDeepDoubt ? 'Clarifying...' : '✨ Let AI help phrased it'}
+                                {enhancingDeepDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                {enhancingDeepDoubt ? 'Clarifying...' : '✨ Let AI phrase it'}
                             </button>
                         </div>
                         <textarea 
