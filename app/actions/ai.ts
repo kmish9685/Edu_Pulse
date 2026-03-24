@@ -375,10 +375,20 @@ Rules:
 4. Keep it concise (max 2 sentences).
 5. If the student text is already clear, just refine it slightly.
 
-Return ONLY the enhanced question text. Do not include quotes or any intro/outro.`;
+CRITICAL SAFETY RULE:
+If the student text is gibberish (e.g. "bkb", "asdf"), a simple greeting ("hi", "hello"), or clearly not related to academic study, return EXACTLY this string: "REJECT: This content is not a genuine academic doubt."
+
+Return ONLY the enhanced question text or the REJECT string. No quotes.`;
 
         const result = await model.generateContent(prompt);
-        const textResponse = result.response.text().trim();
+        let textResponse = result.response.text().trim();
+        
+        // Remove markdown or quotes if present
+        textResponse = textResponse.replace(/^["']|["']$/g, '');
+
+        if (textResponse.includes('REJECT:')) {
+            return { success: false, error: textResponse.replace('REJECT:', '').trim() };
+        }
 
         return { success: true, data: textResponse };
     } catch (e: any) {

@@ -562,6 +562,8 @@ export default function StudentJoin() {
             const res = await enhanceDoubt(quickComment)
             if (res.success && res.data) {
                 setQuickComment(res.data)
+            } else if (!res.success && res.error) {
+                setError(res.error)
             }
         } catch (err) {
             console.error('Enhance error:', err)
@@ -577,6 +579,8 @@ export default function StudentJoin() {
             const res = await enhanceDoubt(pendingDoubt)
             if (res.success && res.data) {
                 setPendingDoubt(res.data)
+            } else if (!res.success && res.error) {
+                setPendingDoubtMsg(`❌ ${res.error}`)
             }
         } catch (err) {
             console.error('Enhance error:', err)
@@ -592,6 +596,8 @@ export default function StudentJoin() {
             const res = await enhanceDoubt(deepDoubt)
             if (res.success && res.data) {
                 setDeepDoubt(res.data)
+            } else if (!res.success && res.error) {
+                setDeepDoubtMsg(`❌ ${res.error}`)
             }
         } catch (err) {
             console.error('Enhance error:', err)
