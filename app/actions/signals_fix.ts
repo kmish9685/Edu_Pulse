@@ -260,3 +260,21 @@ export async function reviewPendingDoubt(sessionId: string, doubtId: string, sta
         return { success: false, error: e.message }
     }
 }
+
+export async function sendVibeCheck(roomId: string): Promise<ActionResponse> {
+    const supabase = await createClient()
+    try {
+        const { data: session } = await supabase.from('active_sessions').select('metadata').eq('id', roomId).single()
+        if (!session) return { success: false, error: 'Session not found' }
+        const currentMetadata = session.metadata || {}
+        
+        const timestamp = Date.now()
+        await supabase.from('active_sessions').update({ 
+            metadata: { ...currentMetadata, vibe_check_timestamp: timestamp } 
+        }).eq('id', roomId)
+        
+        return { success: true, data: { timestamp } }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}

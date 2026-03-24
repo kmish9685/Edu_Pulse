@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { endSession, updateJoinCode, muteDevice, getMutedDevices, getPendingDoubts, reviewPendingDoubt } from '@/app/actions/signals_fix'
+import { endSession, updateJoinCode, muteDevice, getMutedDevices, getPendingDoubts, reviewPendingDoubt, sendVibeCheck } from '@/app/actions/signals_fix'
 import { QRCodeSVG } from 'qrcode.react'
 
 // ─── State Banner ──────────────────────────────────────────────
@@ -458,6 +458,30 @@ function DashboardContent() {
                 )}
 
                 <div style={{ flex: 1 }} />
+
+                {/* Vibe Check Button */}
+                <button
+                    onClick={async (e) => {
+                        const btn = e.currentTarget;
+                        if (!sessionId || btn.disabled) return;
+                        btn.innerHTML = 'Sending...'; 
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        await sendVibeCheck(sessionId);
+                        setTimeout(() => { 
+                            btn.innerHTML = '✨ Send Vibe Check'; 
+                            btn.disabled = false; 
+                            btn.style.opacity = '1';
+                        }, 3000);
+                    }}
+                    title="Ask all students if they understand"
+                    style={{ padding: '0.4rem 0.8rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 'var(--radius)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(139,92,246,0.1)' }}
+                    onMouseEnter={e => !e.currentTarget.disabled && (e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))')}
+                    onMouseLeave={e => !e.currentTarget.disabled && (e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))')}
+                >
+                    ✨ Send Vibe Check
+                </button>
+
                 {/* Mute toggle */}
                 <button
                     onClick={() => setMuted(m => !m)}
@@ -686,7 +710,7 @@ function DashboardContent() {
                                         animationDelay: `${idx * 40}ms`,
                                     }}
                                 >
-                                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: signal.type === 'Too Fast' ? 'var(--warning)' : 'var(--danger)', flexShrink: 0, boxShadow: `0 0 6px ${signal.type === 'Too Fast' ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }} />
+                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: signal.type === 'Vibe: Got It' ? 'var(--success)' : (signal.type === 'Vibe: Review' || signal.type === 'Too Fast') ? 'var(--warning)' : 'var(--danger)', flexShrink: 0, boxShadow: `0 0 6px ${signal.type === 'Vibe: Got It' ? 'rgba(34,197,94,0.5)' : (signal.type === 'Vibe: Review' || signal.type === 'Too Fast') ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }} />
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{signal.type}</span>
                                         {signal.additional_text && (

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { validateSession, submitSignal, submitPendingDoubt } from '@/app/actions/signals_fix'
 import { enhanceDoubt } from '@/app/actions/ai'
+import { createClient } from '@/utils/supabase/client'
 import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
@@ -240,6 +241,28 @@ export default function StudentJoin() {
     const [enhancingPendingDoubt, setEnhancingPendingDoubt] = useState(false)
     const [enhancingDeepDoubt, setEnhancingDeepDoubt] = useState(false)
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
+    const [vibeCheckActive, setVibeCheckActive] = useState(false)
+
+    useEffect(() => {
+        if (!roomId) return;
+        const supabase = createClient()
+        
+        const channel = supabase.channel(`vibe_check_${roomId}`)
+            .on(
+                'postgres_changes',
+                { event: 'UPDATE', schema: 'public', table: 'active_sessions', filter: `id=eq.${roomId}` },
+                (payload: any) => {
+                    const newTs = payload.new?.metadata?.vibe_check_timestamp;
+                    const oldTs = payload.old?.metadata?.vibe_check_timestamp;
+                    if (newTs && newTs !== oldTs && (Date.now() - newTs < 60000)) {
+                        setVibeCheckActive(true);
+                    }
+                }
+            )
+            .subscribe()
+
+        return () => { supabase.removeChannel(channel) }
+    }, [roomId])
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -432,6 +455,23 @@ export default function StudentJoin() {
         setSubmitting(null)
     }
 
+    const [enhancingQuickComment, setEnhancingQuickComment] = useState(false)
+
+    const handleEnhanceQuick = async () => {
+        if (!quickComment.trim() || enhancingQuickComment) return
+        setEnhancingQuickComment(true)
+        try {
+            const res = await enhanceDoubt(quickComment)
+            if (res.success && res.data) {
+                setQuickComment(res.data)
+            }
+        } catch (err) {
+            console.error('Enhance error:', err)
+        } finally {
+            setEnhancingQuickComment(false)
+        }
+    }
+
     const handleEnhancePending = async () => {
         if (!pendingDoubt.trim() || enhancingPendingDoubt) return
         setEnhancingPendingDoubt(true)
@@ -546,6 +586,41 @@ export default function StudentJoin() {
                         style={{ padding: '0.875rem', background: 'transparent', border: '1px solid var(--glass-border)', borderRadius: 14, color: 'var(--text-tertiary)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                         {t.tryDiff}
                     </button>
+                </div>
+            </div>
+        )
+    }
+
+    // ── Vibe Check Modal ──────────────────────────────────────────
+    if (vibeCheckActive) {
+        return (
+            <div style={{ ...pageShell, justifyContent: 'center' }}>
+                <div style={{ background: 'var(--bg-surface)', padding: '2.5rem 2rem', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxWidth: 400, width: '100%', zIndex: 100, animation: 'enter-scale 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+                    <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>👀</div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>Quick Vibe Check!</h2>
+                    <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '2.5rem', lineHeight: 1.5 }}>
+                        Your teacher wants to know if you're following the current topic.
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                        {[
+                            { label: 'Got it perfectly', type: 'Vibe: Got It', color: '#22C55E', emoji: '🟢', bg: 'rgba(34,197,94,0.1)', hover: 'rgba(34,197,94,0.15)' },
+                            { label: 'Need a quick review', type: 'Vibe: Review', color: '#EAB308', emoji: '🟡', bg: 'rgba(234,179,8,0.1)', hover: 'rgba(234,179,8,0.15)' },
+                            { label: 'Completely lost', type: 'Vibe: Lost', color: '#EF4444', emoji: '🔴', bg: 'rgba(239,68,68,0.1)', hover: 'rgba(239,68,68,0.15)' }
+                        ].map(opt => (
+                            <button
+                                key={opt.type}
+                                onClick={async () => {
+                                    setVibeCheckActive(false);
+                                    await submitSignal({ type: opt.type, block_room: roomId || sessionId, device_id: getOrCreateDeviceId() });
+                                }}
+                                style={{ width: '100%', padding: '1.25rem', background: opt.bg, border: `1px solid ${opt.color}40`, borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, color: opt.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', transition: 'all 0.2s' }}
+                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 16px ${opt.color}25`; e.currentTarget.style.background = opt.hover; }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = opt.bg; }}
+                            >
+                                <span style={{ fontSize: '1.3rem' }}>{opt.emoji}</span> {opt.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         )
@@ -872,12 +947,25 @@ export default function StudentJoin() {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Tell us more (Optional):</label>
+                            <button 
+                                onClick={handleEnhanceQuick}
+                                disabled={!quickComment.trim() || enhancingQuickComment}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !quickComment.trim() ? 'not-allowed' : 'pointer', padding: '0.35rem 0.6rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !quickComment.trim() ? 0.6 : 1 }}
+                                onMouseEnter={e => { if(quickComment.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
+                                onMouseLeave={e => { if(quickComment.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
+                            >
+                                {enhancingQuickComment ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                {enhancingQuickComment ? 'Polishing...' : '✨ Polish this'}
+                            </button>
+                        </div>
                         <textarea
                             value={quickComment}
                             onChange={(e) => setQuickComment(e.target.value)}
                             disabled={submitting !== null}
-                            placeholder="Type a short comment (optional)..."
+                            placeholder="Type a short comment..."
                             rows={2}
                             maxLength={80}
                             style={{
