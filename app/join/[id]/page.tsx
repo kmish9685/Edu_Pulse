@@ -364,7 +364,8 @@ export default function StudentJoin() {
                     return updated
                 })
 
-                const isSpamming = (topicSignalCounts[activeTopic] || 0) >= 2
+                // Penalty triggers on the 4th signal within the same topic (current count 3)
+                const isSpamming = (topicSignalCounts[activeTopic] || 0) >= 3
                 const duration = isSpamming ? 180 : 60
                 if (isSpamming) setRateLimited(true)
                 setSignaled(true)
@@ -920,104 +921,27 @@ export default function StudentJoin() {
                         </>
                     )}
 
-                    {/* Rate-Limited UI — shown when student has sent 3+ signals on same topic */}
+                    {/* Rate-Limited UI — shown when student has sent 4+ signals on same topic */}
                     {rateLimited ? (
                         <div style={{ animation: 'enter-fade 0.4s ease-out' }}>
-                            {/* Paused state indicator */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem', padding: '1.125rem', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--radius-xl)', marginBottom: '1.25rem' }}>
-                                <span style={{ fontSize: '1.375rem' }}>⏸️</span>
+                            {/* Paused state indicator — Explicit and Helpful */}
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '0.875rem', 
+                                padding: '1.25rem', 
+                                background: 'rgba(99,102,241,0.06)', 
+                                border: '1px solid rgba(99,102,241,0.2)', 
+                                borderRadius: 'var(--radius-xl)', 
+                                marginBottom: '1.25rem' 
+                            }}>
+                                <div style={{ fontSize: '1.75rem' }}>🎯</div>
                                 <div style={{ textAlign: 'left' }}>
-                                    <div style={{ fontWeight: 700, color: '#D97706', fontSize: '0.9rem', marginBottom: '0.1rem' }}>Pulse buttons paused for this topic</div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>You've sent 3+ signals on this topic. If it's still confusing, type your doubt below — we'll show it to the teacher after class.</div>
-                                </div>
-                            </div>
-
-                            {/* Pending Doubt Box */}
-                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.875rem' }}>
-                                    <div style={{ width: 32, height: 32, background: 'rgba(245,158,11,0.12)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <span style={{ fontSize: '1rem' }}>📬</span>
+                                    <div style={{ fontWeight: 800, color: 'var(--accent)', fontSize: '0.95rem', marginBottom: '0.2rem' }}>You're clearly engaged!</div>
+                                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                                        To help the teacher focus on your needs, pulse buttons are paused for "General". 
+                                        <strong> Please use the "Specific Doubt" box below</strong> — these are prioritized for the teacher.
                                     </div>
-                                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Still confused? Tell us specifically.</h3>
-                                </div>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1rem' }}>
-                                    Describe exactly what's confusing you. Your teacher will review this after the session ends. Genuine academic doubts will be shown to them.
-                                </p>
-
-                                {/* Feedback message */}
-                                {pendingDoubtMsg && (
-                                    <div style={{ padding: '0.75rem 1rem', background: pendingDoubtStatus === 'sent' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${pendingDoubtStatus === 'sent' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: 10, fontSize: '0.82rem', lineHeight: 1.5, marginBottom: '1rem', color: 'var(--text-primary)' }}>
-                                        {pendingDoubtMsg}
-                                    </div>
-                                )}
-
-                                {pendingDoubtStatus !== 'sent' && (
-                                    <>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Your message:</label>
-                                            <button 
-                                                onClick={handleEnhancePending}
-                                                disabled={!pendingDoubt.trim() || enhancingPendingDoubt}
-                                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !pendingDoubt.trim() ? 'not-allowed' : 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !pendingDoubt.trim() ? 0.6 : 1 }}
-                                                onMouseEnter={e => { if(pendingDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
-                                                onMouseLeave={e => { if(pendingDoubt.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
-                                            >
-                                                {enhancingPendingDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                                                {enhancingPendingDoubt ? 'Polishing...' : '✨ Help me phrase this'}
-                                            </button>
-                                        </div>
-                                        <textarea
-                                            value={pendingDoubt}
-                                            onChange={(e) => setPendingDoubt(e.target.value)}
-                                            placeholder="e.g., 'I don't understand how integration changes polynomial degree — can you give an example?'"
-                                            maxLength={500}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.875rem',
-                                                background: 'var(--bg-base)',
-                                                border: '1px solid var(--border)',
-                                                borderRadius: 12,
-                                                fontSize: '0.85rem',
-                                                fontFamily: 'inherit',
-                                                resize: 'none',
-                                                outline: 'none',
-                                                minHeight: 90,
-                                                marginBottom: '0.75rem',
-                                                transition: 'border-color 0.2s',
-                                                boxSizing: 'border-box',
-                                                color: 'var(--text-primary)'
-                                            }}
-                                            onFocus={e => e.currentTarget.style.borderColor = 'rgba(245,158,11,0.5)'}
-                                            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                                        />
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
-                                            <span style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{pendingDoubt.length}/500</span>
-                                        </div>
-                                        <button
-                                            onClick={handlePendingDoubt}
-                                            disabled={!pendingDoubt.trim() || pendingDoubtStatus === 'submitting'}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.875rem',
-                                                background: pendingDoubt.trim() ? 'rgba(245,158,11,0.9)' : 'var(--bg-hover)',
-                                                color: pendingDoubt.trim() ? '#fff' : 'var(--text-tertiary)',
-                                                border: 'none',
-                                                borderRadius: 12,
-                                                fontSize: '0.9rem',
-                                                fontWeight: 700,
-                                                cursor: !pendingDoubt.trim() || pendingDoubtStatus === 'submitting' ? 'not-allowed' : 'pointer',
-                                                opacity: !pendingDoubt.trim() || pendingDoubtStatus === 'submitting' ? 0.6 : 1,
-                                                transition: 'all 0.2s',
-                                                fontFamily: 'inherit',
-                                            }}
-                                        >
-                                            {pendingDoubtStatus === 'submitting' ? '🤖 AI is checking your doubt...' : '📬 Submit for Teacher Review'}
-                                        </button>
-                                    </>
-                                )}
-
-                                <div style={{ marginTop: '0.875rem', padding: '0.625rem 0.875rem', background: 'var(--accent-dim)', borderRadius: 8, fontSize: '0.73rem', color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
-                                    🤖 <strong>AI Guard:</strong> Only genuine academic questions reach the teacher. Offensive or off-topic messages are automatically rejected.
                                 </div>
                             </div>
                         </div>
@@ -1074,10 +998,14 @@ export default function StudentJoin() {
                         <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Sparkles size={16} color="var(--accent-soft)" />
                         </div>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Ask a Specific Doubt</h3>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
+                            {rateLimited ? "🎯 Priority Academic Doubt" : "Ask a Specific Doubt"}
+                        </h3>
                     </div>
                     <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-                        Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown.
+                        {rateLimited 
+                            ? "Since pulses are paused, please describe your doubt specifically. The teacher will see this in their priority queue." 
+                            : "Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown."}
                     </p>
                     <div style={{ position: 'relative' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
