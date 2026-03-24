@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { validateSession, submitSignal, submitPendingDoubt } from '@/app/actions/signals_fix'
 import { enhanceDoubt } from '@/app/actions/ai'
@@ -243,6 +243,7 @@ export default function StudentJoin() {
     const [enhancingDeepDoubt, setEnhancingDeepDoubt] = useState(false)
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
     const [vibeCheckActive, setVibeCheckActive] = useState(false)
+    const lastVibeTs = useRef(0)
 
     useEffect(() => {
         if (!roomId) return;
@@ -254,8 +255,8 @@ export default function StudentJoin() {
                 { event: 'UPDATE', schema: 'public', table: 'active_sessions', filter: `id=eq.${roomId}` },
                 (payload: any) => {
                     const newTs = payload.new?.metadata?.vibe_check_timestamp;
-                    const oldTs = payload.old?.metadata?.vibe_check_timestamp;
-                    if (newTs && newTs !== oldTs && (Date.now() - newTs < 60000)) {
+                    if (newTs && newTs > lastVibeTs.current && (Date.now() - newTs < 30000)) {
+                        lastVibeTs.current = newTs;
                         setVibeCheckActive(true);
                     }
                 }
@@ -311,12 +312,11 @@ export default function StudentJoin() {
             }
         }, 15000)
 
-        // Check cooldown from localStorage
-        const lastSignal = localStorage.getItem(`edupulse_cooldown_${sessionId}`)
-        if (lastSignal) {
-            const diff = Date.now() - parseInt(lastSignal)
-            if (diff < 60000) {
-                const remaining = Math.ceil((60000 - diff) / 1000)
+        // Check cooldown from localStorage (using absolute end time)
+        const cooldownEnd = localStorage.getItem(`edupulse_cooldown_end_${sessionId}`)
+        if (cooldownEnd) {
+            const remaining = Math.ceil((parseInt(cooldownEnd) - Date.now()) / 1000)
+            if (remaining > 0) {
                 setCooldown(true)
                 setCooldownSecs(remaining)
                 const countdown = setInterval(() => {
@@ -361,17 +361,21 @@ export default function StudentJoin() {
                 setTopicSignalCounts(prev => {
                     const updated = { ...prev, [activeTopic]: (prev[activeTopic] || 0) + 1 }
                     localStorage.setItem(`edupulse_topic_counts_${sessionId}`, JSON.stringify(updated))
-                    if (updated[activeTopic] >= 3) setRateLimited(true)
                     return updated
                 })
 
+                const isSpamming = (topicSignalCounts[activeTopic] || 0) >= 2
+                const duration = isSpamming ? 180 : 60
+                if (isSpamming) setRateLimited(true)
                 setSignaled(true)
                 setCooldown(true)
-                setCooldownSecs(60)
+                setCooldownSecs(duration)
                 setOptionalText('')
                 setQuickComment('')
                 setOffNetwork(!!(res as any).offNetwork)
-                localStorage.setItem(`edupulse_cooldown_${sessionId}`, Date.now().toString())
+                
+                const endTime = Date.now() + (duration * 1000)
+                localStorage.setItem(`edupulse_cooldown_end_${sessionId}`, endTime.toString())
                 
                 const countdown = setInterval(() => {
                     setCooldownSecs(s => {
@@ -751,43 +755,42 @@ export default function StudentJoin() {
                 <div style={{ width: '100%', maxWidth: 420 }}>
                     {signaled && cooldown ? signalSentContent : <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-                    {/* Optional Context Field (Dropdown) */}
-                    {/* Topic / Reason Picker — Premium Custom Dropdown */}
-                    <div style={{ marginBottom: '0.5rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.625rem', textAlign: 'center' }}>
-                            {t.optional}
-                        </label>
+                    {/* Optional Context Field (Dropdown) - Hidden when rate-limited to reduce clutter */}
+                    {!rateLimited && (
+                        <>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.625rem', textAlign: 'center' }}>
+                                    {t.optional}
+                                </label>
 
-                        {/* Custom dropdown trigger */}
-                        <div style={{ position: 'relative' }}>
-                            <button
-                                onClick={() => !submitting && setDropdownOpen(o => !o)}
-                                disabled={submitting !== null}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.875rem 1.125rem',
-                                    background: optionalText ? 'rgba(99,102,241,0.08)' : 'var(--accent-dim)',
-                                    border: `1px solid ${optionalText ? 'rgba(99,102,241,0.35)' : 'var(--border)'}`,
-                                    borderRadius: dropdownOpen ? '14px 14px 0 0' : 14,
-                                    color: optionalText ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                                    fontSize: '0.9rem',
-                                    fontFamily: 'inherit',
-                                    fontWeight: optionalText ? 600 : 400,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {optionalText || t.selectReason}
-                                </span>
-                                <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', opacity: 0.5, transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
-                            </button>
+                                <div style={{ position: 'relative' }}>
+                                    <button
+                                        onClick={() => !submitting && setDropdownOpen(o => !o)}
+                                        disabled={submitting !== null}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.875rem 1.125rem',
+                                            background: optionalText ? 'rgba(99,102,241,0.08)' : 'var(--accent-dim)',
+                                            border: `1px solid ${optionalText ? 'rgba(99,102,241,0.35)' : 'var(--border)'}`,
+                                            borderRadius: dropdownOpen ? '14px 14px 0 0' : 14,
+                                            color: optionalText ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                                            fontSize: '0.9rem',
+                                            fontFamily: 'inherit',
+                                            fontWeight: optionalText ? 600 : 400,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            textAlign: 'left',
+                                        }}
+                                    >
+                                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {optionalText || t.selectReason}
+                                        </span>
+                                        <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', opacity: 0.5, transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+                                    </button>
 
-                                    {/* Dropdown panel */}
                                     {dropdownOpen && (
                                         <div style={{
                                             position: 'absolute',
@@ -802,131 +805,120 @@ export default function StudentJoin() {
                                             maxHeight: '40vh',
                                             boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
                                         }}>
-                                    {/* Session topics */}
-                                    {sessionAgenda.length > 0 && (
-                                        <>
-                                            <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--accent-soft)', textTransform: 'uppercase' }}>
-                                                📚 Session Topics
-                                            </div>
-                                            {sessionAgenda.map((topic, i) => (
+                                            {sessionAgenda.length > 0 && (
+                                                <>
+                                                    <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--accent-soft)', textTransform: 'uppercase' }}>
+                                                        📚 Session Topics
+                                                    </div>
+                                                    {sessionAgenda.map((topic, i) => (
+                                                        <button
+                                                            key={i}
+                                                            onClick={() => { setOptionalText(`Confused about: ${topic}`); setDropdownOpen(false) }}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '0.75rem 1.125rem',
+                                                                background: optionalText === `Confused about: ${topic}` ? 'rgba(99,102,241,0.12)' : 'transparent',
+                                                                border: 'none',
+                                                                borderLeft: optionalText === `Confused about: ${topic}` ? '3px solid var(--accent)' : '3px solid transparent',
+                                                                color: optionalText === `Confused about: ${topic}` ? 'var(--accent-soft)' : 'var(--text-primary)',
+                                                                fontSize: '0.88rem',
+                                                                fontWeight: 600,
+                                                                fontFamily: 'inherit',
+                                                                textAlign: 'left',
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.15s',
+                                                                display: 'block',
+                                                            }}
+                                                        >
+                                                            🎯 {topic}
+                                                        </button>
+                                                    ))}
+                                                    <div style={{ height: 1, background: 'var(--border)', margin: '0.25rem 0' }} />
+                                                </>
+                                            )}
+
+                                            {[
+                                                { value: 'I missed the last explanation', label: t.opt1, icon: '👂' },
+                                                { value: "I don't understand the core concept", label: t.opt2, icon: '🧠' },
+                                                { value: 'The math/formula is confusing', label: t.opt3, icon: '📐' },
+                                                { value: 'The slide changed too fast', label: t.opt4, icon: '⚡' },
+                                                { value: 'I need an example to understand', label: t.opt5, icon: '💡' },
+                                                { value: 'Other / Not listed', label: t.opt6, icon: '💬' },
+                                            ].map((opt) => (
                                                 <button
-                                                    key={i}
-                                                    onClick={() => { setOptionalText(`Confused about: ${topic}`); setDropdownOpen(false) }}
+                                                    key={opt.value}
+                                                    onClick={() => { setOptionalText(opt.value); setDropdownOpen(false) }}
                                                     style={{
                                                         width: '100%',
-                                                        padding: '0.75rem 1.125rem',
-                                                        background: optionalText === `Confused about: ${topic}` ? 'rgba(99,102,241,0.12)' : 'transparent',
+                                                        padding: '0.7rem 1.125rem',
+                                                        background: optionalText === opt.value ? 'rgba(99,102,241,0.08)' : 'transparent',
                                                         border: 'none',
-                                                        borderLeft: optionalText === `Confused about: ${topic}` ? '3px solid var(--accent)' : '3px solid transparent',
-                                                        color: optionalText === `Confused about: ${topic}` ? 'var(--accent-soft)' : 'var(--text-primary)',
-                                                        fontSize: '0.88rem',
-                                                        fontWeight: 600,
+                                                        borderLeft: optionalText === opt.value ? '3px solid var(--accent)' : '3px solid transparent',
+                                                        color: optionalText === opt.value ? 'var(--accent-soft)' : 'var(--text-secondary)',
+                                                        fontSize: '0.85rem',
                                                         fontFamily: 'inherit',
+                                                        fontWeight: 500,
                                                         textAlign: 'left',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.15s',
                                                         display: 'block',
                                                     }}
-                                                    onMouseEnter={e => { if (optionalText !== `Confused about: ${topic}`) e.currentTarget.style.background = 'rgba(99,102,241,0.06)' }}
-                                                    onMouseLeave={e => { if (optionalText !== `Confused about: ${topic}`) e.currentTarget.style.background = 'transparent' }}
                                                 >
-                                                    🎯 {topic}
+                                                    {opt.icon} {opt.label}
                                                 </button>
                                             ))}
-                                            <div style={{ height: 1, background: 'var(--border)', margin: '0.25rem 0' }} />
-                                            <div style={{ padding: '0.25rem 1rem 0.25rem', fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em', color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
-                                                General reasons
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {/* Generic reasons */}
-                                    {[
-                                        { value: 'I missed the last explanation', label: t.opt1, icon: '👂' },
-                                        { value: "I don't understand the core concept", label: t.opt2, icon: '🧠' },
-                                        { value: 'The math/formula is confusing', label: t.opt3, icon: '📐' },
-                                        { value: 'The slide changed too fast', label: t.opt4, icon: '⚡' },
-                                        { value: 'I need an example to understand', label: t.opt5, icon: '💡' },
-                                        { value: 'Other / Not listed', label: t.opt6, icon: '💬' },
-                                    ].map((opt) => (
-                                        <button
-                                            key={opt.value}
-                                            onClick={() => { setOptionalText(opt.value); setDropdownOpen(false) }}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.7rem 1.125rem',
-                                                background: optionalText === opt.value ? 'rgba(99,102,241,0.08)' : 'transparent',
-                                                border: 'none',
-                                                borderLeft: optionalText === opt.value ? '3px solid var(--accent)' : '3px solid transparent',
-                                                color: optionalText === opt.value ? 'var(--accent-soft)' : 'var(--text-secondary)',
-                                                fontSize: '0.85rem',
-                                                fontFamily: 'inherit',
-                                                fontWeight: 500,
-                                                textAlign: 'left',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.15s',
-                                                display: 'block',
-                                            }}
-                                            onMouseEnter={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'rgba(0,0,0,0.04)' }}
-                                            onMouseLeave={e => { if (optionalText !== opt.value) e.currentTarget.style.background = 'transparent' }}
-                                        >
-                                            {opt.icon} {opt.label}
-                                        </button>
-                                    ))}
-
-                                    {/* Clear option */}
-                                    {optionalText && (
-                                        <button
-                                            onClick={() => { setOptionalText(''); setDropdownOpen(false) }}
-                                            style={{ width: '100%', padding: '0.6rem 1.125rem', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-tertiary)', fontSize: '0.8rem', fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer' }}
-                                        >
-                                            ✕ Clear selection
-                                        </button>
+                                            {optionalText && (
+                                                <button
+                                                    onClick={() => { setOptionalText(''); setDropdownOpen(false) }}
+                                                    style={{ width: '100%', padding: '0.6rem 1.125rem', background: 'transparent', border: 'none', borderTop: '1px solid var(--border)', color: 'var(--text-tertiary)', fontSize: '0.8rem', fontFamily: 'inherit', textAlign: 'center', cursor: 'pointer' }}
+                                                >
+                                                    ✕ Clear selection
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
 
-                    <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Tell us more (Optional):</label>
-                            <button 
-                                onClick={handleEnhanceQuick}
-                                disabled={!quickComment.trim() || enhancingQuickComment}
-                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !quickComment.trim() ? 'not-allowed' : 'pointer', padding: '0.35rem 0.6rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !quickComment.trim() ? 0.6 : 1 }}
-                                onMouseEnter={e => { if(quickComment.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))' }}
-                                onMouseLeave={e => { if(quickComment.trim()) e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))' }}
-                            >
-                                {enhancingQuickComment ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                                {enhancingQuickComment ? 'Polishing...' : '✨ Polish this'}
-                            </button>
-                        </div>
-                        <textarea
-                            value={quickComment}
-                            onChange={(e) => setQuickComment(e.target.value)}
-                            disabled={submitting !== null}
-                            placeholder="Type a short comment..."
-                            rows={2}
-                            maxLength={80}
-                            style={{
-                                width: '100%',
-                                padding: '1rem',
-                                background: 'var(--bg-surface)',
-                                border: '1px solid var(--border)',
-                                borderRadius: 'var(--radius-lg)',
-                                color: 'var(--text-primary)',
-                                fontSize: '0.9rem',
-                                fontFamily: 'inherit',
-                                outline: 'none',
-                                resize: 'none',
-                                transition: 'all 0.2s',
-                                boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)'
-                            }}
-                            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-soft)'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(79,70,229,0.1)' }}
-                            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px 0 rgba(0,0,0,0.02)' }}
-                        />
-                    </div>
+                            <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Tell us more (Optional):</label>
+                                    <button 
+                                        onClick={handleEnhanceQuick}
+                                        disabled={!quickComment.trim() || enhancingQuickComment}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: !quickComment.trim() ? 'not-allowed' : 'pointer', padding: '0.35rem 0.6rem', borderRadius: 8, transition: 'all 0.2s', boxShadow: '0 2px 6px rgba(139,92,246,0.15)', opacity: !quickComment.trim() ? 0.6 : 1 }}
+                                    >
+                                        {enhancingQuickComment ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                                        {enhancingQuickComment ? 'Polishing...' : '✨ Polish this'}
+                                    </button>
+                                </div>
+                                <textarea
+                                    value={quickComment}
+                                    onChange={(e) => setQuickComment(e.target.value)}
+                                    disabled={submitting !== null}
+                                    placeholder="Type a short comment..."
+                                    rows={2}
+                                    maxLength={80}
+                                    style={{
+                                        width: '100%',
+                                        padding: '1rem',
+                                        background: 'var(--bg-surface)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        color: 'var(--text-primary)',
+                                        fontSize: '0.9rem',
+                                        fontFamily: 'inherit',
+                                        outline: 'none',
+                                        resize: 'none',
+                                        transition: 'all 0.2s',
+                                        boxShadow: 'inset 0 2px 4px 0 rgba(0,0,0,0.02)'
+                                    }}
+                                    onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-soft)'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(79,70,229,0.1)' }}
+                                    onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'inset 0 2px 4px 0 rgba(0,0,0,0.02)' }}
+                                />
+                            </div>
+                        </>
+                    )}
 
                     {/* Rate-Limited UI — shown when student has sent 3+ signals on same topic */}
                     {rateLimited ? (
@@ -1075,8 +1067,9 @@ export default function StudentJoin() {
         }
     </div>
 
-                {/* Always-on Deep Doubt Area */}
-                <div style={{ width: '100%', maxWidth: 420, marginTop: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
+                {/* Always-on Deep Doubt Area - Hidden when rate-limited to reduce clutter */}
+                {!rateLimited && (
+                    <div style={{ width: '100%', maxWidth: 420, marginTop: '2rem', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-sm)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
                         <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Sparkles size={16} color="var(--accent-soft)" />
@@ -1152,6 +1145,7 @@ export default function StudentJoin() {
                         </button>
                     </div>
                 </div>
+            )}
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
