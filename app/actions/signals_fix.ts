@@ -89,12 +89,13 @@ export async function submitSignal(data: { type: string, block_room: string, add
     // Database Constraint Safety: Trim to 500 chars 
     const safeText = finalAdditionalText?.substring(0, 500)
 
-    // Primary Insert - Only using columns verified to exist
+    // Primary Insert - Only using columns verified to exist in your current schema
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
         additional_text: safeText,
-        device_id: data.device_id
+        device_id: data.device_id,
+        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General'
     })
     
     if (error) {
