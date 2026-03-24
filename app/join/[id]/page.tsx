@@ -630,120 +630,35 @@ export default function StudentJoin() {
         )
     }
 
-    // ── Signal Sent ────────────────────────────────────────────────
-    if (signaled && cooldown) {
-        return (
-            <div style={pageShell}>
-                <div style={{ textAlign: 'center', width: '100%', maxWidth: 380 }}>
-                    <div style={{ width: 80, height: 80, background: offNetwork ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${offNetwork ? 'rgba(245,158,11,0.25)' : 'rgba(34,197,94,0.25)'}`, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: offNetwork ? '0 0 48px rgba(245,158,11,0.18)' : '0 0 48px rgba(34,197,94,0.18)' }}>
-                        <CheckCircle size={38} color={offNetwork ? '#F59E0B' : '#22C55E'} />
-                    </div>
-                    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
-                        {t.received}
-                    </h2>
+    // ── Pre-calculate Signal Sent View (Used inside main return) ──
+    const signalSentContent = (
+        <div style={{ textAlign: 'center', width: '100%', maxWidth: 380, animation: 'enter-fade 0.5s ease-out', marginBottom: '2rem' }}>
+            <div style={{ width: 80, height: 80, background: offNetwork ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)', border: `1px solid ${offNetwork ? 'rgba(245,158,11,0.25)' : 'rgba(34,197,94,0.25)'}`, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: offNetwork ? '0 0 48px rgba(245,158,11,0.18)' : '0 0 48px rgba(34,197,94,0.18)' }}>
+                <CheckCircle size={38} color={offNetwork ? '#F59E0B' : '#22C55E'} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: 700, letterSpacing: '-0.04em', marginBottom: '0.625rem', color: 'var(--text-primary)' }}>
+                {t.received}
+            </h2>
 
-                    {/* Off-network WiFi warning */}
-                    {offNetwork ? (
-                        <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.25rem', textAlign: 'left' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <span style={{ fontSize: '1.1rem' }}>📶</span>
-                                <span style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>Campus WiFi Recommended</span>
-                            </div>
-                            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                                Your signal was successfully received! 
-                                If possible, connecting to the <strong style={{ color: 'var(--text-primary)' }}>same campus WiFi</strong> as your teacher helps us ensure the best experience.
-                            </p>
-                        </div>
-                    ) : (
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.75rem', padding: '0 0.5rem' }}>
-                            {t.notified}
-                        </p>
-                    )}
-
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600, marginBottom: '2rem' }}>
-                        <Clock size={14} />
-                        {t.signalAgain.replace('{s}', cooldownSecs.toString())}
-                    </div>
-
-                    {/* Deep Doubt Form */}
-                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', textAlign: 'left', animation: 'enter-fade 0.5s ease-out' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1rem' }}>
-                            <div style={{ width: 32, height: 32, background: 'rgba(99,102,241,0.1)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Sparkles size={16} color="var(--accent-soft)" />
-                            </div>
-                            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>Still Confused?</h3>
-                        </div>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-                            Your teacher values your clarity. If the last explanation didn&apos;t clear your doubt, tell them exactly what&apos;s blocking you.
-                        </p>
-                        
-                        <div style={{ position: 'relative' }}>
-                            <textarea 
-                                value={deepDoubt}
-                                onChange={(e) => setDeepDoubt(e.target.value)}
-                                placeholder="Describe your doubt here (e.g., 'How did we get that formula?')..."
-                                style={{
-                                    width: '100%',
-                                    padding: '0.875rem',
-                                    background: 'var(--bg-base)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: 12,
-                                    fontSize: '0.85rem',
-                                    fontFamily: 'inherit',
-                                    resize: 'none',
-                                    outline: 'none',
-                                    minHeight: 80,
-                                    marginBottom: '0.75rem',
-                                    transition: 'border-color 0.2s',
-                                    boxSizing: 'border-box'
-                                }}
-                                onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                                onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-                            />
-                            <button 
-                                onClick={handleDoubt}
-                                disabled={!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem',
-                                    background: 'var(--accent)',
-                                    color: '#fff',
-                                    border: 'none',
-                                    borderRadius: 10,
-                                    fontSize: '0.85rem',
-                                    fontWeight: 700,
-                                    cursor: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 'default' : 'pointer',
-                                    opacity: (!deepDoubt.trim() || (submitting !== null && submitting !== 'Deep Doubt') || doubtCooldown) ? 0.5 : 1,
-                                    transition: 'all 0.2s'
-                                }}
-                            >
-                                {submitting === 'Deep Doubt' ? 'Submitting...' : 
-                                 doubtCooldown ? `Wait ${doubtCooldownSecs}s...` : 'Submit Specific Doubt'}
-                            </button>
-                        </div>
-                        <Link 
-                            href={`/join/${sessionId}/remedy`}
-                            style={{ 
-                                display: 'block', 
-                                textAlign: 'center', 
-                                marginTop: '1rem', 
-                                fontSize: '0.75rem', 
-                                color: 'var(--accent-soft)', 
-                                fontWeight: 600, 
-                                textDecoration: 'none' 
-                            }}
-                        >
-                            View Post-Session Remedy Hub →
-                        </Link>
-                    </div>
-
-                    <div style={{ marginTop: '1.25rem', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                        {t.anonFooter}
+            {offNetwork ? (
+                <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.25rem', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <span style={{ fontSize: '1.1rem' }}>📶</span>
+                        <span style={{ fontWeight: 700, color: '#F59E0B', fontSize: '0.9rem' }}>Campus WiFi Recommended</span>
                     </div>
                 </div>
+            ) : (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1.75rem', padding: '0 0.5rem' }}>
+                    {t.notified}
+                </p>
+            )}
+
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 100, fontSize: '0.85rem', color: 'var(--success)', fontWeight: 600 }}>
+                <Clock size={14} />
+                {t.signalAgain.replace('{s}', cooldownSecs.toString())}
             </div>
-        )
-    }
+        </div>
+    )
 
     // ── Active session — Signal buttons ────────────────────────────
     return (
