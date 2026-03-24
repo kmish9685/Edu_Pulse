@@ -86,8 +86,8 @@ export async function submitSignal(data: { type: string, block_room: string, add
         }
     }
 
-    // Database Constraint Safety: Trim to 500 chars 
-    const safeText = finalAdditionalText?.substring(0, 500)
+    // Database Constraint Safety: Trim to 120 chars (Confirmed schema limit)
+    const safeText = finalAdditionalText?.substring(0, 120)
 
     // Primary Insert - Only using columns verified to exist in your current schema
     const { error } = await supabase.from('signals').insert({
