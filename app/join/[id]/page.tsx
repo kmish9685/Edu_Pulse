@@ -202,16 +202,27 @@ export default function StudentJoin() {
     const router = useRouter()
     const sessionId = params.id as string
 
-    // Generate or retrieve a persistent anonymous device ID
-    // This never contains any personal info — just a random string
-    const getOrCreateDeviceId = (): string => {
-        const key = 'edupulse_device_id'
-        let id = localStorage.getItem(key)
+    // Generate or retrieve a persistent anonymous identity
+    const getOrCreateIdentity = (): { id: string, name: string } => {
+        const idKey = 'edupulse_device_id'
+        const nameKey = 'edupulse_student_identity'
+        
+        let id = localStorage.getItem(idKey)
+        let name = localStorage.getItem(nameKey)
+        
         if (!id) {
             id = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36)
-            localStorage.setItem(key, id)
+            localStorage.setItem(idKey, id)
         }
-        return id
+        
+        if (!name) {
+            const adjectives = ['Cosmic', 'Neon', 'Lunar', 'Alpha', 'Swift', 'Golden', 'Electric', 'Arctic', 'Vibrant', 'Silent']
+            const animals = ['Panda', 'Fox', 'Eagle', 'Owl', 'Wolf', 'Lion', 'Tiger', 'Dolphin', 'Koala', 'Falcon']
+            name = adjectives[Math.floor(Math.random() * adjectives.length)] + ' ' + animals[Math.floor(Math.random() * animals.length)]
+            localStorage.setItem(nameKey, name)
+        }
+        
+        return { id, name }
     }
 
     const [sessionValid, setSessionValid] = useState<boolean | null>(null) // null = checking
@@ -244,6 +255,7 @@ export default function StudentJoin() {
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
     const [vibeCheckActive, setVibeCheckActive] = useState(false)
     const lastVibeTs = useRef(0)
+    const [studentIdentity, setStudentIdentity] = useState('Joining...')
 
     useEffect(() => {
         if (!roomId) return;
@@ -297,8 +309,25 @@ export default function StudentJoin() {
         // Check session validity and detect topic changes
         validateSession(sessionId).then(res => {
             setSessionValid(res.active)
-            if (res.active && res.roomId) setRoomId(res.roomId)
-            if (res.agenda && res.agenda.length > 0) setSessionAgenda(res.agenda)
+            if (res.active && res.roomId) {
+                setRoomId(res.roomId)
+                if (res.agenda) setSessionAgenda(res.agenda)
+                
+                // Initialize Identity
+                const { name } = getOrCreateIdentity()
+                setStudentIdentity(name)
+
+                // Initialize Persistent Signal Counts for this room
+                const savedCounts = localStorage.getItem(`topic_counts_${res.roomId}`)
+                if (savedCounts) {
+                    try {
+                        const parsed = JSON.parse(savedCounts)
+                        setTopicSignalCounts(parsed)
+                        // If already spammed in this room, set rate limit
+                        if (parsed['General'] >= 3) setRateLimited(true)
+                    } catch(e) {}
+                }
+            }
         })
 
         // Poll for topic changes every 15s — reset rate limit per topic
@@ -333,13 +362,6 @@ export default function StudentJoin() {
             }
         }
 
-        // Restore topic signal counts from localStorage
-        const topicKey = `edupulse_topic_counts_${sessionId}`
-        const stored = localStorage.getItem(topicKey)
-        if (stored) {
-            try { setTopicSignalCounts(JSON.parse(stored)) } catch {}
-        }
-
         return () => clearInterval(topicPoller)
     }, [sessionId, router])
 
@@ -348,7 +370,7 @@ export default function StudentJoin() {
         setSubmitting(type)
         setError(null)
         setDropdownOpen(false)
-        const deviceId = getOrCreateDeviceId()
+        const { id: deviceId } = getOrCreateIdentity()
         const combinedText = [optionalText, quickComment].filter(Boolean).join(' | ')
         const activeTopic = optionalText || 'General'
 
@@ -356,7 +378,7 @@ export default function StudentJoin() {
             const res = await submitSignal({ 
                 type: realType, 
                 block_room: roomId || sessionId, 
-                additional_text: combinedText, 
+                additional_text: `[${studentIdentity}] ${combinedText}`, 
                 device_id: deviceId 
             })
             
@@ -368,9 +390,13 @@ export default function StudentJoin() {
                     return updated
                 })
 
+                // Persist new counts to localStorage to prevent refresh-based spamming
+                const currentCounts = { ...topicSignalCounts, [activeTopic]: (topicSignalCounts[activeTopic] || 0) + 1 }
+                localStorage.setItem(`topic_counts_${roomId}`, JSON.stringify(currentCounts))
+
                 // Penalty triggers on the 4th signal within the same topic (current count 3)
-                const isSpamming = (topicSignalCounts[activeTopic] || 0) >= 3
-                const duration = isSpamming ? 180 : 60
+                const isSpamming = (currentCounts[activeTopic] || 0) >= 3
+                const duration = isSpamming ? 180 : 120 // Unified 120s cooldown, 180s for spam
                 if (isSpamming) setRateLimited(true)
                 setSignaled(true)
                 setCooldown(true)
@@ -403,21 +429,20 @@ export default function StudentJoin() {
         if (!deepDoubt.trim() || (submitting && submitting !== 'Deep Doubt') || doubtCooldown) return
         setSubmitting('Deep Doubt')
         setError(null)
-        const deviceId = getOrCreateDeviceId()
 
         try {
             const res = await submitSignal({ 
                 type: 'Deep Doubt', 
                 block_room: roomId || sessionId, 
-                additional_text: deepDoubt, 
-                device_id: deviceId 
+                additional_text: `[${studentIdentity}] ${deepDoubt}`, 
+                device_id: getOrCreateIdentity().id 
             })
             
             if (res.success) {
                 setDeepDoubt('')
                 setDeepDoubtMsg('✅ Question sent! Your teacher will see it shortly.')
                 setDoubtCooldown(true)
-                setDoubtCooldownSecs(10)
+                setDoubtCooldownSecs(120) // Unified cooldown for doubts too
                 const doubtTimer = setInterval(() => {
                     setDoubtCooldownSecs(s => {
                         if (s <= 1) { clearInterval(doubtTimer); setDoubtCooldown(false); return 0 }
@@ -442,13 +467,12 @@ export default function StudentJoin() {
         if (!pendingDoubt.trim() || pendingDoubtStatus === 'submitting') return
         setPendingDoubtStatus('submitting')
         setPendingDoubtMsg('')
-        const deviceId = getOrCreateDeviceId()
         const activeTopic = optionalText || 'General'
         const res = await submitPendingDoubt({
             sessionId: roomId || sessionId,
-            deviceId,
+            deviceId: getOrCreateIdentity().id,
             topic: activeTopic,
-            doubtText: pendingDoubt,
+            doubtText: `[${studentIdentity}] ${pendingDoubt}`,
         })
         if (res.success) {
             setPendingDoubt('')
@@ -624,7 +648,8 @@ export default function StudentJoin() {
                                 key={opt.type}
                                 onClick={async () => {
                                     setVibeCheckActive(false);
-                                    await submitSignal({ type: opt.type, block_room: roomId || sessionId, device_id: getOrCreateDeviceId() });
+                                    const { id: dId } = getOrCreateIdentity();
+                                    await submitSignal({ type: opt.type, block_room: roomId || sessionId, additional_text: `[${studentIdentity}]`, device_id: dId });
                                 }}
                                 style={{ width: '100%', padding: '1.25rem', background: opt.bg, border: `1px solid ${opt.color}40`, borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, color: opt.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', transition: 'all 0.2s' }}
                                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 16px ${opt.color}25`; e.currentTarget.style.background = opt.hover; }}
@@ -711,7 +736,10 @@ export default function StudentJoin() {
                 <div style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: 380, width: '100%' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.3rem 0.875rem', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: 100, marginBottom: '1.25rem' }}>
                         <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--success)', animation: 'pulse-dot 2s infinite' }} />
-                        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t.classInSession}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.6rem', background: 'rgba(99,102,241,0.06)', borderRadius: 100, border: '1px solid rgba(99,102,241,0.1)' }}>
+                            <div style={{ width: 8, height: 8, background: 'var(--accent-soft)', borderRadius: '50%', boxShadow: '0 0 4px var(--accent-dim)' }} />
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-soft)', letterSpacing: '0.01em' }}>You are: {studentIdentity}</span>
+                        </div>
                     </div>
 
                     {/* Pre-signal WiFi Warning */}
