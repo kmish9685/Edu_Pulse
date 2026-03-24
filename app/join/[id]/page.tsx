@@ -512,16 +512,14 @@ export default function StudentJoin() {
             <div style={{ position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>{rateLimited ? "Describe your doubt:" : "My question:"}</label>
-                    {!rateLimited && (
-                         <button 
-                            onClick={handleEnhanceDeep}
-                            disabled={!deepDoubt.trim() || enhancingDeepDoubt}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8 }}
-                        >
-                            {enhancingDeepDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
-                            {enhancingDeepDoubt ? 'Polish with AI' : '✨ Polish with AI'}
-                        </button>
-                    )}
+                    <button 
+                        onClick={handleEnhanceDeep}
+                        disabled={!deepDoubt && !pendingDoubt || enhancingDeepDoubt}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', padding: '0.4rem 0.8rem', borderRadius: 8 }}
+                    >
+                        {enhancingDeepDoubt ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                        {enhancingDeepDoubt ? 'Polishing...' : '✨ Polish with AI'}
+                    </button>
                 </div>
                 
                 {(deepDoubtMsg || pendingDoubtMsg) && (
@@ -851,12 +849,12 @@ export default function StudentJoin() {
                     {signaled && cooldown ?
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                             {signalSentContent}
-                            {rateLimited && (
-                                <div style={{ animation: 'enter-fade 0.5s ease-out' }}>
-                                    <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-soft)', marginBottom: '1rem', textAlign: 'center' }}>🎯 Priority Academic Doubt Box</h3>
-                                    {renderDoubtInterface()}
-                                </div>
-                            )}
+                            <div style={{ animation: 'enter-fade 0.5s ease-out' }}>
+                                <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--accent-soft)', marginBottom: '1rem', textAlign: 'center' }}>
+                                    {rateLimited ? "🎯 Priority Academic Doubt Box" : "💡 Ask a Specific Doubt Instead"}
+                                </h3>
+                                {renderDoubtInterface()}
+                            </div>
                         </div>
                     :
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -1072,9 +1070,18 @@ export default function StudentJoin() {
 
                 {/* Cooldown state */}
                 {cooldown && !signaled && (
-                    <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.125rem', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 100, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
-                        <Clock size={14} />
-                        {t.waitCooldown.replace('{s}', cooldownSecs.toString())}
+                    <div style={{ marginTop: '2.5rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+                        <div style={{ width: '100%', maxWidth: 420 }}>
+                            <div style={{ padding: '1rem', background: 'linear-gradient(to right, rgba(99,102,241,0.06), rgba(168,85,247,0.06))', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', textAlign: 'center' }}>
+                                <div style={{ fontWeight: 800, color: 'var(--accent-soft)', fontSize: '0.88rem', marginBottom: '0.2rem' }}>{rateLimited ? "🎯 Penalty Active: Please Use Doubt Box" : "💡 Signal Cooldown Active"}</div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>You can still send specific academic doubts directly to your teacher below.</div>
+                            </div>
+                            {renderDoubtInterface()}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.125rem', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--border)', borderRadius: 100, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
+                            <Clock size={14} />
+                            {t.waitCooldown.replace('{s}', cooldownSecs.toString())}
+                        </div>
                     </div>
                 )}
 
