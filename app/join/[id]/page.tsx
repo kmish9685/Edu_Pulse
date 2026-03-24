@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { submitSignal, validateSession, submitPendingDoubt } from '@/app/actions/signals_fix'
+import { validateSession, submitSignal, submitPendingDoubt } from '@/app/actions/signals_fix'
+import { enhanceDoubt } from '@/app/actions/ai'
 import { CheckCircle, Clock, Loader2, Zap, WifiOff, Radio, Globe, Sparkles, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
@@ -236,6 +237,8 @@ export default function StudentJoin() {
     const [pendingDoubt, setPendingDoubt] = useState('')            // Text in the pending doubt box
     const [pendingDoubtStatus, setPendingDoubtStatus] = useState<'idle' | 'submitting' | 'sent' | 'rejected'>('idle')
     const [pendingDoubtMsg, setPendingDoubtMsg] = useState('')      // Feedback message to student
+    const [enhancingPendingDoubt, setEnhancingPendingDoubt] = useState(false)
+    const [enhancingDeepDoubt, setEnhancingDeepDoubt] = useState(false)
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
     
     useEffect(() => {
@@ -427,6 +430,36 @@ export default function StudentJoin() {
             setTimeout(() => setPendingDoubtStatus('idle'), 5000)
         }
         setSubmitting(null)
+    }
+
+    const handleEnhancePending = async () => {
+        if (!pendingDoubt.trim() || enhancingPendingDoubt) return
+        setEnhancingPendingDoubt(true)
+        try {
+            const res = await enhanceDoubt(pendingDoubt)
+            if (res.success && res.data) {
+                setPendingDoubt(res.data)
+            }
+        } catch (err) {
+            console.error('Enhance error:', err)
+        } finally {
+            setEnhancingPendingDoubt(false)
+        }
+    }
+
+    const handleEnhanceDeep = async () => {
+        if (!deepDoubt.trim() || enhancingDeepDoubt) return
+        setEnhancingDeepDoubt(true)
+        try {
+            const res = await enhanceDoubt(deepDoubt)
+            if (res.success && res.data) {
+                setDeepDoubt(res.data)
+            }
+        } catch (err) {
+            console.error('Enhance error:', err)
+        } finally {
+            setEnhancingDeepDoubt(false)
+        }
     }
 
     // Shared page shell styles
@@ -899,6 +932,19 @@ export default function StudentJoin() {
 
                                 {pendingDoubtStatus !== 'sent' && (
                                     <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>Your message:</label>
+                                            <button 
+                                                onClick={handleEnhancePending}
+                                                disabled={!pendingDoubt.trim() || enhancingPendingDoubt}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'transparent', border: 'none', color: 'var(--accent-soft)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: 6, transition: 'all 0.2s' }}
+                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,70,229,0.08)'}
+                                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                            >
+                                                {enhancingPendingDoubt ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                                {enhancingPendingDoubt ? 'Polishing...' : '✨ Help me phrase this'}
+                                            </button>
+                                        </div>
                                         <textarea
                                             value={pendingDoubt}
                                             onChange={(e) => setPendingDoubt(e.target.value)}
@@ -1010,6 +1056,19 @@ export default function StudentJoin() {
                         Type your question below. It will be sent directly to your teacher, even if pulses are on cooldown.
                     </p>
                     <div style={{ position: 'relative' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-tertiary)' }}>My question:</label>
+                            <button 
+                                onClick={handleEnhanceDeep}
+                                disabled={!deepDoubt.trim() || enhancingDeepDoubt}
+                                style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'transparent', border: 'none', color: 'var(--accent-soft)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: 6, transition: 'all 0.2s' }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,70,229,0.08)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                                {enhancingDeepDoubt ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                {enhancingDeepDoubt ? 'Clarifying...' : '✨ Let AI help phrased it'}
+                            </button>
+                        </div>
                         <textarea 
                             value={deepDoubt}
                             onChange={(e) => setDeepDoubt(e.target.value)}

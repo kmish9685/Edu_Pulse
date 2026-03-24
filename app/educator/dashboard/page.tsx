@@ -690,9 +690,22 @@ function DashboardContent() {
                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{signal.type}</span>
                                         {signal.additional_text && (
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '0.1rem' }}>
-                                                &quot;{signal.additional_text}&quot;
-                                            </span>
+                                            <div style={{ fontSize: '0.75rem', marginTop: '0.15rem', lineHeight: 1.4 }}>
+                                                {signal.additional_text.includes(' (Original: ') ? (
+                                                    <>
+                                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500, display: 'block' }}>
+                                                            {signal.additional_text.split(' (Original: ')[0]}
+                                                        </span>
+                                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                                                            Original: &ldquo;{signal.additional_text.split(' (Original: ')[1].replace(/\)$/, '')}&rdquo;
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                                                        &ldquo;{signal.additional_text}&rdquo;
+                                                    </span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
