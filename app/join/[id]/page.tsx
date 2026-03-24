@@ -238,6 +238,7 @@ export default function StudentJoin() {
     const [pendingDoubt, setPendingDoubt] = useState('')            // Text in the pending doubt box
     const [pendingDoubtStatus, setPendingDoubtStatus] = useState<'idle' | 'submitting' | 'sent' | 'rejected'>('idle')
     const [pendingDoubtMsg, setPendingDoubtMsg] = useState('')      // Feedback message to student
+    const [deepDoubtMsg, setDeepDoubtMsg] = useState('')            // Success feedback for deep doubt
     const [enhancingPendingDoubt, setEnhancingPendingDoubt] = useState(false)
     const [enhancingDeepDoubt, setEnhancingDeepDoubt] = useState(false)
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
@@ -405,6 +406,7 @@ export default function StudentJoin() {
             
             if (res.success) {
                 setDeepDoubt('')
+                setDeepDoubtMsg('✅ Question sent! Your teacher will see it shortly.')
                 setDoubtCooldown(true)
                 setDoubtCooldownSecs(10)
                 const doubtTimer = setInterval(() => {
@@ -413,6 +415,8 @@ export default function StudentJoin() {
                         return s - 1
                     })
                 }, 1000)
+                // Clear success message after 5s
+                setTimeout(() => setDeepDoubtMsg(''), 5000)
             } else {
                 setError(res.error || 'Failed to send doubt')
             }
@@ -1177,6 +1181,14 @@ export default function StudentJoin() {
                                 {enhancingDeepDoubt ? 'Clarifying...' : '✨ Let AI phrase it'}
                             </button>
                         </div>
+                        
+                        {/* Success/Error Message for Deep Doubt */}
+                        {deepDoubtMsg && (
+                            <div style={{ padding: '0.625rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 10, fontSize: '0.82rem', color: 'var(--success)', fontWeight: 600, marginBottom: '1rem', animation: 'enter-fade 0.3s ease-out' }}>
+                                {deepDoubtMsg}
+                            </div>
+                        )}
+
                         <textarea 
                             value={deepDoubt}
                             onChange={(e) => setDeepDoubt(e.target.value)}

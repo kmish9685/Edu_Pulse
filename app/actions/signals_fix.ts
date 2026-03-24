@@ -15,26 +15,30 @@ export async function submitSignal(data: { type: string, block_room: string, add
     const supabase = await createClient()
     let roomId = data.block_room || ''
     
-    // Resolve PIN to UUID if necessary
-    if (roomId.length <= 6) {
+    // Resolve PIN to UUID if necessary (foreign key requirement)
+    if (roomId && roomId.length <= 8) {
         try {
-            const { data: sess } = await supabase
+            const { data: sess, error: resError } = await supabase
                 .from('active_sessions')
                 .select('id')
                 .or(`join_code.eq.${roomId.toUpperCase()},id.eq.${roomId.toUpperCase()}`)
                 .eq('is_active', true)
-                .limit(1)
-                .single()
-            if (sess) roomId = sess.id
+                .maybeSingle()
+            
+            if (sess?.id) {
+                roomId = sess.id
+            } else if (resError) {
+                console.error('[DEBUG] Resolution error:', resError.message)
+            }
         } catch (e) {
-            console.error('[DEBUG] Resolution error:', e)
+            console.error('[DEBUG] Resolution catch:', e)
         }
     }
 
     let isSpam = false
 
     // 1. Rate-Limiting Check (Max 3 signals per 60s per device)
-    if (data.device_id) {
+    if (data.device_id && roomId) {
         const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
         const { count } = await supabase
             .from('signals')
@@ -50,22 +54,21 @@ export async function submitSignal(data: { type: string, block_room: string, add
     }
 
     // 2. Fetch session details for manual shadowban (Muted Devices)
-    try {
-        const { data: sessionData } = await supabase
-            .from('active_sessions')
-            .select('metadata, current_topic')
-            .eq('id', roomId)
-            .single()
+    if (roomId) {
+        try {
+            const { data: sessionData } = await supabase
+                .from('active_sessions')
+                .select('metadata')
+                .eq('id', roomId)
+                .maybeSingle()
 
-        if (sessionData) {
-            const mutes = sessionData.metadata?.muted_devices || []
-            if (data.device_id && mutes.includes(data.device_id)) {
+            if (sessionData?.metadata?.muted_devices?.includes(data.device_id)) {
                 console.error('[DEBUG] Device is manually muted:', data.device_id);
                 isSpam = true
             }
+        } catch (e) {
+            console.error('[DEBUG] Session metadata fetch error:', e)
         }
-    } catch (e) {
-        console.error('[DEBUG] Session data fetch error:', e)
     }
 
     let finalAdditionalText = data.additional_text
@@ -83,17 +86,32 @@ export async function submitSignal(data: { type: string, block_room: string, add
         }
     }
 
+    // Database Constraint Safety: Trim to 500 chars 
+    const safeText = finalAdditionalText?.substring(0, 500)
+
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
-        additional_text: finalAdditionalText,
+        additional_text: safeText,
         device_id: data.device_id,
-        active_topic: data.additional_text?.split(' | ')[0] || 'General',
-        is_spam: isSpam
+        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
+        is_spam: isSpam,
+        metadata: { ai_processed: true, original_length: data.additional_text?.length }
     })
     
     if (error) {
         console.error('[ERROR] submitSignal fail:', error.message);
+        // Fallback: If it fails because of missing columns, try a barebones insert
+        if (error.message.includes('column') || error.message.includes('unknown')) {
+             const { error: retryErr } = await supabase.from('signals').insert({
+                type: data.type,
+                block_room: roomId,
+                additional_text: safeText,
+                device_id: data.device_id
+            })
+            if (!retryErr) return { success: true }
+            return { success: false, error: retryErr.message }
+        }
         return { success: false, error: error.message }
     }
     return { success: true }
