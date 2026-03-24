@@ -820,6 +820,13 @@ export default function StudentJoin() {
                     </p>
                 </div>
 
+                {/* Error Banner */}
+                {error && (
+                    <div style={{ width: '100%', maxWidth: 420, marginBottom: '1.25rem', padding: '1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 'var(--radius-lg)', color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center', animation: 'enter-fade 0.3s ease-out' }}>
+                        ⚠️ {error}
+                    </div>
+                )}
+
                 {/* Signals */}
                 <div style={{ width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
