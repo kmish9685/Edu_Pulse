@@ -89,29 +89,16 @@ export async function submitSignal(data: { type: string, block_room: string, add
     // Database Constraint Safety: Trim to 500 chars 
     const safeText = finalAdditionalText?.substring(0, 500)
 
+    // Primary Insert - Only using columns verified to exist
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
         additional_text: safeText,
-        device_id: data.device_id,
-        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
-        is_spam: isSpam,
-        metadata: { ai_processed: true, original_length: data.additional_text?.length }
+        device_id: data.device_id
     })
     
     if (error) {
         console.error('[ERROR] submitSignal fail:', error.message);
-        // Fallback: If it fails because of missing columns, try a barebones insert
-        if (error.message.includes('column') || error.message.includes('unknown')) {
-             const { error: retryErr } = await supabase.from('signals').insert({
-                type: data.type,
-                block_room: roomId,
-                additional_text: safeText,
-                device_id: data.device_id
-            })
-            if (!retryErr) return { success: true }
-            return { success: false, error: retryErr.message }
-        }
         return { success: false, error: error.message }
     }
     return { success: true }
