@@ -61,6 +61,7 @@ function DashboardContent() {
     // Pending Doubts state
     const [pendingDoubts, setPendingDoubts] = useState<any[]>([])
     const [reviewingDoubt, setReviewingDoubt] = useState<string | null>(null)
+    const [internalId, setInternalId] = useState<string | null>(null)
 
     const agendaParam = searchParams.get('agenda')
     const [agenda] = useState<string[]>(() => {
@@ -138,6 +139,7 @@ function DashboardContent() {
                     .single()
                 if (session) resolvedId = session.id
             }
+            setInternalId(resolvedId)
 
             console.log('[DASHBOARD] Initializing with Resolved ID:', resolvedId);
 
@@ -467,7 +469,27 @@ function DashboardContent() {
                         btn.innerHTML = 'Sending...'; 
                         btn.disabled = true;
                         btn.style.opacity = '0.5';
-                        await sendVibeCheck(sessionId);
+                        
+                        // 1. Log to DB (Server Action)
+                        await sendVibeCheck(internalId || sessionId || '');
+                        
+                        // 2. Direct Broadcast (Instant UI response)
+                        const targetId = internalId || sessionId;
+                        if (targetId) {
+                            const pulseChannel = supabase.channel(`vibe_pulse_${targetId}`)
+                            pulseChannel.subscribe(async (status) => {
+                                if (status === 'SUBSCRIBED') {
+                                    await pulseChannel.send({
+                                        type: 'broadcast',
+                                        event: 'vibe_check_pulse',
+                                        payload: { ts: Date.now() }
+                                    });
+                                    // Remove channel after broadcast to clean up
+                                    supabase.removeChannel(pulseChannel);
+                                }
+                            });
+                        }
+
                         setTimeout(() => { 
                             btn.innerHTML = '✨ Send Vibe Check'; 
                             btn.disabled = false; 

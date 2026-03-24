@@ -249,7 +249,7 @@ export default function StudentJoin() {
         if (!roomId) return;
         const supabase = createClient()
         
-        const channel = supabase.channel(`vibe_check_${roomId}`)
+        const channel = supabase.channel(`vibe_pulse_${roomId}`)
             .on(
                 'postgres_changes',
                 { event: 'UPDATE', schema: 'public', table: 'active_sessions', filter: `id=eq.${roomId}` },
@@ -261,6 +261,10 @@ export default function StudentJoin() {
                     }
                 }
             )
+            .on('broadcast', { event: 'vibe_check_pulse' }, (payload) => {
+                console.log('[REALTIME] Vibe Check broadcast received!');
+                setVibeCheckActive(true);
+            })
             .subscribe()
 
         return () => { supabase.removeChannel(channel) }
