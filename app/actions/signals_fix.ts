@@ -14,25 +14,37 @@ export async function submitSignal(data: { type: string, block_room: string, add
     console.log('[DEBUG] submitSignal start:', data);
     const supabase = await createClient()
     let roomId = data.block_room || ''
+    let instId: string | null = null
     
     // Resolve PIN to UUID if necessary (foreign key requirement)
     if (roomId && roomId.length <= 8) {
         try {
             const { data: sess, error: resError } = await supabase
                 .from('active_sessions')
-                .select('id')
+                .select('id, institution_id')
                 .or(`join_code.eq.${roomId.toUpperCase()},id.eq.${roomId.toUpperCase()}`)
                 .eq('is_active', true)
                 .maybeSingle()
             
             if (sess?.id) {
                 roomId = sess.id
+                instId = sess.institution_id
             } else if (resError) {
                 console.error('[DEBUG] Resolution error:', resError.message)
             }
         } catch (e) {
             console.error('[DEBUG] Resolution catch:', e)
         }
+    } else if (roomId) {
+        // Fetch institution_id even if it's already a UUID
+        try {
+            const { data: sess } = await supabase
+                .from('active_sessions')
+                .select('institution_id')
+                .eq('id', roomId)
+                .maybeSingle()
+            if (sess) instId = sess.institution_id
+        } catch (e) {}
     }
 
     let isSpam = false
@@ -95,7 +107,8 @@ export async function submitSignal(data: { type: string, block_room: string, add
         block_room: roomId,
         additional_text: safeText,
         device_id: data.device_id,
-        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General'
+        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
+        institution_id: instId
     })
     
     if (error) {
@@ -127,9 +140,13 @@ export async function startSession(pin: string, topic: string, agenda: string[])
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { success: false, error: 'Not authenticated' }
+    
+    // Fetch educator profile to get their institution
+    const { data: profile } = await supabase.from('profiles').select('institution_id').eq('id', user.id).single()
+
     const { error } = await supabase
         .from('active_sessions')
-        .upsert({ id: pin, educator_id: user.id, is_active: true, current_topic: topic, join_code: pin, agenda })
+        .upsert({ id: pin, educator_id: user.id, is_active: true, current_topic: topic, join_code: pin, agenda, institution_id: profile?.institution_id })
     return { success: !error, error: error?.message }
 }
 

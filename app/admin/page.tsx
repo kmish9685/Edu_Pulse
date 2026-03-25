@@ -70,6 +70,7 @@ export default function AdminPage() {
     const [createResult, setCreateResult] = useState<{ ok: boolean; msg: string } | null>(null)
     const [educators, setEducators] = useState<EducatorRow[]>([])
     const [loadingEducators, setLoadingEducators] = useState(true)
+    const [institutionId, setInstitutionId] = useState<string | null>(null)
 
     const tickerRef = useRef<HTMLDivElement>(null)
     const supabase = createClient()
@@ -82,34 +83,21 @@ export default function AdminPage() {
                 return
             }
 
-            // Look for the role in user metadata first (set by JWT)
-            // or fallback to checking the profile if not present.
-            const userRole = user.user_metadata?.role
+            const { data: profile } = await supabase
+                .from('profiles').select('role, institution_id').eq('id', user.id).single()
 
-            if (userRole === 'admin') {
-                // Role confirmed via JWT
-                fetchSignalTypes()
-                fetchRealMetrics()
-                fetchEducators()
-            } else {
-                // Fallback check against profiles table if JWT doesn't have it
-                const { data: profile } = await supabase
-                    .from('profiles').select('role').eq('id', user.id).single()
-
-                if (profile?.role !== 'admin') {
-                    window.location.href = '/admin/login?error=admin_required'
-                    return
-                }
-
-                fetchSignalTypes()
-                fetchRealMetrics()
-                fetchEducators()
+            if (profile?.role !== 'admin') {
+                window.location.href = '/admin/login?error=admin_required'
+                return
             }
+
+            setInstitutionId(profile?.institution_id)
+            fetchSignalTypes(profile?.institution_id)
+            fetchRealMetrics(profile?.institution_id)
+            fetchEducators()
         }
 
         checkAuth()
-        const interval = setInterval(fetchRealMetrics, 10000)
-        return () => clearInterval(interval)
     }, [])
 
     async function fetchEducators() {
@@ -123,9 +111,16 @@ export default function AdminPage() {
 
     // Supabase Realtime — updates ticker AND metrics instantly, no refresh needed
     useEffect(() => {
+        if (!institutionId) return
+
         const channel = supabase
-            .channel('admin-live-ticker')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signals' }, payload => {
+            .channel(`admin-live-ticker-${institutionId}`)
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'signals',
+                filter: `institution_id=eq.${institutionId}`
+            }, payload => {
                 const newSig = payload.new as LiveSignal & { active_topic?: string }
 
                 // 1. Update ticker
@@ -163,12 +158,29 @@ export default function AdminPage() {
                 })
             })
             .subscribe()
-        return () => { supabase.removeChannel(channel) }
-    }, [])
+        
+        const interval = setInterval(() => fetchRealMetrics(institutionId), 10000)
+        
+        return () => { 
+            supabase.removeChannel(channel)
+            clearInterval(interval)
+        }
+    }, [institutionId])
 
-    async function fetchRealMetrics() {
+    async function fetchRealMetrics(instId?: string | null) {
+        const queryInst = instId || institutionId
+        if (!queryInst) {
+            setLoadingMetrics(false)
+            return
+        }
+
         const ago = new Date(Date.now() - 24 * 3600000).toISOString()
-        const { data: signals } = await supabase.from('signals').select('id,type,block_room,created_at,active_topic').gte('created_at', ago).order('created_at', { ascending: false })
+        const { data: signals } = await supabase
+            .from('signals')
+            .select('id,type,block_room,created_at,active_topic')
+            .gte('created_at', ago)
+            .eq('institution_id', queryInst)
+            .order('created_at', { ascending: false })
         if (signals) {
             const sessions = [...new Set(signals.map(s => s.block_room).filter(Boolean))]
             const breakdown: Record<string, number> = {}
@@ -203,8 +215,15 @@ export default function AdminPage() {
         setLoadingMetrics(false)
     }
 
-    async function fetchSignalTypes() {
-        const { data } = await supabase.from('signal_types').select('*').eq('is_active', true)
+    async function fetchSignalTypes(instId?: string | null) {
+        const queryInst = instId || institutionId
+        if (!queryInst) return
+
+        const { data } = await supabase
+            .from('signal_types')
+            .select('*')
+            .eq('is_active', true)
+            .eq('institution_id', queryInst)
         if (data) setSignalTypes(data)
     }
 

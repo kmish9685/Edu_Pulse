@@ -39,7 +39,7 @@ export async function resetAllData() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, institution_id')
         .eq('id', user.id)
         .single()
 
@@ -49,7 +49,7 @@ export async function resetAllData() {
     const { error } = await supabase
         .from('signals')
         .delete()
-        .neq('id', 0) // Delete all
+        .eq('institution_id', profile.institution_id) // Delete all for this institution
 
     if (error) return { success: false, error: error.message }
 
@@ -76,9 +76,20 @@ export async function updateCampusSettings(settings: { latitude: number, longitu
 export async function addSignalType(label: string) {
     const supabase = await createClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: 'Not authenticated' }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, institution_id')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'admin') return { success: false, error: 'Unauthorized' }
+
     const { error } = await supabase
         .from('signal_types')
-        .insert({ label })
+        .insert({ label, institution_id: profile.institution_id })
 
     if (error) return { success: false, error: error.message }
 

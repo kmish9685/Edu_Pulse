@@ -10,10 +10,15 @@ export async function createEducatorUser(email: string, password: string, displa
     if (!caller) return { success: false, error: 'Not authenticated' }
 
     const { data: callerProfile } = await supabase
-        .from('profiles').select('role').eq('id', caller.id).single()
+        .from('profiles')
+        .select('role, institution_id')
+        .eq('id', caller.id)
+        .single()
     if (callerProfile?.role !== 'admin') {
         return { success: false, error: 'Unauthorized — admin only' }
     }
+
+    const institutionId = callerProfile?.institution_id
 
     // Use the admin client to create the user — this bypasses email confirmation entirely
     try {
@@ -44,6 +49,7 @@ export async function createEducatorUser(email: string, password: string, displa
                 role: 'educator',
                 email: email,
                 display_name: displayName,
+                institution_id: institutionId
             })
 
         if (profileError) {
@@ -79,7 +85,10 @@ export async function listEducators() {
     if (!caller) return { success: false, error: 'Not authenticated', educators: [] }
 
     const { data: callerProfile } = await supabase
-        .from('profiles').select('role').eq('id', caller.id).single()
+        .from('profiles')
+        .select('role, institution_id')
+        .eq('id', caller.id)
+        .single()
     if (callerProfile?.role !== 'admin') {
         return { success: false, error: 'Unauthorized', educators: [] }
     }
@@ -90,6 +99,7 @@ export async function listEducators() {
             .from('profiles')
             .select('id, role, display_name, email, created_at')
             .eq('role', 'educator')
+            .eq('institution_id', callerProfile.institution_id)
             .order('created_at', { ascending: false })
 
         if (error) {
