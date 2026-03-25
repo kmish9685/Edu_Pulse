@@ -37,4 +37,3 @@ ADD COLUMN IF NOT EXISTS institution_id UUID REFERENCES public.institutions(id) 
 -- 7. (Optional) Force the schema cache to refresh
 NOTIFY pgrst, 'reload schema';
 
-RAISE NOTICE 'Migration successful. All data is now linked to a default institution.';
