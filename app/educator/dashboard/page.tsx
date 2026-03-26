@@ -461,48 +461,6 @@ function DashboardContent() {
 
                 <div style={{ flex: 1 }} />
 
-                {/* Vibe Check Button */}
-                <button
-                    onClick={async (e) => {
-                        const btn = e.currentTarget;
-                        if (!sessionId || btn.disabled) return;
-                        btn.innerHTML = 'Sending...'; 
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                        
-                        // 1. Log to DB (Server Action)
-                        await sendVibeCheck(internalId || sessionId || '');
-                        
-                        // 2. Direct Broadcast (Instant UI response)
-                        const targetId = internalId || sessionId;
-                        if (targetId) {
-                            const pulseChannel = supabase.channel(`vibe_pulse_${targetId}`)
-                            pulseChannel.subscribe(async (status) => {
-                                if (status === 'SUBSCRIBED') {
-                                    await pulseChannel.send({
-                                        type: 'broadcast',
-                                        event: 'vibe_check_pulse',
-                                        payload: { ts: Date.now() }
-                                    });
-                                    // Remove channel after broadcast to clean up
-                                    supabase.removeChannel(pulseChannel);
-                                }
-                            });
-                        }
-
-                        setTimeout(() => { 
-                            btn.innerHTML = '✨ Send Vibe Check'; 
-                            btn.disabled = false; 
-                            btn.style.opacity = '1';
-                        }, 3000);
-                    }}
-                    title="Ask all students if they understand"
-                    style={{ padding: '0.4rem 0.8rem', background: 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 'var(--radius)', color: 'var(--accent)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(139,92,246,0.1)' }}
-                    onMouseEnter={e => !e.currentTarget.disabled && (e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(168,85,247,0.15))')}
-                    onMouseLeave={e => !e.currentTarget.disabled && (e.currentTarget.style.background = 'linear-gradient(to right, rgba(99,102,241,0.1), rgba(168,85,247,0.1))')}
-                >
-                    ✨ Send Vibe Check
-                </button>
 
                 {/* Mute toggle */}
                 <button
