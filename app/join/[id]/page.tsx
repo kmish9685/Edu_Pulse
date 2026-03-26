@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { validateSession, submitSignal, submitPendingDoubt } from '@/app/actions/signals_fix'
 import { enhanceDoubt } from '@/app/actions/ai'
