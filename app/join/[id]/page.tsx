@@ -321,9 +321,11 @@ export default function StudentJoin() {
         }, 15000)
 
         // Check cooldown from localStorage (using absolute end time)
+        // Cap at 60s max so old cached 120s timers don't persist
         const cooldownEnd = localStorage.getItem(`edupulse_cooldown_end_${sessionId}`)
         if (cooldownEnd) {
-            const remaining = Math.ceil((parseInt(cooldownEnd) - Date.now()) / 1000)
+            const rawRemaining = Math.ceil((parseInt(cooldownEnd) - Date.now()) / 1000)
+            const remaining = Math.min(rawRemaining, 60) // never restore more than 60s
             if (remaining > 0) {
                 setCooldown(true)
                 setCooldownSecs(remaining)
@@ -346,8 +348,23 @@ export default function StudentJoin() {
         setError(null)
         setDropdownOpen(false)
         const { id: deviceId } = getOrCreateIdentity()
-        const combinedText = [optionalText, quickComment].filter(Boolean).join(' | ')
         const activeTopic = optionalText || 'General'
+
+        // ── Validate quickComment before including it ──
+        // If it's gibberish, strip it — but still send the signal + topic
+        let safeComment = quickComment.trim()
+        if (safeComment) {
+            try {
+                const check = await enhanceDoubt(safeComment)
+                if (!check.success) {
+                    safeComment = '' // silently drop gibberish, don't block signal
+                }
+            } catch {
+                // Fail-open: keep the comment if AI is unavailable
+            }
+        }
+
+        const combinedText = [optionalText, safeComment].filter(Boolean).join(' | ')
 
         try {
             const res = await submitSignal({ 
