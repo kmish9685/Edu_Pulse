@@ -405,6 +405,19 @@ export default function StudentJoin() {
         setSubmitting('Deep Doubt')
         setError(null)
 
+        // ── AI spam gate: reject gibberish before it reaches the teacher ──
+        try {
+            const spamCheck = await enhanceDoubt(deepDoubt)
+            if (!spamCheck.success) {
+                setDeepDoubtMsg(`❌ This doesn't look like a genuine academic question. Please describe what you're confused about clearly.`)
+                setSubmitting(null)
+                setTimeout(() => setDeepDoubtMsg(''), 6000)
+                return
+            }
+        } catch {
+            // Fail-open if AI is unavailable
+        }
+
         try {
             const res = await submitSignal({ 
                 type: 'Deep Doubt', 
