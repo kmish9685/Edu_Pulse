@@ -371,7 +371,7 @@ export default function StudentJoin() {
 
                 // Penalty triggers on the 4th signal within the same topic (current count 3)
                 const isSpamming = (currentCounts[activeTopic] || 0) >= 3
-                const duration = isSpamming ? 180 : 120 // Unified 120s cooldown, 180s for spam
+                const duration = isSpamming ? 180 : 60 // 60s normal cooldown, 180s for spam
                 if (isSpamming) setRateLimited(true)
                 setSignaled(true)
                 setCooldown(true)
