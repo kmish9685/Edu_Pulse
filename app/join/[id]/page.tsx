@@ -253,34 +253,9 @@ export default function StudentJoin() {
     const [enhancingPendingDoubt, setEnhancingPendingDoubt] = useState(false)
     const [enhancingDeepDoubt, setEnhancingDeepDoubt] = useState(false)
     const [currentSessionTopic, setCurrentSessionTopic] = useState<string | null>(null)
-    const [vibeCheckActive, setVibeCheckActive] = useState(false)
-    const lastVibeTs = useRef(0)
     const [studentIdentity, setStudentIdentity] = useState('Joining...')
 
-    useEffect(() => {
-        if (!roomId) return;
-        const supabase = createClient()
-        
-        const channel = supabase.channel(`vibe_pulse_${roomId}`)
-            .on(
-                'postgres_changes',
-                { event: 'UPDATE', schema: 'public', table: 'active_sessions', filter: `id=eq.${roomId}` },
-                (payload: any) => {
-                    const newTs = payload.new?.metadata?.vibe_check_timestamp;
-                    if (newTs && newTs > lastVibeTs.current && (Date.now() - newTs < 30000)) {
-                        lastVibeTs.current = newTs;
-                        setVibeCheckActive(true);
-                    }
-                }
-            )
-            .on('broadcast', { event: 'vibe_check_pulse' }, (payload) => {
-                console.log('[REALTIME] Vibe Check broadcast received!');
-                setVibeCheckActive(true);
-            })
-            .subscribe()
 
-        return () => { supabase.removeChannel(channel) }
-    }, [roomId])
     
     useEffect(() => {
         const saved = localStorage.getItem('edupulse_lang') as keyof typeof translations
@@ -466,6 +441,25 @@ export default function StudentJoin() {
     const handlePendingDoubt = async () => {
         if (!pendingDoubt.trim() || pendingDoubtStatus === 'submitting') return
         setPendingDoubtStatus('submitting')
+        setPendingDoubtMsg('Checking your doubt...')
+
+        // ── Always validate with AI before submitting (even without Polish) ──
+        try {
+            const spamCheck = await enhanceDoubt(pendingDoubt)
+            // enhanceDoubt returns { success: false, error: "REJECT: ..." } for spam/gibberish
+            if (!spamCheck.success) {
+                setPendingDoubtStatus('rejected')
+                setPendingDoubtMsg(`❌ This doesn't look like a genuine academic doubt. Please describe your actual question clearly.`)
+                setTimeout(() => {
+                    setPendingDoubtStatus('idle')
+                    setPendingDoubtMsg('')
+                }, 6000)
+                return
+            }
+        } catch {
+            // If AI check fails, allow through (fail-open)
+        }
+
         setPendingDoubtMsg('')
         const activeTopic = optionalText || 'General'
         const res = await submitPendingDoubt({
@@ -589,15 +583,27 @@ export default function StudentJoin() {
         }
     }
 
+    // ── Polish handler — works for BOTH deepDoubt (normal) and pendingDoubt (rate-limited) ──
     const handleEnhanceDeep = async () => {
-        if (!deepDoubt.trim() || enhancingDeepDoubt) return
+        const textToEnhance = rateLimited ? pendingDoubt : deepDoubt
+        if (!textToEnhance.trim() || enhancingDeepDoubt) return
         setEnhancingDeepDoubt(true)
         try {
-            const res = await enhanceDoubt(deepDoubt)
+            const res = await enhanceDoubt(textToEnhance)
             if (res.success && res.data) {
-                setDeepDoubt(res.data)
+                // Update the correct state based on current mode
+                if (rateLimited) {
+                    setPendingDoubt(res.data)
+                } else {
+                    setDeepDoubt(res.data)
+                }
             } else if (!res.success && res.error) {
-                setDeepDoubtMsg(`❌ ${res.error}`)
+                const msg = `❌ ${res.error}`
+                if (rateLimited) {
+                    setPendingDoubtMsg(msg)
+                } else {
+                    setDeepDoubtMsg(msg)
+                }
             }
         } catch (err) {
             console.error('Enhance error:', err)
@@ -695,41 +701,7 @@ export default function StudentJoin() {
         )
     }
 
-    // ── Vibe Check Modal ──────────────────────────────────────────
-    if (vibeCheckActive) {
-        return (
-            <div style={{ ...pageShell, justifyContent: 'center' }}>
-                <div style={{ background: 'var(--bg-surface)', padding: '2.5rem 2rem', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', maxWidth: 400, width: '100%', zIndex: 100, animation: 'enter-scale 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-                    <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>👀</div>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>Quick Vibe Check!</h2>
-                    <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '2.5rem', lineHeight: 1.5 }}>
-                        Your teacher wants to know if you're following the current topic.
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                        {[
-                            { label: 'Got it perfectly', type: 'Vibe: Got It', color: '#22C55E', emoji: '🟢', bg: 'rgba(34,197,94,0.1)', hover: 'rgba(34,197,94,0.15)' },
-                            { label: 'Need a quick review', type: 'Vibe: Review', color: '#EAB308', emoji: '🟡', bg: 'rgba(234,179,8,0.1)', hover: 'rgba(234,179,8,0.15)' },
-                            { label: 'Completely lost', type: 'Vibe: Lost', color: '#EF4444', emoji: '🔴', bg: 'rgba(239,68,68,0.1)', hover: 'rgba(239,68,68,0.15)' }
-                        ].map(opt => (
-                            <button
-                                key={opt.type}
-                                onClick={async () => {
-                                    setVibeCheckActive(false);
-                                    const { id: dId } = getOrCreateIdentity();
-                                    await submitSignal({ type: opt.type, block_room: roomId || sessionId, additional_text: `[${studentIdentity}]`, device_id: dId });
-                                }}
-                                style={{ width: '100%', padding: '1.25rem', background: opt.bg, border: `1px solid ${opt.color}40`, borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, color: opt.color, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', transition: 'all 0.2s' }}
-                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 16px ${opt.color}25`; e.currentTarget.style.background = opt.hover; }}
-                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = opt.bg; }}
-                            >
-                                <span style={{ fontSize: '1.3rem' }}>{opt.emoji}</span> {opt.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        )
-    }
+
 
     // ── Pre-calculate Signal Sent View (Used inside main return) ──
     const signalSentContent = (

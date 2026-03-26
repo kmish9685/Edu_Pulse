@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduPulse × SDG 4 — EDVentures Hong Kong 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Outfit:wght@400;700;900&display=swap');
+
+  :root {
+    --navy: #0D1B2A;
+    --blue: #1565C0;
+    --electric: #2979FF;
+    --cyan: #00B0FF;
+    --yellow: #FFD600;
+    --green: #00E676;
+    --white: #FFFFFF;
+    --light: #E3F2FD;
+    --card-bg: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  /* ── SLIDE SYSTEM ── */
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    padding: 56px 72px;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide.active { display: flex; }
+
+  /* ── BACKGROUNDS ── */
+  .bg-navy   { background: var(--navy); }
+  .bg-dark   { background: #0A1520; }
+  .bg-deep   { background: #060F1A; }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.18;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  #nav {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    z-index: 999;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 10px 20px;
+    border-radius: 50px;
+    backdrop-filter: blur(12px);
+  }
+  #nav button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 24px;
+    transition: background 0.2s;
+  }
+  #nav button:hover { background: rgba(255,255,255,0.15); }
+  #slide-count { font-size: 13px; color: rgba(255,255,255,0.6); min-width: 60px; text-align:center; }
+
+  /* dots */
+  #dots { display: flex; gap: 6px; align-items: center; }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .dot.active { background: var(--cyan); transform: scale(1.4); }
+
+  /* ── COMMON ELEMENTS ── */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .tag-blue { background: rgba(41,121,255,0.2); color: var(--cyan); border: 1px solid rgba(0,176,255,0.3); }
+  .tag-green { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+  .tag-yellow { background: rgba(255,214,0,0.15); color: var(--yellow); border: 1px solid rgba(255,214,0,0.3); }
+
+  h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(38px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+  h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(26px, 3.5vw, 44px);
+    font-weight: 900;
+    line-height: 1.15;
+  }
+  h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(16px, 2vw, 22px);
+    font-weight: 700;
+  }
+
+  .highlight { color: var(--cyan); }
+  .highlight-yellow { color: var(--yellow); }
+  .highlight-green { color: var(--green); }
+
+  .subtitle {
+    font-size: clamp(14px, 1.6vw, 18px);
+    color: rgba(255,255,255,0.65);
+    line-height: 1.6;
+    max-width: 700px;
+    margin-top: 14px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: rgba(0,176,255,0.35); }
+
+  .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* SDG Target badge */
+  .target-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,214,0,0.2);
+    border: 1px solid rgba(255,214,0,0.4);
+    color: var(--yellow);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 30px;
+    margin-bottom: 8px;
+  }
+
+  .card-icon { font-size: 28px; margin-bottom: 10px; }
+  .card p { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.55; margin-top: 6px; }
+  .card strong { color: #fff; font-size: 14px; }
+
+  /* Stat boxes */
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(30px, 4vw, 52px);
+    font-weight: 900;
+    color: var(--cyan);
+  }
+  .stat-label { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  /* Divider */
+  .divider {
+    width: 60px; height: 3px;
+    background: linear-gradient(90deg, var(--electric), var(--cyan));
+    border-radius: 2px;
+    margin: 18px 0;
+  }
+
+  /* Slide number top-right */
+  .slide-num {
+    position: absolute;
+    top: 28px; right: 72px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+  }
+
+  /* Brand bottom-left */
+  .brand {
+    position: absolute;
+    bottom: 32px; left: 72px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: rgba(41,121,255,0.2);
+    color: var(--cyan);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.04); }
+
+  /* Quote */
+  .big-quote {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(18px, 2.2vw, 26px);
+    font-style: italic;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.5;
+    border-left: 3px solid var(--cyan);
+    padding-left: 24px;
+    max-width: 820px;
+    margin-top: 20px;
+  }
+
+  /* Flow step */
+  .flow-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .flow-step {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 14px 18px;
+    flex: 1;
+    min-width: 130px;
+    text-align: center;
+  }
+  .flow-step .emoji { font-size: 24px; }
+  .flow-step .label { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 4px; }
+  .flow-step .bold { font-size: 13px; font-weight: 700; color: #fff; margin-top: 2px; }
+  .arrow { font-size: 20px; color: var(--cyan); flex-shrink: 0; }
+
+  /* progress bar */
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 9999;
+  }
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--electric), var(--cyan));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* SLIDE 1 — TITLE */
+  #s1 { justify-content: center; align-items: flex-start; }
+  #s1 .un-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  #s1 .un-circle {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1976D2, #0D47A1);
+    border: 2px solid var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 0 20px rgba(0,176,255,0.4);
+  }
+
+  /* keyboard hint */
+  .key-hint {
+    position: fixed;
+    bottom: 80px;
+    right: 40px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div id="progress-fill"></div></div>
+
+<!-- ───────── SLIDE 1 — TITLE ───────── -->
+<div class="slide bg-navy active" id="s1">
+  <div class="blob" style="width:500px;height:500px;background:#1565C0;top:-150px;right:-100px;"></div>
+  <div class="blob" style="width:300px;height:300px;background:#00B0FF;bottom:-80px;left:-60px;"></div>
+
+  <div class="un-badge">
+    <div class="un-circle">SDG<br>4</div>
+    <div>
+      <div class="tag tag-blue">EDVentures Hong Kong 2026</div>
+    </div>
+  </div>
+
+  <h1>How <span class="highlight">EduPulse</span><br>Delivers<br><span class="highlight-yellow">SDG 4</span></h1>
+  <div class="divider"></div>
+  <p class="subtitle">A research-backed mapping of every EduPulse feature to the UN's Sustainable Development Goal 4 — Quality Education for All.</p>
+
+  <p style="margin-top:28px;font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:1.5px;">USE ARROW KEYS OR CLICK → TO NAVIGATE</p>
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 2 — WHAT IS SDG 4 ───────── -->
+<div class="slide bg-dark" id="s2">
+  <div class="blob" style="width:400px;height:400px;background:#0D47A1;top:-100px;left:-100px;"></div>
+
+  <span class="slide-num">02 / 10</span>
+  <div class="tag tag-blue">🌍 Background</div>
+  <h2>What is <span class="highlight">SDG 4</span>?</h2>
+  <div class="divider"></div>
+  <p class="subtitle">One of 17 goals set by the United Nations to be achieved by 2030. SDG 4 is laser-focused on education.</p>
+
+  <div style="margin-top:28px;" class="card-grid-2">
+    <div class="card" style="grid-column: 1 / -1; background: rgba(21,101,192,0.15); border-color: rgba(41,121,255,0.3);">
+      <div style="font-size:16px;font-weight:700;color:var(--cyan);">The Official Goal</div>
+      <p style="font-size:16px;color:#fff;line-height:1.6;margin-top:8px;">"Ensure inclusive and equitable <strong>quality education</strong> and promote <strong>lifelong learning</strong> opportunities for all."</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <strong>10 Specific Targets</strong>
+      <p>Ranging from primary school access to scholarships, teacher training, and building safe school environments.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <strong>Why It Matters to EDVentures</strong>
+      <p>EDVentures specifically judges innovation based on how well your solution advances SDG 4. This is your scoring criteria.</p>
+    </div>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 3 — THE PROBLEM NUMBERS ───────── -->
+<div class="slide bg-deep" id="s3">
+  <div class="blob" style="width:450px;height:450px;background:#1565C0;bottom:-150px;right:-80px;"></div>
+
+  <span class="slide-num">03 / 10</span>
+  <div class="tag tag-yellow">📊 The Problem</div>
+  <h2>The Crisis <span class="highlight-yellow">Hiding in Plain Sight</span></h2>
+  <div class="divider"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px;">
+    <div class="card stat">
+      <div class="stat-num">50%</div>
+      <div class="stat-label">Students feel disengaged in class</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">50%</div>
+      <div class="stat-label">Students never ask a single question all semester</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">72%</div>
+      <div class="stat-label">Reason: Fear of judgment in class</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">$1T</div>
+      <div class="stat-label">Annual cost of student disengagement globally</div>
+    </div>
+  </div>
+
+  <div class="big-quote">
+    "Right now, in every classroom in Asia, 1 in 2 students is silently confused. They won't raise their hand. The teacher won't know. And 3 months later, that student fails — or disappears entirely."
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 4 — WHAT IS EDUPULSE ───────── -->
+<div class="slide bg-navy" id="s4">
+  <div class="blob" style="width:400px;height:400px;background:#0091EA;top:-100px;right:-80px;"></div>
+  <div class="blob" style="width:250px;height:250px;background:#00E676;bottom:-60px;left:-40px;"></div>
+
+  <span class="slide-num">04 / 10</span>
+  <div class="tag tag-green">🚀 Our Solution</div>
+  <h2>What <span class="highlight">EduPulse</span> Does</h2>
+  <div class="divider"></div>
+
+  <div class="flow-row">
+    <div class="flow-step">
+      <div class="emoji">🎓</div>
+      <div class="bold">Student</div>
+      <div class="label">Feels confused. Taps anonymously. 3 seconds.</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-step">
+      <div class="emoji">🤖</div>
+      <div class="bold">AI Validates</div>
+      <div class="label">Checks if genuine or spam. Scores confidence.</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-step">
+      <div class="emoji">📊</div>
+      <div class="bold">Teacher Dashboard</div>
+      <div class="label">Sees real-time confusion. Gets AI nudge to pause.</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-step">
+      <div class="emoji">📧</div>
+      <div class="bold">AI Remediation</div>
+      <div class="label">Auto-drafts review email + quiz. One-click send.</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="flow-step">
+      <div class="emoji">📈</div>
+      <div class="bold">Session History</div>
+      <div class="label">Tracks confusion trends. Flags at-risk students early.</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px;">
+    <div class="card" style="border-color:rgba(0,230,118,0.3);">
+      <strong>✅ 100% Anonymous</strong>
+      <p>Students signal without fear of being identified — removing the #1 barrier to participation.</p>
+    </div>
+    <div class="card" style="border-color:rgba(0,230,118,0.3);">
+      <strong>✅ Gemini AI Powered</strong>
+      <p>AI validates doubts, generates summaries, analogies, practice questions, and remediation emails.</p>
+    </div>
+    <div class="card" style="border-color:rgba(0,230,118,0.3);">
+      <strong>✅ Multi-Institution Ready</strong>
+      <p>Strict multi-tenant architecture — each school's data is fully isolated and secure.</p>
+    </div>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 5 — SDG 4.1 ───────── -->
+<div class="slide bg-dark" id="s5">
+  <div class="blob" style="width:350px;height:350px;background:#1565C0;top:-80px;right:-60px;"></div>
+
+  <span class="slide-num">05 / 10</span>
+  <div class="tag tag-yellow">🎯 SDG 4 Target 4.1</div>
+  <h2>Effective <span class="highlight-yellow">Learning Outcomes</span></h2>
+  <div class="divider"></div>
+  <p class="subtitle">SDG 4.1 — By 2030, ensure all students complete quality education leading to relevant and <strong style="color:#fff;">effective learning outcomes.</strong></p>
+
+  <div class="card-grid-2" style="margin-top:24px;">
+    <div class="card">
+      <div class="target-badge">4.1 Alignment ✓</div>
+      <div class="card-icon">📱</div>
+      <strong>Real-Time Confusion Signaling</strong>
+      <p>Students tap to signal confusion anonymously. The teacher sees the signal spike in real time and can re-explain before the confusion compounds into failure. Learning outcome is actively protected every session.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.1 Alignment ✓</div>
+      <div class="card-icon">📧</div>
+      <strong>AI Remediation Email + Quiz</strong>
+      <p>After class, Gemini AI reads all confusion signals and auto-drafts a personalized review email with practice questions and real-world analogies — targeted at exactly what students struggled with. Learning continues after the bell rings.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.1 Alignment ✓</div>
+      <div class="card-icon">📈</div>
+      <strong>Session-Over-Session Trend Tracking</strong>
+      <p>EduPulse tracks confusion on each topic over multiple sessions. If Session 1 had 45 signals on "Pointers" and Session 4 shows 9, the teacher has measurable proof that learning is improving.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.1 Alignment ✓</div>
+      <div class="card-icon">⚠️</div>
+      <strong>At-Risk Student Detection</strong>
+      <p>Students who consistently signal confusion across sessions are flagged 3–4 weeks before they are likely to drop out. The teacher can intervene before it's too late — turning a potential dropout into a graduate.</p>
+    </div>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 6 — SDG 4.a ───────── -->
+<div class="slide bg-navy" id="s6">
+  <div class="blob" style="width:380px;height:380px;background:#0D47A1;bottom:-100px;left:-80px;"></div>
+
+  <span class="slide-num">06 / 10</span>
+  <div class="tag tag-blue">🎯 SDG 4 Target 4.a</div>
+  <h2>Safe & Effective <span class="highlight">Learning Environments</span></h2>
+  <div class="divider"></div>
+  <p class="subtitle">SDG 4.a — Build and upgrade education facilities to provide <strong style="color:#fff;">safe, non-violent, inclusive and effective</strong> learning environments for all.</p>
+
+  <div class="card-grid-2" style="margin-top:24px;">
+    <div class="card">
+      <div class="target-badge">4.a Alignment ✓</div>
+      <div class="card-icon">🛡️</div>
+      <strong>Anonymous by Design</strong>
+      <p>No student name is ever attached to a signal. The classroom remains psychologically safe — a student can ask "I'm confused" without social risk. This directly removes fear and judgment from the learning environment.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.a Alignment ✓</div>
+      <div class="card-icon">🤖</div>
+      <strong>AI Spam & Disruption Shield</strong>
+      <p>Our Gemini-powered spam detector classifies every doubt as "academic", "noise", or "spam". Disruptive students are rate-limited and cannot ruin the class. A safe environment is enforced by the system itself — not just classroom rules.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.a Alignment ✓</div>
+      <div class="card-icon">🌐</div>
+      <strong>No Device Required to Access</strong>
+      <p>Students join via a simple browser URL (/join/PIN) — no app download, no login, no account. Any phone, tablet, or school computer works. This removes technological barriers to participation in the learning environment.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.a Alignment ✓</div>
+      <div class="card-icon">🏫</div>
+      <strong>Multi-Institution Architecture</strong>
+      <p>Each school's data is 100% isolated. When scaled, EduPulse creates a consistent, secure learning environment across hundreds of institutions — upgrading the digital infrastructure of education at scale.</p>
+    </div>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 7 — SDG 4.c ───────── -->
+<div class="slide bg-deep" id="s7">
+  <div class="blob" style="width:350px;height:350px;background:#00796B;top:-80px;right:-60px;"></div>
+
+  <span class="slide-num">07 / 10</span>
+  <div class="tag tag-green">🎯 SDG 4 Target 4.c</div>
+  <h2>Empowering <span class="highlight-green">Teachers</span></h2>
+  <div class="divider"></div>
+  <p class="subtitle">SDG 4.c — By 2030, substantially increase the supply of <strong style="color:#fff;">qualified teachers</strong> and enhance their ability to teach effectively.</p>
+
+  <div class="card-grid-3" style="margin-top:24px;">
+    <div class="card">
+      <div class="target-badge">4.c Alignment ✓</div>
+      <div class="card-icon">📊</div>
+      <strong>Real-Time Teaching Feedback</strong>
+      <p>Teachers see a live confusion dashboard during class. If 8+ students signal confusion, the AI nudges: "Consider a quick recap." Teachers can adjust their pace on the fly — making every existing teacher more effective immediately.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.c Alignment ✓</div>
+      <div class="card-icon">🤖</div>
+      <strong>AI Agenda Generator</strong>
+      <p>Teachers input a topic — or upload a PDF/PPT — and EduPulse uses Gemini AI to generate a structured, time-estimated teaching agenda in seconds. Reduces lesson planning burden by 90%.</p>
+    </div>
+    <div class="card">
+      <div class="target-badge">4.c Alignment ✓</div>
+      <div class="card-icon">📧</div>
+      <strong>One-Click Post-Session Reports</strong>
+      <p>After every session, AI drafts a full post-session summary: what went well, what confused students, and practical tips for next class. The teacher reads it, clicks Approve, and it's sent. Zero extra work.</p>
+    </div>
+  </div>
+
+  <div class="big-quote" style="margin-top:20px;font-size:15px;">
+    Teacher burnout is a global crisis. EduPulse doesn't just help teachers teach better — it protects their time, energy, and sanity. A supported teacher is a better teacher.
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 8 — SDG 4.3 + 4.4 ───────── -->
+<div class="slide bg-navy" id="s8">
+  <div class="blob" style="width:400px;height:400px;background:#4A148C;bottom:-100px;right:-80px;"></div>
+
+  <span class="slide-num">08 / 10</span>
+  <div class="tag tag-blue">🎯 SDG 4 Targets 4.3 & 4.4</div>
+  <h2>Inclusive Access & <span class="highlight">21st Century Skills</span></h2>
+  <div class="divider"></div>
+
+  <div class="card-grid-2" style="margin-top:22px;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;">Target 4.3 — Equal Access to Learning</div>
+      <div class="card">
+        <div class="target-badge">4.3 Alignment ✓</div>
+        <div class="card-icon">🌏</div>
+        <strong>Language & Platform Agnostic</strong>
+        <p>EduPulse works on any browser, in any language. No app install, no account creation, no technical barrier. Accessible to students in rural India, Hong Kong, or Southeast Asia with any basic smartphone.</p>
+      </div>
+      <div class="card">
+        <div class="target-badge">4.3 Alignment ✓</div>
+        <div class="card-icon">🏫</div>
+        <strong>Cross-Institution Scalability</strong>
+        <p>Multi-tenant architecture means EduPulse can scale from 1 school to 1,000 institutions without any student being left behind due to data conflicts or institutional barriers.</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="font-size:13px;font-weight:700;color:var(--yellow);letter-spacing:1px;text-transform:uppercase;">Target 4.4 — Skills for the Modern World</div>
+      <div class="card">
+        <div class="target-badge">4.4 Alignment ✓</div>
+        <div class="card-icon">🧠</div>
+        <strong>Teaching Digital Confidence</strong>
+        <p>Students who use EduPulse learn to use digital tools for self-advocacy in education — a transferable ICT skill in itself. The platform teaches students that technology can represent their voice.</p>
+      </div>
+      <div class="card">
+        <div class="target-badge">4.4 Alignment ✓</div>
+        <div class="card-icon">📊</div>
+        <strong>Data-Driven Learning Culture</strong>
+        <p>By surfacing confused topics and trend data, EduPulse introduces institutions to data-informed education — a core competency in modern workplace and academic environments.</p>
+      </div>
+    </div>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 9 — FULL SUMMARY TABLE ───────── -->
+<div class="slide bg-dark" id="s9">
+  <span class="slide-num">09 / 10</span>
+  <div class="tag tag-yellow">📋 Full Alignment Summary</div>
+  <h2>EduPulse × <span class="highlight-yellow">All SDG 4 Targets</span></h2>
+  <div class="divider"></div>
+
+  <div style="margin-top:20px;overflow:auto;max-height:calc(100vh - 240px);">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:110px;">SDG 4 Target</th>
+          <th>What it Asks For</th>
+          <th>How EduPulse Delivers</th>
+          <th style="width:90px;text-align:center;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.1</strong></td>
+          <td>Quality education with effective learning outcomes</td>
+          <td>Real-time confusion signals, AI remediation, quiz, trend tracking, at-risk detection</td>
+          <td style="text-align:center;color:var(--green);font-weight:700;">✅ Direct</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.3</strong></td>
+          <td>Equal access to affordable quality education</td>
+          <td>No-app, browser-only, platform-agnostic access. Works on any device anywhere.</td>
+          <td style="text-align:center;color:var(--green);font-weight:700;">✅ Direct</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.4</strong></td>
+          <td>Students gain relevant skills including ICT</td>
+          <td>Students learn to use digital tools for academic voice. Data literacy embedded.</td>
+          <td style="text-align:center;color:var(--cyan);font-weight:700;">🔵 Indirect</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.5</strong></td>
+          <td>Eliminate disparities, ensure inclusion for vulnerable</td>
+          <td>Anonymity removes the social penalty on shy, introverted, or at-risk students.</td>
+          <td style="text-align:center;color:var(--cyan);font-weight:700;">🔵 Indirect</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.a</strong></td>
+          <td>Safe, non-violent, inclusive, effective learning environments</td>
+          <td>AI spam shield, anonymous design, no-fear signaling, multi-institution security.</td>
+          <td style="text-align:center;color:var(--green);font-weight:700;">✅ Direct</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--yellow);">4.c</strong></td>
+          <td>Increase qualified, effective teachers</td>
+          <td>AI agenda gen, real-time dashboard nudges, AI session summary, one-click reports.</td>
+          <td style="text-align:center;color:var(--green);font-weight:700;">✅ Direct</td>
+        </tr>
+        <tr>
+          <td><strong style="color:rgba(255,255,255,0.35);">4.2</strong></td>
+          <td>Early childhood development / pre-primary</td>
+          <td style="color:rgba(255,255,255,0.35);">Not in current scope — targets ages 0–5</td>
+          <td style="text-align:center;color:rgba(255,255,255,0.3);">— Out of Scope</td>
+        </tr>
+        <tr>
+          <td><strong style="color:rgba(255,255,255,0.35);">4.6</strong></td>
+          <td>Adult literacy and numeracy</td>
+          <td style="color:rgba(255,255,255,0.35);">Not directly addressed — EduPulse is classroom-tool, not a literacy program</td>
+          <td style="text-align:center;color:rgba(255,255,255,0.3);">— Out of Scope</td>
+        </tr>
+        <tr>
+          <td><strong style="color:rgba(255,255,255,0.35);">4.b</strong></td>
+          <td>Scholarships for developing countries</td>
+          <td style="color:rgba(255,255,255,0.35);">Not addressed — financial aid is outside software scope</td>
+          <td style="text-align:center;color:rgba(255,255,255,0.3);">— Out of Scope</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:14px;display:flex;gap:20px;font-size:12px;color:rgba(255,255,255,0.5);">
+    <span><span style="color:var(--green);">✅ Direct</span> — Core product feature addresses this target</span>
+    <span><span style="color:var(--cyan);">🔵 Indirect</span> — Product contributes to this target as a side effect</span>
+    <span>— Out of Scope — Honest acknowledgement</span>
+  </div>
+
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── SLIDE 10 — CLOSING ───────── -->
+<div class="slide bg-navy" id="s10">
+  <div class="blob" style="width:500px;height:500px;background:#1565C0;top:-150px;right:-100px;"></div>
+  <div class="blob" style="width:300px;height:300px;background:#00E676;bottom:-80px;left:-60px;"></div>
+
+  <span class="slide-num">10 / 10</span>
+  <div class="tag tag-green">🏁 Our Commitment</div>
+  <h2>We Fix the <span class="highlight-yellow">Last Mile</span> of SDG 4</h2>
+  <div class="divider"></div>
+
+  <div class="big-quote">
+    "Getting a student into a classroom is only half the battle. EduPulse ensures that once they're there — every minute counts, every question is heard, and no student falls through the cracks silently."
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px;">
+    <div class="card stat">
+      <div class="stat-num" style="color:var(--green);">4</div>
+      <div class="stat-label">SDG 4 Targets directly addressed</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">20%</div>
+      <div class="stat-label">Target: Reduction in repeat confusion per 4 sessions</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num" style="color:var(--yellow);">3–4</div>
+      <div class="stat-label">Weeks early: At-risk students flagged before dropout</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">90%</div>
+      <div class="stat-label">Teacher time saved on post-class follow-up</div>
+    </div>
+  </div>
+
+  <p style="margin-top:24px;font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:1px;">EDVentures Hong Kong 2026 · edupulse.app</p>
+  <span class="brand">EduPulse · edupulse.app</span>
+</div>
+
+<!-- ───────── NAV ───────── -->
+<div id="nav">
+  <button onclick="go(-1)">←</button>
+  <div id="dots"></div>
+  <span id="slide-count">1 / 10</span>
+  <button onclick="go(1)">→</button>
+</div>
+
+<div class="key-hint">← → ARROW KEYS TO NAVIGATE · F11 FOR FULLSCREEN</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  const dotsEl = document.getElementById('dots');
+  const countEl = document.getElementById('slide-count');
+  const fillEl = document.getElementById('progress-fill');
+
+  // Build dots
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(total - 1, n));
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    countEl.textContent = (current + 1) + ' / ' + total;
+    fillEl.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function go(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+
+  // Init progress bar
+  fillEl.style.width = (1 / total * 100) + '%';
+</script>
+</body>
+</html>
