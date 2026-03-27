@@ -386,9 +386,11 @@ export default function StudentJoin() {
                 const currentCounts = { ...topicSignalCounts, [activeTopic]: (topicSignalCounts[activeTopic] || 0) + 1 }
                 localStorage.setItem(`topic_counts_${roomId}`, JSON.stringify(currentCounts))
 
-                // Penalty triggers on the 4th signal within the same topic (current count 3)
-                const isSpamming = (currentCounts[activeTopic] || 0) >= 3
-                const duration = isSpamming ? 180 : 60 // 60s normal cooldown, 180s for spam
+                // Progressive cooldown: escalates per topic to discourage spam
+                // 1st signal → 45s, 2nd signal same topic → 90s, 3rd+ → 180s + rate-limited
+                const topicCount = currentCounts[activeTopic] || 0
+                const isSpamming = topicCount >= 3
+                const duration = isSpamming ? 180 : topicCount === 2 ? 90 : 45
                 if (isSpamming) setRateLimited(true)
                 setSignaled(true)
                 setCooldown(true)

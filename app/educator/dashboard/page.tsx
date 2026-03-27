@@ -676,73 +676,85 @@ function DashboardContent() {
                             <div className="lx-badge lx-badge-live">live</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem', overflowY: 'auto', maxHeight: 220 }}>
-                            {recentSignals.length === 0 ? (
+                            {recentSignals.length === 0 && (
                                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-tertiary)', textAlign: 'center', padding: '2.5rem 0' }}>
                                     Waiting for signals...
                                 </div>
-                            ) : recentSignals.map((signal, idx) => (
-                                <div
-                                    key={signal.id}
-                                    className="signal-row-enter"
-                                    style={{
-                                        display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem',
-                                        background: 'var(--bg-surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)',
-                                        animationDelay: `${idx * 40}ms`,
-                                    }}
-                                >
-                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: signal.type === 'Vibe: Got It' ? 'var(--success)' : (signal.type === 'Vibe: Review' || signal.type === 'Too Fast') ? 'var(--warning)' : 'var(--danger)', flexShrink: 0, boxShadow: `0 0 6px ${signal.type === 'Vibe: Got It' ? 'rgba(34,197,94,0.5)' : (signal.type === 'Vibe: Review' || signal.type === 'Too Fast') ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }} />
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>{signal.type}</span>
-                                        {signal.additional_text && (
-                                            <div style={{ fontSize: '0.75rem', marginTop: '0.15rem', lineHeight: 1.4 }}>
-                                                {signal.additional_text.includes(' (Original: ') ? (
-                                                    <>
-                                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500, display: 'block' }}>
-                                                            {signal.additional_text.split(' (Original: ')[0]}
-                                                        </span>
-                                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-                                                            Original: &ldquo;{signal.additional_text.split(' (Original: ')[1].replace(/\)$/, '')}&rdquo;
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                                                        &ldquo;{signal.additional_text}&rdquo;
+                            )}
+                            {recentSignals.map((signal, idx) => {
+                                const raw = signal.additional_text || ''
+                                const nameMatch = raw.match(/^\[([^\]]+)\]\s*/)
+                                const studentName = nameMatch ? nameMatch[1] : null
+                                const afterName = nameMatch ? raw.slice(nameMatch[0].length) : raw
+                                const [enhancedPart, originalPart] = afterName.includes(' (Original: ')
+                                    ? [afterName.split(' (Original: ')[0], afterName.split(' (Original: ')[1]?.replace(/\)$/, '')]
+                                    : [afterName, null]
+                                const parts = enhancedPart.split(' | ')
+                                const topicPart = parts.length > 1 ? parts[0] : null
+                                const commentPart = parts.length > 1 ? parts.slice(1).join(' | ') : parts[0]
+                                return (
+                                    <div
+                                        key={signal.id}
+                                        className="signal-row-enter"
+                                        style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.625rem 0.75rem', background: 'var(--bg-surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', animationDelay: `${idx * 40}ms` }}
+                                    >
+                                        <span style={{ width: 8, height: 8, borderRadius: '50%', marginTop: '0.35rem', background: signal.type === 'Too Fast' ? 'var(--warning)' : 'var(--danger)', flexShrink: 0 }} />
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{signal.type}</span>
+                                                {studentName && (
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--accent-soft)', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '0.05rem 0.4rem', borderRadius: 100 }}>
+                                                        {studentName}
                                                     </span>
                                                 )}
                                             </div>
-                                        )}
+                                            {topicPart && (
+                                                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#D97706', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', padding: '0.1rem 0.5rem', borderRadius: 100, display: 'inline-block', width: 'fit-content' }}>
+                                                    📌 {topicPart}
+                                                </span>
+                                            )}
+                                            {commentPart && commentPart.trim() && (
+                                                <span style={{ fontSize: '0.78rem', color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.5 }}>
+                                                    &ldquo;{commentPart.trim()}&rdquo;
+                                                </span>
+                                            )}
+                                            {originalPart && (
+                                                <span style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                                                    Original: &ldquo;{originalPart}&rdquo;
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.3rem', flexShrink: 0 }}>
+                                            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)' }}>
+                                                {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            </span>
+                                            {signal.is_spam && (
+                                                <span style={{ color: 'var(--danger)', fontSize: '0.6rem', fontWeight: 800, background: 'rgba(239,68,68,0.1)', padding: '0 0.3rem', borderRadius: 3 }}>AI: SPAM</span>
+                                            )}
+                                            {signal.device_id && mutedDevices.includes(signal.device_id) && (
+                                                <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-surface)', padding: '0.1rem 0.4rem', borderRadius: 4, border: '1px solid var(--border-dim)' }}>MUTED</div>
+                                            )}
+                                            {signal.device_id && (
+                                                <button
+                                                    onClick={async () => {
+                                                        const confirmed = window.confirm('Shadowban this device? They will stay in the session but their signals will be muted for you.')
+                                                        if (confirmed) {
+                                                            setMutedDevices(d => [...d, signal.device_id])
+                                                            await muteDevice(sessionId!, signal.device_id)
+                                                        }
+                                                    }}
+                                                    style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.65rem', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: 4, fontFamily: 'var(--font-mono)' }}
+                                                    onMouseOver={e => e.currentTarget.style.color = 'var(--danger)'}
+                                                    onMouseOut={e => e.currentTarget.style.color = 'var(--text-tertiary)'}
+                                                    title="Shadowban this student's device"
+                                                >
+                                                    {mutedDevices.includes(signal.device_id) ? 'Shadowbanned' : 'Mute'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: 'var(--text-tertiary)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
-                                        {new Date(signal.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                        {signal.is_spam && (
-                                            <span style={{ color: 'var(--danger)', fontSize: '0.6rem', fontWeight: 800, background: 'rgba(239,68,68,0.1)', padding: '0 0.3rem', borderRadius: 3 }}>AI: SPAM</span>
-                                        )}
-                                        {signal.metadata?.category && signal.metadata.category !== 'academic' && !signal.is_spam && (
-                                            <span style={{ color: 'var(--warning)', fontSize: '0.6rem', fontWeight: 800, background: 'rgba(245,158,11,0.1)', padding: '0 0.3rem', borderRadius: 3 }}>AI: {signal.metadata.category.toUpperCase()}</span>
-                                        )}
-                                    </span>
-                                    {signal.device_id && mutedDevices.includes(signal.device_id) && (
-                                        <div style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-tertiary)', background: 'var(--bg-surface)', padding: '0.1rem 0.4rem', borderRadius: 4, letterSpacing: '0.05em', border: '1px solid var(--border-dim)' }}>MUTED</div>
-                                    )}
-                                    {signal.device_id && (
-                                        <button 
-                                            onClick={async () => {
-                                                const confirmed = window.confirm('Shadowban this device? They will stay in the session but their signals will be muted for you.')
-                                                if (confirmed) {
-                                                    setMutedDevices(d => [...d, signal.device_id])
-                                                    await muteDevice(sessionId!, signal.device_id)
-                                                }
-                                            }}
-                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', fontSize: '0.65rem', cursor: 'pointer', padding: '0.2rem 0.4rem', borderRadius: 4, fontFamily: 'var(--font-mono)' }}
-                                            onMouseOver={e => e.currentTarget.style.color = 'var(--danger)'}
-                                            onMouseOut={e => e.currentTarget.style.color = 'var(--text-tertiary)'}
-                                            title={`Shadowban this student\'s device`}
-                                        >
-                                            {mutedDevices.includes(signal.device_id) ? 'Shadowbanned' : 'Mute'}
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     </div>
                 </div>
