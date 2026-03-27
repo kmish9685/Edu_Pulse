@@ -34,7 +34,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
         if (raw.includes('429') || raw.toLowerCase().includes('quota') || raw.toLowerCase().includes('too many')) {
             return '✨ Our AI is taking a quick breather! We had too many requests at once. Please wait a moment and refresh the page to try again.'
         }
-        return fallback
+        return raw // Show the real error if it's NOT a 429
     }
 
     useEffect(() => {
