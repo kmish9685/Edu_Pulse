@@ -28,6 +28,15 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
     const agendaParam = searchParams.get('agenda')
     const agenda: string[] = agendaParam ? JSON.parse(decodeURIComponent(agendaParam)) : []
 
+    // Prevent raw API errors from spilling into the UI
+    const friendlyAIError = (raw?: string, fallback: string = 'AI temporarily unavailable.'): string => {
+        if (!raw) return fallback
+        if (raw.includes('429') || raw.toLowerCase().includes('quota') || raw.toLowerCase().includes('too many')) {
+            return '✨ Our AI is taking a quick breather! We had too many requests at once. Please wait a moment and refresh the page to try again.'
+        }
+        return fallback
+    }
+
     useEffect(() => {
         async function fetchAndGenerate() {
             setLoading(true)
@@ -52,7 +61,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
             if (res.success && res.data) {
                 setSummary(res.data)
             } else {
-                setError(res.error || 'AI failed to generate a summary.')
+                setError(friendlyAIError(res.error, 'AI failed to generate a summary.'))
             }
 
             // 3. Check if remediation is already published
@@ -97,7 +106,7 @@ export default function EducatorSummary({ params }: { params: Promise<{ id: stri
             setRemediationText(res.data)
             setFollowUpMode('draft') // DO NOT auto-save. Let the teacher approve it.
         } else {
-            setRemediationError(res.error || 'Failed to generate review material.')
+            setRemediationError(friendlyAIError(res.error, 'Failed to generate review material.'))
             setFollowUpMode('idle')
         }
     }
