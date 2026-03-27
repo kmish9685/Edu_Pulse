@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateDeepDoubt, enhanceDoubt } from './ai'
+import { headers } from 'next/headers'
 
 export type ActionResponse<T = any> = {
     success: boolean
@@ -48,8 +49,35 @@ export async function submitSignal(data: { type: string, block_room: string, add
     }
 
     let isSpam = false
+    let clientIp = 'unknown'
 
-    // 1. Rate-Limiting Check (Max 3 signals per 60s per device)
+    // 1a. IP-based rate limit (catches incognito + multi-tab abuse)
+    // Max 5 signals per 90 seconds from the same IP, regardless of device_id
+    try {
+        const hdr = await headers()
+        clientIp = hdr.get('x-forwarded-for')?.split(',')[0]?.trim()
+            || hdr.get('x-real-ip')
+            || 'unknown'
+        
+        if (clientIp !== 'unknown' && roomId) {
+            const ninetySecondsAgo = new Date(Date.now() - 90000).toISOString()
+            const { count: ipCount } = await supabase
+                .from('signals')
+                .select('*', { count: 'exact', head: true })
+                .eq('block_room', roomId)
+                .gte('created_at', ninetySecondsAgo)
+                .contains('metadata', { ip: clientIp })
+            
+            if ((ipCount || 0) >= 5) {
+                console.log('[DEBUG] IP rate-limited:', clientIp)
+                isSpam = true
+            }
+        }
+    } catch (e) {
+        // headers() can fail in some contexts — fail-open
+    }
+
+    // 1b. Device-ID rate limit (original check — only adds to isSpam)
     if (data.device_id && roomId) {
         const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
         const { count } = await supabase
@@ -60,7 +88,7 @@ export async function submitSignal(data: { type: string, block_room: string, add
             .gte('created_at', sixtySecondsAgo)
         
         if ((count || 0) >= 3) {
-            console.log('[DEBUG] Device rate-limited:', data.device_id);
+            console.log('[DEBUG] Device rate-limited:', data.device_id)
             isSpam = true
         }
     }
@@ -75,7 +103,7 @@ export async function submitSignal(data: { type: string, block_room: string, add
                 .maybeSingle()
 
             if (sessionData?.metadata?.muted_devices?.includes(data.device_id)) {
-                console.error('[DEBUG] Device is manually muted:', data.device_id);
+                console.error('[DEBUG] Device is manually muted:', data.device_id)
                 isSpam = true
             }
         } catch (e) {
@@ -85,13 +113,11 @@ export async function submitSignal(data: { type: string, block_room: string, add
 
     let finalAdditionalText = data.additional_text
     if (data.additional_text && !isSpam) {
-        // 1. Validate - don't send if it's spam/inappropriate
         const valRes = await validateDeepDoubt(data.additional_text)
         if (valRes.success && !valRes.isValid) {
             return { success: false, error: valRes.reason || 'AI rejected this message as not being genuine.' } 
         }
 
-        // 2. Enhance - phrase perfectly
         const enhanced = await enhanceDoubt(data.additional_text)
         if (enhanced.success && enhanced.data) {
             finalAdditionalText = `${enhanced.data} (Original: ${data.additional_text})`
@@ -101,18 +127,19 @@ export async function submitSignal(data: { type: string, block_room: string, add
     // Database Constraint Safety: Trim to 500 chars
     const safeText = finalAdditionalText?.substring(0, 500)
 
-    // Primary Insert - Only using columns verified to exist in your current schema
+    // Primary Insert — store IP in metadata for future IP-based rate limiting
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
         additional_text: safeText,
         device_id: data.device_id,
         active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
-        institution_id: instId
+        institution_id: instId,
+        metadata: { ip: clientIp }
     })
     
     if (error) {
-        console.error('[ERROR] submitSignal fail:', error.message);
+        console.error('[ERROR] submitSignal fail:', error.message)
         return { success: false, error: error.message }
     }
     return { success: true }

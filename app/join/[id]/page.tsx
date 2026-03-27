@@ -581,6 +581,18 @@ export default function StudentJoin() {
 
     const [enhancingQuickComment, setEnhancingQuickComment] = useState(false)
 
+    // Maps raw API errors to short friendly messages
+    const friendlyAIError = (raw?: string): string => {
+        if (!raw) return '✨ Polish unavailable right now — submit as-is!'
+        if (raw.includes('429') || raw.toLowerCase().includes('quota') || raw.toLowerCase().includes('too many')) {
+            return '✨ AI is a bit busy right now. Submit your question as-is — it will still reach the teacher!'
+        }
+        if (raw.toLowerCase().includes('gibberish') || raw.toLowerCase().includes('cannot rephrase') || raw.toLowerCase().includes('not academic')) {
+            return '🚫 Looks like gibberish — type a real question and try again.'
+        }
+        return '✨ Polish unavailable right now — submit as-is!'
+    }
+
     const handleEnhanceQuick = async () => {
         if (!quickComment.trim() || enhancingQuickComment) return
         setEnhancingQuickComment(true)
@@ -588,11 +600,13 @@ export default function StudentJoin() {
             const res = await enhanceDoubt(quickComment)
             if (res.success && res.data) {
                 setQuickComment(res.data)
-            } else if (!res.success && res.error) {
-                setError(res.error)
+            } else {
+                setError(friendlyAIError(res.error))
+                setTimeout(() => setError(null), 4000)
             }
         } catch (err) {
-            console.error('Enhance error:', err)
+            setError('✨ Polish unavailable right now — submit as-is!')
+            setTimeout(() => setError(null), 4000)
         } finally {
             setEnhancingQuickComment(false)
         }
@@ -605,11 +619,13 @@ export default function StudentJoin() {
             const res = await enhanceDoubt(pendingDoubt)
             if (res.success && res.data) {
                 setPendingDoubt(res.data)
-            } else if (!res.success && res.error) {
-                setPendingDoubtMsg(`❌ ${res.error}`)
+            } else {
+                setPendingDoubtMsg(friendlyAIError(res.error))
+                setTimeout(() => setPendingDoubtMsg(''), 4000)
             }
         } catch (err) {
-            console.error('Enhance error:', err)
+            setPendingDoubtMsg('✨ Polish unavailable right now — submit as-is!')
+            setTimeout(() => setPendingDoubtMsg(''), 4000)
         } finally {
             setEnhancingPendingDoubt(false)
         }
@@ -629,12 +645,14 @@ export default function StudentJoin() {
                 } else {
                     setDeepDoubt(res.data)
                 }
-            } else if (!res.success && res.error) {
-                const msg = `❌ ${res.error}`
+            } else {
+                const msg = friendlyAIError(res.error)
                 if (rateLimited) {
                     setPendingDoubtMsg(msg)
+                    setTimeout(() => setPendingDoubtMsg(''), 4000)
                 } else {
                     setDeepDoubtMsg(msg)
+                    setTimeout(() => setDeepDoubtMsg(''), 4000)
                 }
             }
         } catch (err) {
