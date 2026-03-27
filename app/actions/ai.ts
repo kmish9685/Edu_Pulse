@@ -114,7 +114,9 @@ export async function generateSummary(agenda: string[], signals: any[]): Promise
         signals.forEach(s => {
             typeCounts[s.type] = (typeCounts[s.type] || 0) + 1;
             if (s.active_topic) {
-                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1;
+                // Fix for historical data: strip [Student Name] if it accidentally leaked into active_topic
+                const cleanTopic = s.active_topic.replace(/^\[.*?\]\s*/, '').trim() || 'General';
+                topicCounts[cleanTopic] = (topicCounts[cleanTopic] || 0) + 1;
             }
         });
         const totalSignals = signals.length;
@@ -161,7 +163,9 @@ export async function generateRemediation(agenda: string[], signals: any[], teac
         signals.forEach(s => {
             typeCounts[s.type] = (typeCounts[s.type] || 0) + 1
             if (s.active_topic) {
-                topicCounts[s.active_topic] = (topicCounts[s.active_topic] || 0) + 1
+                // Fix for historical data: strip [Student Name] if it accidentally leaked into active_topic
+                const cleanTopic = s.active_topic.replace(/^\[.*?\]\s*/, '').trim() || 'General';
+                topicCounts[cleanTopic] = (topicCounts[cleanTopic] || 0) + 1
             }
         })
         const totalSignals = signals.length
@@ -195,21 +199,24 @@ You MUST use EXACTLY the following format. Do not use markdown bolding (**) or h
 • [Insert Topic 2]: [Insert Number] signals
 
 📖 Key points to review:
-[For EACH confused topic, write a clear plain-language explanation as if speaking to a student who is genuinely struggling. Be specific and concrete, not generic. Avoid textbook definitions — use real language.]
+[For EACH confused topic, write a clear, empathetic plain-language explanation as if speaking to a student who is genuinely struggling. Break the concept down into 2-3 simple, digestible steps. Be specific and concrete. Avoid textbook definitions and corporate jargon.]
+
+➡️ Step-by-Step Breakdown:
+[For EACH confused topic, provide a simple, numbered 2-3 step process that a student can follow to apply or understand the concept. Focus on "how to do it" or "how it works" in a practical sense.]
 
 💡 Concept Analogies (Real-World Examples):
 [For EACH confused topic, write one everyday real-world analogy that makes the concept click intuitively. The analogy must be culturally accessible and require zero background knowledge. Format as:
 • [Topic Name]: [Analogy — start with "Think of it like..." or "Imagine..."]
-The goal is an "aha!" moment — the student should say "oh THAT'S what it means" after reading it.]
+The goal is an "aha!" moment — the student should say "oh THATS what it means" after reading it.]
 
 🎥 Helpful resources:
 [Use the teacher-provided resources if any were given above. List each on its own line starting with •. If no resources provided, suggest descriptive resource titles only (e.g., "YouTube: Recursion Explained Simply — search on YouTube"). Do NOT fabricate URLs.]
 
 ❓ Practice questions:
-Q1. [Write a multiple-choice question targeting the FIRST most confused topic. Include 4 options labeled A, B, C, D]
+Q1. [Write a multiple-choice question targeting the FIRST most confused topic. Ensure the question is clear, unambiguous, and has one unequivocally correct answer. Include 4 options labeled A, B, C, D]
 Answer: [State correct answer letter and explain in one sentence WHY it is correct and why the others are wrong]
 
-Q2. [Write a multiple-choice question targeting the SECOND most confused topic OR a different aspect of the first. Include 4 options labeled A, B, C, D]
+Q2. [Write a multiple-choice question targeting the SECOND most confused topic OR a different aspect of the first. Ensure the question is clear, unambiguous, and has one unequivocally correct answer. Include 4 options labeled A, B, C, D]
 Answer: [State correct answer letter and explain in one sentence WHY it is correct]
 
 Q3. [Write a harder short-answer or true/false question that requires the student to APPLY the concept, not just recall it. Make it slightly harder than Q1 and Q2.]

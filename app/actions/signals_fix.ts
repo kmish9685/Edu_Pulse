@@ -143,13 +143,17 @@ export async function submitSignal(data: { type: string, block_room: string, add
     // Database Constraint Safety: Trim to 500 chars
     const safeText = finalAdditionalText?.substring(0, 500)
 
+    // Extract pure topic from "[Name] Topic | Comment" format
+    const rawTopicPart = data.additional_text?.split(' | ')[0] || 'General'
+    const cleanTopic = rawTopicPart.replace(/^\[.*?\]\s*/, '').substring(0, 50) || 'General'
+
     // Primary Insert — store IP + fingerprint in metadata for rate limiting
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
         additional_text: safeText,
         device_id: data.device_id,
-        active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
+        active_topic: cleanTopic,
         institution_id: instId,
         metadata: { ip: clientIp, fingerprint_id: data.fingerprint_id || null }
     })
