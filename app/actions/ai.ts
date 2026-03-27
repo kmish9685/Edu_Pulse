@@ -5,6 +5,27 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize the API with the key from environment variables
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
+// Automatic Failover: Try 2.5-flash for quality, fallback to 1.5-flash if rate limited
+async function generateWithFailover(promptData: any, config: any) {
+    try {
+        const primaryModel = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            generationConfig: config,
+        });
+        return await primaryModel.generateContent(promptData);
+    } catch (e: any) {
+        if (e.message && (e.message.includes('429') || e.message.toLowerCase().includes('quota') || e.message.toLowerCase().includes('too many'))) {
+            console.warn('[AI Fallback] gemini-2.5-flash rate limited, seamlessly falling back to gemini-1.5-flash');
+            const fallbackModel = genAI.getGenerativeModel({
+                model: 'gemini-1.5-flash',
+                generationConfig: config,
+            });
+            return await fallbackModel.generateContent(promptData);
+        }
+        throw e;
+    }
+}
+
 export async function generateAgenda(topic: string): Promise<{ success: boolean; data?: string[]; error?: string }> {
     if (!process.env.GEMINI_API_KEY) {
         return { success: false, error: 'AI API key not configured. Please add GEMINI_API_KEY to your env.' };
@@ -15,14 +36,6 @@ export async function generateAgenda(topic: string): Promise<{ success: boolean;
     }
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: {
-                temperature: 0.7,
-                responseMimeType: 'application/json',
-            },
-        });
-
         const prompt = `You are an expert educator. The user is teaching a class on the topic: "${topic}".
 Generate a concise, logical agenda of 3 to 5 subtopics. 
 Assume a slow, deliberate teaching pace to ensure students fully understand before moving on. For each subtopic, estimate the time it would take in minutes.
@@ -30,7 +43,10 @@ Return ONLY a valid JSON array of strings, where each string contains the subtop
 Do not include any Markdown formatting like \`\`\`json. Only return the raw JSON array.
 Example: ["Introduction to concept (10m)", "Core principles (25m)", "Real-world examples (15m)", "Q&A (10m)"]`;
 
-        const result = await model.generateContent(prompt);
+        const result = await generateWithFailover(prompt, {
+            temperature: 0.7,
+            responseMimeType: 'application/json',
+        });
         const text = result.response.text();
 
         // Safely parse the JSON
@@ -56,20 +72,12 @@ export async function generateAgendaFromFile(base64Data: string, mimeType: strin
     }
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',
-            generationConfig: {
-                temperature: 0.2, // Low temperature for extraction fidelity
-                responseMimeType: 'application/json',
-            },
-        });
-
         const prompt = `You are an expert educator. Extract a concise, logical agenda of 3 to 7 subtopics from this presentation document. 
 Assume a slow, deliberate teaching pace to ensure students fully understand before moving on. For each subtopic, estimate the time it would take in minutes.
 Return ONLY a valid JSON array of strings, where each string contains the subtopic followed by the duration in parentheses, like "(Xm)".
 Example: ["Introduction to concept (10m)", "Core principles (25m)", "Real-world examples (15m)", "Q&A (10m)"]`;
 
-        const result = await model.generateContent([
+        const result = await generateWithFailover([
             prompt,
             {
                 inlineData: {
@@ -77,7 +85,10 @@ Example: ["Introduction to concept (10m)", "Core principles (25m)", "Real-world 
                     mimeType: mimeType
                 }
             }
-        ]);
+        ], {
+            temperature: 0.2, // Low temperature for extraction fidelity
+            responseMimeType: 'application/json',
+        });
 
         const text = result.response.text();
 
@@ -103,11 +114,6 @@ export async function generateSummary(agenda: string[], signals: any[]): Promise
     }
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: { temperature: 0.7 },
-        });
-
         // Format signals for the prompt
         const typeCounts: Record<string, number> = {};
         const topicCounts: Record<string, number> = {};
@@ -135,7 +141,7 @@ ${Object.entries(topicCounts).map(([topic, count]) => `- During "${topic}": ${co
 Please write a concise, encouraging, and highly actionable 2-3 paragraph summary of the session. 
 Focus on identifying what specific topics or moments might have caused confusion (based on the accurate topic signals) and give 1-2 practical tips for the next class. Do not use generic corporate jargon, speak directly to the teacher.`;
 
-        const result = await model.generateContent(prompt);
+        const result = await generateWithFailover(prompt, { temperature: 0.7 });
         const text = result.response.text();
 
         return { success: true, data: text };
@@ -152,11 +158,6 @@ export async function generateRemediation(agenda: string[], signals: any[], teac
     }
 
     try {
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: { temperature: 0.7 },
-        });
-
         // Format signals for the prompt
         const typeCounts: Record<string, number> = {}
         const topicCounts: Record<string, number> = {}
@@ -226,7 +227,7 @@ Answer: [Provide a model answer in 2-3 sentences that a student can compare thei
 Before you move on, close this and try to explain the most confused topic to an imaginary friend in your own words. If you can teach it, you've learned it. If you can't, re-read the key points above.
 —Sent via EduPulse | edupulse.app`;
 
-        const result = await model.generateContent(prompt)
+        const result = await generateWithFailover(prompt, { temperature: 0.7 });
         const text = result.response.text()
 
         return { success: true, data: text };
