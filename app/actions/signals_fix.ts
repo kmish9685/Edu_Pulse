@@ -11,7 +11,7 @@ export type ActionResponse<T = any> = {
     error?: string
 }
 
-export async function submitSignal(data: { type: string, block_room: string, additional_text?: string, device_id?: string }): Promise<ActionResponse> {
+export async function submitSignal(data: { type: string, block_room: string, additional_text?: string, device_id?: string, fingerprint_id?: string }): Promise<ActionResponse> {
     console.log('[DEBUG] submitSignal start:', data);
     const supabase = await createClient()
     let roomId = data.block_room || ''
@@ -51,8 +51,7 @@ export async function submitSignal(data: { type: string, block_room: string, add
     let isSpam = false
     let clientIp = 'unknown'
 
-    // 1a. IP-based rate limit (catches incognito + multi-tab abuse)
-    // Max 5 signals per 90 seconds from the same IP, regardless of device_id
+    // 1a. IP-based rate limit — raised to 100/60s (abuse-only, doesn't affect real classrooms)
     try {
         const hdr = await headers()
         clientIp = hdr.get('x-forwarded-for')?.split(',')[0]?.trim()
@@ -60,24 +59,41 @@ export async function submitSignal(data: { type: string, block_room: string, add
             || 'unknown'
         
         if (clientIp !== 'unknown' && roomId) {
-            const ninetySecondsAgo = new Date(Date.now() - 90000).toISOString()
+            const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
             const { count: ipCount } = await supabase
                 .from('signals')
                 .select('*', { count: 'exact', head: true })
                 .eq('block_room', roomId)
-                .gte('created_at', ninetySecondsAgo)
+                .gte('created_at', sixtySecondsAgo)
                 .contains('metadata', { ip: clientIp })
             
-            if ((ipCount || 0) >= 5) {
-                console.log('[DEBUG] IP rate-limited:', clientIp)
+            if ((ipCount || 0) >= 100) {
+                console.log('[DEBUG] IP abuse limit hit:', clientIp)
                 isSpam = true
             }
         }
     } catch (e) {
-        // headers() can fail in some contexts — fail-open
+        // headers() unavailable — fail-open
     }
 
-    // 1b. Device-ID rate limit (original check — only adds to isSpam)
+    // 1b. Fingerprint rate limit — PRIMARY incognito defense
+    // Max 3 signals per 60s from the same hardware fingerprint (same across incognito tabs)
+    if (data.fingerprint_id && roomId) {
+        const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
+        const { count: fpCount } = await supabase
+            .from('signals')
+            .select('*', { count: 'exact', head: true })
+            .eq('block_room', roomId)
+            .gte('created_at', sixtySecondsAgo)
+            .contains('metadata', { fingerprint_id: data.fingerprint_id })
+        
+        if ((fpCount || 0) >= 3) {
+            console.log('[DEBUG] Fingerprint rate-limited:', data.fingerprint_id)
+            isSpam = true
+        }
+    }
+
+    // 1c. Device-ID rate limit (original check — only adds to isSpam)
     if (data.device_id && roomId) {
         const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
         const { count } = await supabase
@@ -127,7 +143,7 @@ export async function submitSignal(data: { type: string, block_room: string, add
     // Database Constraint Safety: Trim to 500 chars
     const safeText = finalAdditionalText?.substring(0, 500)
 
-    // Primary Insert — store IP in metadata for future IP-based rate limiting
+    // Primary Insert — store IP + fingerprint in metadata for rate limiting
     const { error } = await supabase.from('signals').insert({
         type: data.type,
         block_room: roomId,
@@ -135,7 +151,7 @@ export async function submitSignal(data: { type: string, block_room: string, add
         device_id: data.device_id,
         active_topic: data.additional_text?.split(' | ')[0]?.substring(0, 50) || 'General',
         institution_id: instId,
-        metadata: { ip: clientIp }
+        metadata: { ip: clientIp, fingerprint_id: data.fingerprint_id || null }
     })
     
     if (error) {

@@ -225,6 +225,31 @@ export default function StudentJoin() {
         return { id, name }
     }
 
+    // Browser fingerprint — survives incognito because it derives from hardware/OS, NOT localStorage.
+    // Same physical device = same fingerprint in both normal and incognito mode.
+    const getDeviceFingerprint = (): string => {
+        try {
+            const components = [
+                screen.width,
+                screen.height,
+                screen.colorDepth,
+                navigator.hardwareConcurrency || 0,
+                navigator.language || '',
+                navigator.platform || '',
+                Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            ].join('|')
+            // djb2 hash — fast, no external dep
+            let hash = 5381
+            for (let i = 0; i < components.length; i++) {
+                hash = ((hash << 5) + hash) + components.charCodeAt(i)
+                hash = hash & hash // keep as 32-bit int
+            }
+            return 'fp_' + Math.abs(hash).toString(36)
+        } catch {
+            return 'fp_fallback'
+        }
+    }
+
     const [sessionValid, setSessionValid] = useState<boolean | null>(null) // null = checking
     const [roomId, setRoomId] = useState<string | null>(null)
     const [signaled, setSignaled] = useState(false)
@@ -351,16 +376,20 @@ export default function StudentJoin() {
         const activeTopic = optionalText || 'General'
 
         // ── Validate quickComment before including it ──
-        // If it's gibberish, strip it — but still send the signal + topic
+        // If student typed a comment and it's gibberish → block the whole signal.
+        // Only a pure click with NO comment is allowed through without AI validation.
         let safeComment = quickComment.trim()
         if (safeComment) {
             try {
                 const check = await enhanceDoubt(safeComment)
                 if (!check.success) {
-                    safeComment = '' // silently drop gibberish, don't block signal
+                    setError('Your comment doesn\'t look like a genuine academic concern. Either clear it or write something real before signaling.')
+                    setSubmitting(null)
+                    setTimeout(() => setError(null), 5000)
+                    return // block the entire signal
                 }
             } catch {
-                // Fail-open: keep the comment if AI is unavailable
+                // Fail-open: if AI is unavailable, allow through
             }
         }
 
@@ -371,7 +400,8 @@ export default function StudentJoin() {
                 type: realType, 
                 block_room: roomId || sessionId, 
                 additional_text: `[${studentIdentity}] ${combinedText}`, 
-                device_id: deviceId 
+                device_id: deviceId,
+                fingerprint_id: getDeviceFingerprint()
             })
             
             if (res.success) {
@@ -442,7 +472,8 @@ export default function StudentJoin() {
                 type: 'Deep Doubt', 
                 block_room: roomId || sessionId, 
                 additional_text: `[${studentIdentity}] ${deepDoubt}`, 
-                device_id: getOrCreateIdentity().id 
+                device_id: getOrCreateIdentity().id,
+                fingerprint_id: getDeviceFingerprint()
             })
             
             if (res.success) {
